@@ -32,6 +32,24 @@ const translations = {
     startButton: "START OPERATION BUCATINI!",
     subtitle: "Adventure in the seas of Calabria awaits you!"
   },
+  it: {
+    title: "🐟 COMMANDER MOLA MOLA 🐟",
+    controlsHeader: "CONTROLLI:",
+    jump: "⬆️ W/↑ - SALTA",
+    move: "⬅️➡️ A/D/←/→ - MUOVI",
+    fire: "🚀 SPAZIO - SPARA",
+    collectHeader: "RACCOGLI:",
+    coins: "🪙 MONETE MOLA MOLA",
+    pizza: "🍕 PIZZA MARGHERITA",
+    brasilena: "🧃 BRASILENA",
+    wine: "🍷 VINO MADRE GOCCIA",
+    effectsHeader: "EFFETTI:",
+    pizzaEffect: "🍕 Pizza: +20 salute",
+    brasilenaEffect: "🧃 Brasilena: +10 munizioni",
+    wineEffect: "🍷 Vino: velocità +5 sec",
+    startButton: "INIZIA OPERAZIONE BUCATINI!",
+    subtitle: "L'avventura nei mari della Calabria ti aspetta!"
+  },
   ru: {
     title: "🐟 COMMANDER MOLA MOLA 🐟",
     controlsHeader: "УПРАВЛЕНИЕ:",
@@ -71,6 +89,7 @@ const StartScreen = ({ onStart }: StartScreenProps) => {
             <SelectContent className="bg-blue-800 text-white border-blue-400">
               <SelectItem value="ru">🇷🇺 Русский</SelectItem>
               <SelectItem value="en">🇬🇧 English</SelectItem>
+              <SelectItem value="it">🇮🇹 Italiano</SelectItem>
             </SelectContent>
           </Select>
         </div>
