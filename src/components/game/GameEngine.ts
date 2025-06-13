@@ -1,10 +1,13 @@
+
+import { GameState } from './types';
+
 export class GameEngine {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private animationId: number | null = null;
   private keys: { [key: string]: boolean } = {};
   private lastShotTime = 0;
-  private readonly SHOT_COOLDOWN = 200; // milliseconds between shots
+  private readonly SHOT_COOLDOWN = 200;
 
   private player = {
     x: 100,
@@ -19,7 +22,14 @@ export class GameEngine {
     health: 100,
     ammo: 20,
     coins: 0,
-    level: 1
+    level: 1,
+    frame: 0,
+    frameTimer: 0,
+    frameRate: 8,
+    powerUps: {
+      speedBoost: false,
+      speedBoostTime: 0,
+    },
   };
 
   private bullets: Array<{
@@ -38,22 +48,28 @@ export class GameEngine {
     speed: number;
   }> = [];
 
-  private collectibles: Array<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    type: 'coin' | 'pizza' | 'brasilena' | 'wine';
-  }> = [];
+  private coins: Array<{ x: number; y: number; width: number; height: number }> = [];
+  private pizzas: Array<{ x: number; y: number; width: number; height: number }> = [];
+  private brasilenas: Array<{ x: number; y: number; width: number; height: number }> = [];
+  private wines: Array<{ x: number; y: number; width: number; height: number }> = [];
 
   private platforms: Array<{
     x: number;
     y: number;
     width: number;
     height: number;
+    color: string;
   }> = [];
 
-  private images: { [key: string]: HTMLImageElement } = {};
+  private images: {
+    playerFrames: HTMLImageElement[];
+    enemy: HTMLImageElement;
+    pizza: HTMLImageElement;
+    brasilena: HTMLImageElement;
+    wine: HTMLImageElement;
+    coin: HTMLImageElement;
+    backgrounds: { img: HTMLImageElement; level: number }[];
+  };
 
   private callbacks: {
     onGameEnd: (victory: boolean, finalStats: any) => void;
@@ -71,11 +87,22 @@ export class GameEngine {
   ) {
     this.canvas = canvas;
     this.ctx = ctx;
+    this.ctx.imageSmoothingEnabled = false;
     this.callbacks = options;
-    
+
     // Apply initial state
     Object.assign(this.player, options.initialState);
-    
+
+    this.images = {
+      playerFrames: [new Image(), new Image()],
+      enemy: new Image(),
+      pizza: new Image(),
+      brasilena: new Image(),
+      wine: new Image(),
+      coin: new Image(),
+      backgrounds: [],
+    };
+
     this.loadImages();
     this.setupEventListeners();
     this.generateLevel();
@@ -92,12 +119,19 @@ export class GameEngine {
       pizza: '/lovable-uploads/60af68f1-3f70-4928-8512-4f13c4e56a05.png'
     };
 
+    this.images.playerFrames[0].src = imageUrls.player1;
+    this.images.playerFrames[1].src = imageUrls.player2;
+    this.images.enemy.src = imageUrls.coin; // Temporary fallback
+    this.images.pizza.src = imageUrls.pizza;
+    this.images.brasilena.src = imageUrls.brasilena;
+    this.images.wine.src = imageUrls.wine;
+    this.images.coin.src = imageUrls.coin;
+
     Object.entries(imageUrls).forEach(([key, url]) => {
       const img = new Image();
       img.src = url;
       img.onload = () => console.log(`Loaded image: ${key}`);
       img.onerror = () => console.error(`Failed to load image: ${key}`);
-      this.images[key] = img;
     });
   }
 
@@ -105,7 +139,6 @@ export class GameEngine {
     const handleKeyDown = (e: KeyboardEvent) => {
       this.keys[e.code] = true;
       
-      // Handle shooting with space - separate from movement
       if (e.code === 'Space') {
         e.preventDefault();
         this.shoot();
@@ -118,6 +151,71 @@ export class GameEngine {
 
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keyup', handleKeyUp);
+  }
+
+  private generatePlatforms() {
+    this.platforms = [
+      { x: 0, y: this.canvas.height - 40, width: this.canvas.width, height: 40, color: '#8B4513' },
+      { x: 300, y: 350, width: 120, height: 20, color: '#2E8B57' },
+      { x: 500, y: 280, width: 100, height: 20, color: '#1E90FF' },
+      { x: 150, y: 220, width: 80, height: 20, color: '#2E8B57' },
+      { x: 650, y: 200, width: 100, height: 20, color: '#1E90FF' }
+    ];
+  }
+
+  private generateLevel() {
+    this.enemies = [];
+    this.coins = [];
+    this.pizzas = [];
+    this.brasilenas = [];
+    this.wines = [];
+
+    const enemyCount = 3 + this.player.level;
+    const coinCount = 5 + this.player.level * 2;
+
+    for (let i = 0; i < enemyCount; i++) {
+      this.enemies.push({
+        x: 400 + Math.random() * 300,
+        y: 100 + Math.random() * 200,
+        width: 48,
+        height: 48,
+        speed: 1 + this.player.level * 0.2
+      });
+    }
+
+    for (let i = 0; i < coinCount; i++) {
+      this.coins.push({
+        x: 200 + Math.random() * 400,
+        y: 100 + Math.random() * 200,
+        width: 32,
+        height: 32
+      });
+    }
+
+    for (let i = 0; i < 3; i++) {
+      this.pizzas.push({
+        x: 200 + Math.random() * 400,
+        y: 100 + Math.random() * 200,
+        width: 32,
+        height: 32
+      });
+    }
+
+    for (let i = 0; i < 2; i++) {
+      this.brasilenas.push({
+        x: 200 + Math.random() * 400,
+        y: 100 + Math.random() * 200,
+        width: 32,
+        height: 32
+      });
+
+      this.wines.push({
+        x: 200 + Math.random() * 400,
+        y: 100 + Math.random() * 200,
+        width: 32,
+        height: 32
+      });
+    }
   }
 
   private shoot() {
@@ -139,52 +237,9 @@ export class GameEngine {
     this.updateGameState();
   }
 
-  private generatePlatforms() {
-    this.platforms = [
-      // Ground
-      { x: 0, y: this.canvas.height - 40, width: this.canvas.width, height: 40 },
-      // Platforms
-      { x: 300, y: 350, width: 120, height: 20 },
-      { x: 500, y: 280, width: 100, height: 20 },
-      { x: 150, y: 220, width: 80, height: 20 },
-      { x: 650, y: 200, width: 100, height: 20 }
-    ];
-  }
-
-  private generateLevel() {
-    this.enemies = [];
-    this.collectibles = [];
-
-    // Generate enemies
-    for (let i = 0; i < 3 + this.player.level; i++) {
-      this.enemies.push({
-        x: 400 + Math.random() * 300,
-        y: 100 + Math.random() * 200,
-        width: 48,
-        height: 48,
-        speed: 1 + this.player.level * 0.2
-      });
-    }
-
-    // Generate collectibles
-    const collectibleTypes: Array<'coin' | 'pizza' | 'brasilena' | 'wine'> = ['coin', 'coin', 'coin', 'pizza', 'brasilena', 'wine'];
-    
-    for (let i = 0; i < 6; i++) {
-      this.collectibles.push({
-        x: 200 + Math.random() * 400,
-        y: 100 + Math.random() * 200,
-        width: 32,
-        height: 32,
-        type: collectibleTypes[i % collectibleTypes.length]
-      });
-    }
-  }
-
   private updatePlayer() {
-    // Gravity
     this.player.velY += 0.8;
 
-    // Horizontal movement
     this.player.velX = 0;
     if (this.keys['KeyA'] || this.keys['ArrowLeft']) {
       this.player.velX = -this.player.speed;
@@ -193,23 +248,31 @@ export class GameEngine {
       this.player.velX = this.player.speed;
     }
 
-    // Jumping - use W or Up arrow, NOT space
+    // Animation
+    if (this.player.velX !== 0 && this.player.grounded) {
+      this.player.frameTimer++;
+      if (this.player.frameTimer >= (60 / this.player.frameRate)) {
+        this.player.frame = (this.player.frame + 1) % this.images.playerFrames.length;
+        this.player.frameTimer = 0;
+      }
+    } else {
+      this.player.frame = 0;
+      this.player.frameTimer = 0;
+    }
+
     if ((this.keys['KeyW'] || this.keys['ArrowUp']) && this.player.grounded) {
       this.player.velY = this.player.jumpPower;
       this.player.grounded = false;
     }
 
-    // Apply velocity
     this.player.x += this.player.velX;
     this.player.y += this.player.velY;
 
-    // Boundary checks
     if (this.player.x < 0) this.player.x = 0;
     if (this.player.x + this.player.width > this.canvas.width) {
       this.player.x = this.canvas.width - this.player.width;
     }
 
-    // Platform collisions
     this.player.grounded = false;
     for (const platform of this.platforms) {
       if (this.checkCollision(this.player, platform) && this.player.velY >= 0) {
@@ -222,11 +285,41 @@ export class GameEngine {
     }
 
     // Check collectible collisions
-    for (let i = this.collectibles.length - 1; i >= 0; i--) {
-      const collectible = this.collectibles[i];
-      if (this.checkCollision(this.player, collectible)) {
-        this.handleCollectible(collectible.type);
-        this.collectibles.splice(i, 1);
+    for (let i = this.coins.length - 1; i >= 0; i--) {
+      const coin = this.coins[i];
+      if (this.checkCollision(this.player, coin)) {
+        this.player.coins++;
+        this.coins.splice(i, 1);
+        this.updateGameState();
+      }
+    }
+
+    for (let i = this.pizzas.length - 1; i >= 0; i--) {
+      const pizza = this.pizzas[i];
+      if (this.checkCollision(this.player, pizza)) {
+        this.player.health = Math.min(this.player.health + 20, 100);
+        this.pizzas.splice(i, 1);
+        this.updateGameState();
+      }
+    }
+
+    for (let i = this.brasilenas.length - 1; i >= 0; i--) {
+      const brasilena = this.brasilenas[i];
+      if (this.checkCollision(this.player, brasilena)) {
+        this.player.ammo += 10;
+        this.brasilenas.splice(i, 1);
+        this.updateGameState();
+      }
+    }
+
+    for (let i = this.wines.length - 1; i >= 0; i--) {
+      const wine = this.wines[i];
+      if (this.checkCollision(this.player, wine)) {
+        this.player.powerUps.speedBoost = true;
+        this.player.powerUps.speedBoostTime = 300;
+        this.player.speed = 8;
+        this.wines.splice(i, 1);
+        this.updateGameState();
       }
     }
 
@@ -245,37 +338,26 @@ export class GameEngine {
         }
       }
     }
-  }
 
-  private handleCollectible(type: string) {
-    switch (type) {
-      case 'coin':
-        this.player.coins++;
-        break;
-      case 'pizza':
-        this.player.health = Math.min(this.player.health + 20, 100);
-        break;
-      case 'brasilena':
-        this.player.ammo += 10;
-        break;
-      case 'wine':
-        this.player.speed = Math.min(this.player.speed + 2, 10);
-        setTimeout(() => { this.player.speed = 5; }, 5000);
-        break;
+    // Update power-ups
+    if (this.player.powerUps.speedBoost) {
+      this.player.powerUps.speedBoostTime--;
+      if (this.player.powerUps.speedBoostTime <= 0) {
+        this.player.powerUps.speedBoost = false;
+        this.player.speed = 5;
+        this.updateGameState();
+      }
     }
-    this.updateGameState();
   }
 
   private updateEnemies() {
     this.enemies.forEach(enemy => {
-      // Simple AI - move towards player
       if (enemy.x > this.player.x) {
         enemy.x -= enemy.speed;
       } else {
         enemy.x += enemy.speed;
       }
       
-      // Keep enemies on screen
       if (enemy.x < 0) enemy.x = 0;
       if (enemy.x + enemy.width > this.canvas.width) {
         enemy.x = this.canvas.width - enemy.width;
@@ -288,13 +370,11 @@ export class GameEngine {
       const bullet = this.bullets[i];
       bullet.x += bullet.speed;
 
-      // Remove bullets that are off screen
       if (bullet.x > this.canvas.width) {
         this.bullets.splice(i, 1);
         continue;
       }
 
-      // Check bullet-enemy collisions
       for (let j = this.enemies.length - 1; j >= 0; j--) {
         const enemy = this.enemies[j];
         if (this.checkCollision(bullet, enemy)) {
@@ -325,59 +405,78 @@ export class GameEngine {
   }
 
   private render() {
-    // Clear canvas
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Draw background gradient
     const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
     gradient.addColorStop(0, '#1a2980');
     gradient.addColorStop(1, '#26d0ce');
     this.ctx.fillStyle = gradient;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Draw platforms
     this.ctx.fillStyle = '#8B4513';
     this.platforms.forEach(platform => {
       this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
     });
 
-    // Draw player with animation
-    const playerImage = Date.now() % 1000 < 500 ? this.images.player1 : this.images.player2;
+    const playerImage = this.images.playerFrames[this.player.frame];
     if (playerImage && playerImage.complete) {
       this.ctx.drawImage(playerImage, this.player.x, this.player.y, this.player.width, this.player.height);
     } else {
-      // Fallback rectangle
       this.ctx.fillStyle = '#3498db';
       this.ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
     }
 
-    // Draw enemies
     this.ctx.fillStyle = '#e74c3c';
     this.enemies.forEach(enemy => {
       this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
     });
 
-    // Draw bullets
     this.ctx.fillStyle = '#f39c12';
     this.bullets.forEach(bullet => {
       this.ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
     });
 
-    // Draw collectibles
-    this.collectibles.forEach(collectible => {
-      const image = this.images[collectible.type];
+    this.coins.forEach(coin => {
+      const image = this.images.coin;
       if (image && image.complete) {
-        this.ctx.drawImage(image, collectible.x, collectible.y, collectible.width, collectible.height);
+        this.ctx.drawImage(image, coin.x, coin.y, coin.width, coin.height);
       } else {
-        // Fallback colors
-        const colors = { coin: '#f1c40f', pizza: '#e74c3c', brasilena: '#8e44ad', wine: '#c0392b' };
-        this.ctx.fillStyle = colors[collectible.type];
-        this.ctx.fillRect(collectible.x, collectible.y, collectible.width, collectible.height);
+        this.ctx.fillStyle = '#f1c40f';
+        this.ctx.fillRect(coin.x, coin.y, coin.width, coin.height);
       }
     });
 
-    // Check win condition
-    if (this.enemies.length === 0 && this.collectibles.filter(c => c.type === 'coin').length === 0) {
+    this.pizzas.forEach(pizza => {
+      const image = this.images.pizza;
+      if (image && image.complete) {
+        this.ctx.drawImage(image, pizza.x, pizza.y, pizza.width, pizza.height);
+      } else {
+        this.ctx.fillStyle = '#e74c3c';
+        this.ctx.fillRect(pizza.x, pizza.y, pizza.width, pizza.height);
+      }
+    });
+
+    this.brasilenas.forEach(brasilena => {
+      const image = this.images.brasilena;
+      if (image && image.complete) {
+        this.ctx.drawImage(image, brasilena.x, brasilena.y, brasilena.width, brasilena.height);
+      } else {
+        this.ctx.fillStyle = '#8e44ad';
+        this.ctx.fillRect(brasilena.x, brasilena.y, brasilena.width, brasilena.height);
+      }
+    });
+
+    this.wines.forEach(wine => {
+      const image = this.images.wine;
+      if (image && image.complete) {
+        this.ctx.drawImage(image, wine.x, wine.y, wine.width, wine.height);
+      } else {
+        this.ctx.fillStyle = '#c0392b';
+        this.ctx.fillRect(wine.x, wine.y, wine.width, wine.height);
+      }
+    });
+
+    if (this.enemies.length === 0 && this.coins.filter(c => c).length === 0) {
       this.player.level++;
       if (this.player.level > 10) {
         this.callbacks.onGameEnd(true, { 

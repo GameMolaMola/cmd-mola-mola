@@ -1,44 +1,105 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface StartScreenProps {
   onStart: () => void;
 }
 
+const translations = {
+  en: {
+    title: "🐟 COMMANDER MOLA MOLA 🐟",
+    controlsHeader: "CONTROLS:",
+    jump: "⬆️ W/↑ - JUMP",
+    move: "⬅️➡️ A/D/←/→ - MOVE",
+    fire: "🚀 SPACE - FIRE",
+    collectHeader: "COLLECT:",
+    coins: "🪙 MOLA MOLA COINS",
+    pizza: "🍕 MARGHERITA PIZZA",
+    brasilena: "🧃 BRASILENA",
+    wine: "🍷 MADRE GOCCIA WINE",
+    effectsHeader: "EFFECTS:",
+    pizzaEffect: "🍕 Pizza: +20 health",
+    brasilenaEffect: "🧃 Brasilena: +10 ammo",
+    wineEffect: "🍷 Wine: speed boost for 5 sec",
+    startButton: "START OPERATION BUCATINI!",
+    subtitle: "Adventure in the seas of Calabria awaits you!"
+  },
+  ru: {
+    title: "🐟 COMMANDER MOLA MOLA 🐟",
+    controlsHeader: "УПРАВЛЕНИЕ:",
+    jump: "⬆️ W/↑ - ПРЫЖОК",
+    move: "⬅️➡️ A/D/←/→ - ДВИЖЕНИЕ",
+    fire: "🚀 ПРОБЕЛ - ОГОНЬ",
+    collectHeader: "СОБИРАЙ:",
+    coins: "🪙 МОНЕТЫ MOLA MOLA",
+    pizza: "🍕 ПИЦЦА МАРГАРИТА",
+    brasilena: "🧃 BRASILENA",
+    wine: "🍷 VINO MADRE GOCCIA",
+    effectsHeader: "ЭФФЕКТЫ:",
+    pizzaEffect: "🍕 Пицца: +20 здоровья",
+    brasilenaEffect: "🧃 Brasilena: +10 патронов",
+    wineEffect: "🍷 Вино: ускорение на 5 сек",
+    startButton: "START OPERATION BUCATINI!",
+    subtitle: "Приключение в морях Калабрии ждет тебя!"
+  }
+};
+
 const StartScreen = ({ onStart }: StartScreenProps) => {
+  const [language, setLanguage] = useState('ru');
+  const t = (translations as any)[language];
+
   return (
     <div className="absolute inset-0 bg-gradient-to-b from-blue-800 to-blue-900 flex flex-col items-center justify-center text-white font-mono">
       <div className="text-center space-y-6 p-8">
         <h1 className="text-4xl font-bold text-yellow-400 mb-8 animate-pulse">
-          🐟 COMMANDER MOLA MOLA 🐟
+          {t.title}
         </h1>
         
+        <div className="mb-4">
+          <Select onValueChange={(value) => setLanguage(value)} defaultValue={language}>
+            <SelectTrigger className="w-[180px] mx-auto bg-blue-700 border-blue-400 text-white">
+              <SelectValue placeholder="Select Language" />
+            </SelectTrigger>
+            <SelectContent className="bg-blue-800 text-white border-blue-400">
+              <SelectItem value="ru">🇷🇺 Русский</SelectItem>
+              <SelectItem value="en">🇬🇧 English</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
         <div className="bg-black/50 p-6 rounded-lg border-2 border-cyan-400">
-          <h2 className="text-xl text-cyan-400 mb-4">УПРАВЛЕНИЕ:</h2>
+          <h2 className="text-xl text-cyan-400 mb-4">{t.controlsHeader}</h2>
           <div className="space-y-2 text-sm">
-            <p>⬆️ W/↑ - ПРЫЖОК</p>
-            <p>⬅️➡️ A/D/←/→ - ДВИЖЕНИЕ</p>
-            <p>🚀 ПРОБЕЛ - ОГОНЬ</p>
+            <p>{t.jump}</p>
+            <p>{t.move}</p>
+            <p>{t.fire}</p>
           </div>
         </div>
         
         <div className="bg-black/50 p-6 rounded-lg border-2 border-yellow-400">
-          <h2 className="text-xl text-yellow-400 mb-4">СОБИРАЙ:</h2>
+          <h2 className="text-xl text-yellow-400 mb-4">{t.collectHeader}</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>🪙 МОНЕТЫ MOLA MOLA</div>
-            <div>🍕 ПИЦЦА МАРГАРИТА</div>
-            <div>🧃 BRASILENA</div>
-            <div>🍷 VINO MADRE GOCCIA</div>
+            <div>{t.coins}</div>
+            <div>{t.pizza}</div>
+            <div>{t.brasilena}</div>
+            <div>{t.wine}</div>
           </div>
         </div>
         
         <div className="bg-black/50 p-6 rounded-lg border-2 border-red-400">
-          <h2 className="text-xl text-red-400 mb-4">ЭФФЕКТЫ:</h2>
+          <h2 className="text-xl text-red-400 mb-4">{t.effectsHeader}</h2>
           <div className="space-y-2 text-sm">
-            <p>🍕 Пицца: +20 здоровья</p>
-            <p>🧃 Brasilena: +10 патронов</p>
-            <p>🍷 Вино: ускорение на 5 сек</p>
+            <p>{t.pizzaEffect}</p>
+            <p>{t.brasilenaEffect}</p>
+            <p>{t.wineEffect}</p>
           </div>
         </div>
         
@@ -46,11 +107,11 @@ const StartScreen = ({ onStart }: StartScreenProps) => {
           onClick={onStart}
           className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-8 py-4 text-lg animate-bounce"
         >
-          START OPERATION BUCATINI!
+          {t.startButton}
         </Button>
         
         <div className="text-xs text-cyan-300">
-          Приключение в морях Калабрии ждет тебя!
+          {t.subtitle}
         </div>
       </div>
     </div>
