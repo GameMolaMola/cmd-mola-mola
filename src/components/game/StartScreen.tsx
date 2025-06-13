@@ -11,7 +11,7 @@ const StartScreen = ({ onStart }: StartScreenProps) => {
     <div className="absolute inset-0 bg-gradient-to-b from-blue-800 to-blue-900 flex flex-col items-center justify-center text-white font-mono">
       <div className="text-center space-y-6 p-8">
         <h1 className="text-4xl font-bold text-yellow-400 mb-8 animate-pulse">
-          🐟 MOLA MOLA PIXEL QUEST 🐟
+          🐟 COMMANDER MOLA MOLA 🐟
         </h1>
         
         <div className="bg-black/50 p-6 rounded-lg border-2 border-cyan-400">
@@ -26,10 +26,19 @@ const StartScreen = ({ onStart }: StartScreenProps) => {
         <div className="bg-black/50 p-6 rounded-lg border-2 border-yellow-400">
           <h2 className="text-xl text-yellow-400 mb-4">СОБИРАЙ:</h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>🪙 МОНЕТЫ</div>
-            <div>❤️ ЗДОРОВЬЕ</div>
-            <div>🧃 ПАТРОНЫ</div>
-            <div>🍷 УСКОРЕНИЕ</div>
+            <div>🪙 МОНЕТЫ MOLA MOLA</div>
+            <div>🍕 ПИЦЦА МАРГАРИТА</div>
+            <div>🧃 BRASILENA</div>
+            <div>🍷 VINO MADRE GOCCIA</div>
+          </div>
+        </div>
+        
+        <div className="bg-black/50 p-6 rounded-lg border-2 border-red-400">
+          <h2 className="text-xl text-red-400 mb-4">ЭФФЕКТЫ:</h2>
+          <div className="space-y-2 text-sm">
+            <p>🍕 Пицца: +20 здоровья</p>
+            <p>🧃 Brasilena: +10 патронов</p>
+            <p>🍷 Вино: ускорение на 5 сек</p>
           </div>
         </div>
         
