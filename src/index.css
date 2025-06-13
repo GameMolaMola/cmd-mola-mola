@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -95,9 +96,81 @@
 @layer base {
   * {
     @apply border-border;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
   }
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Courier New', monospace;
   }
+}
+
+/* Pixel game styles */
+.pixel-art {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+.game-font {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.8);
+}
+
+/* Animation keyframes for pixel game */
+@keyframes pixelGlow {
+  0%, 100% { 
+    box-shadow: 0 0 5px currentColor; 
+  }
+  50% { 
+    box-shadow: 0 0 20px currentColor, 0 0 30px currentColor; 
+  }
+}
+
+@keyframes pixelPulse {
+  0%, 100% { 
+    transform: scale(1); 
+  }
+  50% { 
+    transform: scale(1.05); 
+  }
+}
+
+.pixel-glow {
+  animation: pixelGlow 2s ease-in-out infinite;
+}
+
+.pixel-pulse {
+  animation: pixelPulse 1s ease-in-out infinite;
+}
+
+/* Retro button styles */
+.retro-button {
+  background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+  border: 3px solid #fff;
+  box-shadow: 
+    0 0 0 3px #000,
+    0 4px 0 #000,
+    0 8px 8px rgba(0, 0, 0, 0.3);
+  transform: translateY(0);
+  transition: all 0.1s;
+}
+
+.retro-button:hover {
+  transform: translateY(2px);
+  box-shadow: 
+    0 0 0 3px #000,
+    0 2px 0 #000,
+    0 4px 4px rgba(0, 0, 0, 0.3);
+}
+
+.retro-button:active {
+  transform: translateY(4px);
+  box-shadow: 
+    0 0 0 3px #000,
+    0 0 0 #000,
+    0 0 0 rgba(0, 0, 0, 0.3);
 }
