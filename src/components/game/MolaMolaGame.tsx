@@ -89,10 +89,10 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     if (!gameEnded) setIsPaused((p) => !p);
   };
 
-  // --- KEY: Добавим score при обновлении!
+  // Обновим HUD обновленный с учетом score и props
   const onStateUpdate = (updates: any) => {
     setHud((prev) => {
-      // score гарантированно обновляется, даже если не пришел из движка
+      // score всегда пересчитываем заново
       let score = updates.score ?? (updates.coins ?? prev.coins) * 10 + (updates.level ?? prev.level) * 100;
       return { ...prev, ...updates, score };
     });

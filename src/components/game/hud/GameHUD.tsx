@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { Heart, Coins } from "lucide-react";
 
 interface GameHUDProps {
   health: number;
@@ -18,11 +19,24 @@ const GameHUD: React.FC<GameHUDProps> = ({
   return (
     <div className="w-full flex items-center justify-between p-2 md:p-4">
       <div className="flex items-center gap-4 flex-wrap">
-        <span className="font-semibold text-white whitespace-nowrap">Здоровье: {health}</span>
-        <span className="font-semibold text-yellow-300 whitespace-nowrap">Монеты: {coins}</span>
-        <span className="font-semibold text-cyan-400 whitespace-nowrap">Очки: {score ?? (coins * 10 + level * 100)}</span>
-        <span className="font-semibold text-blue-200 whitespace-nowrap">Level: {level}</span>
-        <span className="font-semibold text-pink-100 whitespace-nowrap">Патроны: {ammo}</span>
+        <span className="flex items-center font-semibold text-white whitespace-nowrap">
+          <Heart size={18} className="mr-1 text-red-400" />
+          {health}
+        </span>
+        <span className="flex items-center font-semibold text-yellow-300 whitespace-nowrap">
+          <Coins size={18} className="mr-1" />
+          {coins}
+        </span>
+        <span className="flex items-center font-semibold text-pink-100 whitespace-nowrap">
+          <span role="img" aria-label="ammo" className="mr-1">🔫</span>
+          {ammo}
+        </span>
+        <span className="flex items-center font-semibold text-blue-200 whitespace-nowrap">
+          Уровень: {level}
+        </span>
+        <span className="flex items-center font-semibold text-cyan-400 whitespace-nowrap">
+          Очки: {score ?? (coins * 10 + level * 100)}
+        </span>
       </div>
       {isMobile && onPause && (
         <Button

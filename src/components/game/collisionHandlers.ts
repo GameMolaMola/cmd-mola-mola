@@ -1,6 +1,9 @@
 
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
 
+// Добавим таймер чтобы не наносить урон слишком быстро
+let lastDamageTime: number = 0;
+
 type Player = {
   health: number;
   coins: number;
@@ -21,7 +24,8 @@ type GameCallbacks = {
   onStateUpdate: (updates: any) => void;
 };
 
-// Наносим урон всем игрокам, кроме @MolaMolaCoin
+const DAMAGE_COOLDOWN = 400; // наносить урон не чаще чем раз в 400 мс
+
 export function handleEnemyCollisions(
   player: Player,
   enemies: Enemy[],
@@ -29,6 +33,7 @@ export function handleEnemyCollisions(
   checkCollision: (a: any, b: any) => boolean,
   callbacks: GameCallbacks
 ) {
+  const now = Date.now();
   for (const enemy of enemies) {
     if (checkCollision(player, enemy)) {
       if (player?.username === '@MolaMolaCoin') {
@@ -39,18 +44,22 @@ export function handleEnemyCollisions(
         applyGodmodeIfNeeded(player, godmode);
         continue;
       } else {
-        player.health -= 2;
-        callbacks.onStateUpdate?.({
-          health: player.health,
-        });
-        if (player.health <= 0) {
-          callbacks.onGameEnd(false, { 
-            level: player.level, 
-            coins: player.coins, 
-            score: player.coins * 10 
+        if (now - lastDamageTime >= DAMAGE_COOLDOWN) {
+          lastDamageTime = now;
+          player.health -= 2;
+          callbacks.onStateUpdate?.({
+            health: player.health,
           });
-          return true; // game ended
+          if (player.health <= 0) {
+            callbacks.onGameEnd(false, { 
+              level: player.level, 
+              coins: player.coins, 
+              score: player.coins * 10 
+            });
+            return true; // game ended
+          }
         }
+        // если урон уже был недавно – не снимаем ещё раз
       }
     }
   }
