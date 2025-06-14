@@ -146,7 +146,7 @@ export class GameEngine {
       brasilena: '/lovable-uploads/2d15af34-fad3-4789-80a2-b0f9d9a204a0.png',
       wine: '/lovable-uploads/9132b9d8-ab25-44a7-81ec-031ebfbb97e6.png',
       pizza: '/lovable-uploads/60af68f1-3f70-4928-8512-4f13c4e56a05.png',
-      enemy: '/lovable-uploads/1c2ed28f-2e83-4dbd-8327-8c1f2c00c060.png'
+      enemy: '/lovable-uploads/b0b2972b-c98d-4f17-bf93-ac419c59bc60.png'
     };
 
     this.images.playerFrames[0].src = imageUrls.player1;
