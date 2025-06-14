@@ -34,6 +34,17 @@ export function gameTick(engine: any) {
     godmode: engine.godmode,
   });
 
+  // ---- ADD WIN CONDITION CHECK FOR REGULAR LEVELS ----
+  if (!engine.bossLucia && engine.enemies.length === 0) {
+    // Player has completed the level: win!
+    engine.callbacks.onGameEnd(true, {
+      level: engine.player.level,
+      coins: engine.player.coins,
+      score: (engine.player.coins ?? 0) * 10 + (engine.player.level ?? 1) * 100,
+    });
+    return; // Stop further processing; next frame will reset or game will stop.
+  }
+
   if (!engine.bossLucia) {
     handleEnemyCollisions(
       engine.player,
@@ -70,3 +81,4 @@ export function gameTick(engine: any) {
   updateBubbles(engine.bubbles, engine.canvas);
   engine.renderer(engine.ctx, engine);
 }
+
