@@ -44,6 +44,22 @@ const BookIcon = ({className = "w-5 h-5"}) => (
   <span role="img" aria-label="Comic" className={className}>📖</span>
 );
 
+// Новый логотип Webtoon
+const WebtoonIcon = ({ className = "w-5 h-5" }) => (
+  <svg
+    className={className}
+    viewBox="0 0 80 80"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <rect width="80" height="80" rx="16" fill="#00D564"/>
+    <path d="M54 22L25 29.5V56L47.5 54L49.5 61L55.5 56.5V26.5L54 22Z" fill="white"/>
+    <text x="31" y="45" fill="#00D564" fontFamily="Arial Black, Arial, sans-serif" fontWeight="bold" fontSize="14" >WEB</text>
+    <text x="31.5" y="58" fill="#00D564" fontFamily="Arial Black, Arial, sans-serif" fontWeight="bold" fontSize="13">TOON</text>
+  </svg>
+);
+
 const LandingPage = ({
   onPlay
 }: {
@@ -126,15 +142,15 @@ const LandingPage = ({
           </a>
           {/* Social/media icon links */}
           <div className="flex justify-center gap-4 mt-6">
-            {/* Comic link */}
+            {/* Comic/Webtoon link */}
             <a
               href="https://www.webtoons.com/en/canvas/commander-mola-mola-operation-bucatini/list?title_no=1062681"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Commander Mola Mola Comic"
-              className="text-yellow-300 bg-[#2d3751] rounded-full p-2 hover:bg-yellow-100 hover:text-blue-900 transition"
+              className="bg-[#00d564] rounded-full p-2 hover:bg-green-300 transition"
             >
-              <BookIcon />
+              <WebtoonIcon />
             </a>
             {/* TikTok */}
             <a
@@ -156,7 +172,7 @@ const LandingPage = ({
             >
               <Youtube className="w-5 h-5" />
             </a>
-            {/* Linktree/Bitly with Bitly Icon */}
+            {/* Bitly */}
             <a
               href="https://bit.ly/m/CommanderMolaMola"
               target="_blank"
