@@ -34,12 +34,12 @@ const LandingPage = ({
     }
   }, [playerData, view]);
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-700 flex items-center justify-center px-4 relative">
+    <div className="w-full h-screen min-h-screen overflow-y-auto bg-gradient-to-b from-blue-900 to-blue-700 flex justify-center px-2 py-6 md:py-10 relative">
       <div
-        className="bg-black/80 rounded-xl shadow-xl max-w-xl w-full py-10 px-6 flex flex-col items-center gap-6 relative"
+        className="bg-black/80 rounded-xl shadow-xl max-w-xl w-full py-8 md:py-10 px-2 md:px-6 flex flex-col items-center gap-6 relative"
         style={{
-          marginTop: '-12px',
-          marginLeft: '-20px',
+          marginTop: 0,
+          marginLeft: 0,
         }}
       >
         <div className="w-full flex flex-col items-center mb-2" style={{ minHeight: 48 }}>
