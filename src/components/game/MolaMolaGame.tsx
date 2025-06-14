@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from "react";
 import { useGame } from "@/contexts/GameContext";
 import { Button } from "@/components/ui/button";
@@ -131,11 +130,10 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     }
   };
 
-  // Переработка структуры разметки: canvas и mobile controls теперь НЕ overlap, а идут друг за другом
+  // HUD и LevelIndicator теперь языки передаются явно
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-start overflow-hidden"
          style={{minHeight: showMobileControls ? '100svh' : '100%'}}>
-      {/* HUD и LevelIndicator фиксированы, они поверх canvas */}
       <GameHUD
         health={hud.health}
         ammo={hud.ammo}
@@ -192,4 +190,3 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
 };
 
 export default MolaMolaGame;
-
