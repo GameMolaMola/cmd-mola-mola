@@ -87,13 +87,19 @@ const LandingPage = ({
     }
   }, [playerData, view]);
   return <div className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-700 flex items-center justify-center px-4 relative">
-      <div className="bg-black/80 rounded-xl shadow-xl max-w-xl w-full py-10 px-6 flex flex-col items-center gap-6 relative mt-8">
+      <div
+        className="bg-black/80 rounded-xl shadow-xl max-w-xl w-full py-10 px-6 flex flex-col items-center gap-6 relative"
+        style={{
+          marginTop: '-12px', // 3mm up ≈ -12px
+          marginLeft: '-20px', // 5mm left ≈ -20px
+        }}
+      >
         {/* Название: версия + главный заголовок в одну линию, ver.1.0 строго левее, с равным отступом */}
         <div className="relative w-full flex items-center justify-center mb-2" style={{minHeight: 40}}>
           <span
             className="text-cyan-400 font-bold text-[11px] md:text-xs py-0.5 px-1.5 md:px-2 rounded bg-cyan-900 border border-cyan-500 flex-shrink-0 absolute"
             style={{
-              left: 28, // Было 0, стало 28, для более равномерной симметрии
+              left: 38, // увеличено с 28 до 38 для компенсации смещения всей рамки
               top: "50%",
               transform: "translateY(-50%)",
               letterSpacing: "0.01em",
@@ -102,7 +108,7 @@ const LandingPage = ({
               lineHeight: "1",
               textAlign: "center",
               zIndex: 10
-              // Комментарий: теперь между левым краем рамки и надписью примерно тот же отступ, что и между правым краем и концом заголовка
+              // Комментарий: теперь между краем еще больше равный отступ
             }}
           >
             ver.1.0
