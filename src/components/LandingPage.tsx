@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -73,7 +72,7 @@ const LandingPage = ({
           </div>
           <h1
             className="text-2xl md:text-4xl text-yellow-400 font-bold text-center m-0 p-0 leading-tight overflow-visible text-ellipsis whitespace-nowrap w-auto max-w-full drop-shadow-lg"
-            style={{ marginTop: "0px" }}
+            style={{ marginTop: "7mm" }}
           >
             {t.title}
           </h1>
@@ -112,4 +111,3 @@ const LandingPage = ({
 };
 
 export default LandingPage;
-
