@@ -1,7 +1,7 @@
-
 import { updatePlayer } from './player';
 import { updateEnemies } from './enemies';
 import { handleEnemyCollisions } from './collisionHandlers';
+import { checkCollision } from './utils/collision';
 
 export function gameTick(engine: any) {
   // Use standalone functions instead of engine methods.
@@ -26,7 +26,7 @@ export function gameTick(engine: any) {
     player: engine.player,
     canvas: engine.canvas,
     callbacks: engine.callbacks,
-    checkCollision: engine.checkCollision,
+    checkCollision,
     godmode: engine.godmode,
   });
 
@@ -35,7 +35,7 @@ export function gameTick(engine: any) {
       engine.player,
       engine.enemies,
       engine.godmode,
-      engine.checkCollision,
+      checkCollision,
       engine.callbacks
     );
   }
@@ -47,7 +47,7 @@ export function gameTick(engine: any) {
     wines: engine.wines,
     freeBrasilena: engine.freeBrasilena,
     callbacks: engine.callbacks,
-    checkCollision: engine.checkCollision,
+    checkCollision,
     spawnBrasilenaWidth: 21,
     spawnBrasilenaHeight: 64,
     platforms: engine.platforms,
@@ -60,7 +60,7 @@ export function gameTick(engine: any) {
     bossLucia: engine.bossLucia,
     player: engine.player,
     callbacks: engine.callbacks,
-    checkCollision: engine.checkCollision,
+    checkCollision,
     canvas: engine.canvas
   });
   engine.updateBubbles(engine.bubbles, engine.canvas);
