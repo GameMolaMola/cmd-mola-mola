@@ -44,6 +44,11 @@ function useIsMobile() {
 }
 
 const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
+  const { playerData } = useGame();
+
+  // Вспомогательное определение godmode
+  const isGodmode = playerData && playerData.nickname === '@MolaMolaCoin';
+
   const [gameState, setGameState] = useState<GameState>({
     screen: autoStart ? 'playing' : 'start',
     level: 1,
@@ -52,8 +57,9 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
     ammo: 20,
     coins: 0,
     isVictory: false,
-    godmode: false,
+    godmode: isGodmode,
   });
+
   // Храним актуальный viewport
   const [viewport, setViewport] = useState<{width: number, height: number}>({width: 0, height: 0});
   const isMobile = useIsMobile();
@@ -81,18 +87,15 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
         ammo: 20,
         coins: 0,
         isVictory: false,
-        godmode: false,
+        godmode: isGodmode,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoStart]);
+  }, [autoStart, isGodmode]);
 
-  const { playerData } = useGame();
-
-  // Вспомогательное определение godmode
-  const isGodmode = playerData && playerData.nickname === '@MolaMolaCoin';
-
+  // Функция старта — всегда пересчитывает актуальный godmode
   const startGame = () => {
+    console.log('[MolaMolaGame] Start game! Godmode:', isGodmode);
     setGameState({
       screen: 'playing',
       level: 1,
@@ -105,6 +108,7 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
     });
   };
 
+  // Рестарт тоже всегда сверяет текущий godmode
   const restartGame = () => {
     startGame();
   };

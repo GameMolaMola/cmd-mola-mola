@@ -1,5 +1,4 @@
 import { GameState } from './types';
-
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
 
 export class GameEngine {
@@ -102,12 +101,11 @@ export class GameEngine {
     this.ctx.imageSmoothingEnabled = false;
     this.callbacks = options;
 
-    // Apply initial state
     Object.assign(this.player, options.initialState);
     // Новый блок для godmode
     this.godmode = !!(options.initialState && options.initialState.godmode);
+    console.log('[GameEngine] GODMODE is', this.godmode, '(from initialState:', options.initialState?.godmode, ')');
     applyGodmodeIfNeeded(this.player, this.godmode);
-    // Если godmode, здоровье всегда 100
     if (this.godmode) {
       this.player.health = 100;
     }
@@ -476,10 +474,12 @@ export class GameEngine {
     // Check enemy collisions
     for (const enemy of this.enemies) {
       if (this.checkCollision(this.player, enemy)) {
-        // Если godmode включён, НИКАКОЙ урон
         if (isGodmodeActive(this.godmode)) {
-          applyGodmodeIfNeeded(this.player, this.godmode); // страховка
-          continue; // полностью игнорируем последствия коллизии
+          applyGodmodeIfNeeded(this.player, this.godmode);
+          if (this.player.health !== 100) {
+            console.warn('[GameEngine] Godmode active, but health not 100, forced to 100!');
+          }
+          continue;
         } else {
           this.player.health -= 2;
           this.updateGameState();
