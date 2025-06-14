@@ -7,7 +7,7 @@ export function handleBonuses({
   freeBrasilena,
   callbacks,
   checkCollision,
-  spawnBrasilenaWidth = 21,
+  spawnBrasilenaWidth = 42,
   spawnBrasilenaHeight = 32
 }: any) {
   for (let i = pizzas.length - 1; i >= 0; i--) {

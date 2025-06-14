@@ -401,20 +401,20 @@ export class GameEngine {
       });
     }
 
-    // Исправляем ширину для Бразильена и Вина в 3 раза уже (21px)
-    const slimBonusWidth = 21;
+    // Бонус "Бразильена" и "Вино" — делаем шире (42px)
+    const bigBonusWidth = 42;
     for (let i = 0; i < 2; i++) {
       this.brasilenas.push({
         x: 200 + Math.random() * 400,
         y: 100 + Math.random() * 200,
-        width: slimBonusWidth,
+        width: bigBonusWidth,
         height: 32
       });
 
       this.wines.push({
         x: 200 + Math.random() * 400,
         y: 100 + Math.random() * 200,
-        width: slimBonusWidth,
+        width: bigBonusWidth,
         height: 32
       });
     }
@@ -565,7 +565,7 @@ export class GameEngine {
       }
     });
 
-    // Бонусы Brasilena
+    // Бонусы Brasilena (42px ширина)
     this.brasilenas.forEach(brasilena => {
       const image = this.images.brasilena;
       if (image && image.complete) {
@@ -573,7 +573,7 @@ export class GameEngine {
           image,
           0, 0, image.width, image.height,
           brasilena.x, brasilena.y,
-          brasilena.width, brasilena.height // теперь уже x3, т.е. 21px
+          brasilena.width, brasilena.height
         );
       } else {
         this.ctx.fillStyle = '#8e44ad';
@@ -581,7 +581,7 @@ export class GameEngine {
       }
     });
 
-    // Бонусы Wine
+    // Бонусы Wine (42px ширина)
     this.wines.forEach(wine => {
       const image = this.images.wine;
       if (image && image.complete) {
@@ -651,7 +651,7 @@ export class GameEngine {
       freeBrasilena: this.freeBrasilena,
       callbacks: this.callbacks,
       checkCollision,
-      spawnBrasilenaWidth: 21, // 21px ширина!
+      spawnBrasilenaWidth: 42, // Ширина 42px!
       spawnBrasilenaHeight: 32
     });
     updateBullets({
