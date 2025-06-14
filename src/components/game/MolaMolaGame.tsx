@@ -6,7 +6,8 @@ import GameHUD from "./hud/GameHUD";
 import GameOverDialog from "./hud/GameOverDialog";
 import { useFreeBrasilena } from "./useFreeBrasilena";
 import MobileControls from "./MobileControls";
-import GameCanvas from "./GameCanvas"; // импортируем новый компонент
+import GameCanvas from "./GameCanvas";
+import type { GameState } from "./types";
 
 function isMobileDevice() {
   if (typeof navigator === "undefined") return false;
@@ -17,6 +18,24 @@ function isTelegramBrowser() {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || "";
   return ua.toLowerCase().includes("telegram");
+}
+
+// Хелпер для создания стартового состояния игры
+function makeInitialGameState(playerData: any): GameState {
+  return {
+    health: 100,
+    ammo: 10,
+    coins: 0,
+    level: 1,
+    powerUps: {
+      speedBoost: false,
+      speedBoostTime: 0,
+    },
+    score: 0,
+    isVictory: false,
+    // ... ничего лишнего, только нужные поля типа GameState
+    // Если нужно, сюда можно добавить из playerData nickname/email, но для движка не требуется
+  };
 }
 
 const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
@@ -32,6 +51,16 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   // Детектируем, показывать ли mobile controls (мобила ИЛИ Telegram браузер)
   const showMobileControls = isMobileDevice() || isTelegramBrowser();
 
+  // Сохраняем начальный gameState (чтоб не пересоздавался на каждый рендер)
+  const [initialGameState, setInitialGameState] = useState<GameState>(() =>
+    makeInitialGameState(playerData)
+  );
+
+  // Обновляем начальное состояние при смене playerData (например, новый игрок)
+  useEffect(() => {
+    setInitialGameState(makeInitialGameState(playerData));
+  }, [playerData]);
+
   // Callback из движка/canvas
   const onStateUpdate = (updates: any) => {
     setHud((prev) => ({ ...prev, ...updates }));
@@ -41,12 +70,13 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     setGameEnded(false);
     setVictory(false);
     setFinalStats(null);
-    // Нет дополнительной логики, так как GameCanvas/Engine обновится по пропсам
+    // Новый стартовый state: сбрасываем начальное состояние игры
+    setInitialGameState(makeInitialGameState(playerData));
+    // GameCanvas ререндерится и сбрасывает движок автоматически
   };
 
   const handleControl = (control: string, state: boolean) => {
-    // Будет прокинуто в GameCanvas через onMobileControl
-    // (или можно обрабатывать здесь для расширения)
+    // Здесь можно добавить дополнительную логику обработки мобильных контролов
   };
 
   return (
@@ -57,9 +87,8 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         coins={hud.coins}
         level={hud.level}
       />
-      {/* Responsive GameCanvas */}
       <GameCanvas
-        gameState={playerData}
+        gameState={initialGameState}
         onGameEnd={(victory, finalStats) => {
           setGameEnded(true);
           setVictory(victory);
@@ -69,7 +98,6 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         onMobileControl={handleControl}
         isMobile={showMobileControls}
       />
-      {/* Покажем мобильные кнопки поверх canvas, если моб устройство или TG */}
       {showMobileControls && (
         <MobileControls onControl={handleControl} />
       )}
