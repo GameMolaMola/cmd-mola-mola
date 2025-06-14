@@ -119,14 +119,14 @@ const LandingPage = ({
                 marginLeft: 0,
                 marginRight: 0,
               }}
-              title="..."
+              title="v.1.0"
             >
-              ...
+              v.1.0
             </span>
           </div>
           <h1
             className="text-2xl md:text-4xl text-yellow-400 font-bold text-center m-0 p-0 leading-tight overflow-hidden text-ellipsis whitespace-nowrap w-auto max-w-full"
-            style={{ marginTop: "56px" }} // стандартный отступ обратно
+            style={{ marginTop: "28px" }} // Поднимем на 7мм (28px) вверх от прежнего 56px
           >
             {t.title}
           </h1>
