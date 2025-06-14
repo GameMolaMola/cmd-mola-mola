@@ -545,51 +545,6 @@ export class GameEngine {
       this.ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
     }
 
-    // Обычные враги или босс
-    if (this.bossLucia) {
-      const image = this.images.bossLucia;
-      if (image && image.complete) {
-        this.ctx.drawImage(image, this.bossLucia.x, this.bossLucia.y, this.bossLucia.width, this.bossLucia.height);
-      } else {
-        this.ctx.fillStyle = "#AA2424";
-        this.ctx.fillRect(this.bossLucia.x, this.bossLucia.y, this.bossLucia.width, this.bossLucia.height);
-      }
-      // Отрисуем полоску хп босса
-      this.ctx.save();
-      this.ctx.globalAlpha = 0.86;
-      this.ctx.fillStyle = "#000";
-      this.ctx.fillRect(this.bossLucia.x, this.bossLucia.y - 18, this.bossLucia.width, 10);
-      this.ctx.fillStyle = "#fcba03";
-      this.ctx.fillRect(this.bossLucia.x, this.bossLucia.y - 18, (this.bossLucia.health / (200 + (this.player.level - 10) * 40)) * this.bossLucia.width, 10);
-      this.ctx.restore();
-    } else {
-      this.enemies.forEach(enemy => {
-        // Если враг движется влево, используем enemyLeft, иначе обычный enemy
-        let image;
-        if (enemy.x > this.player.x) {
-          image = this.images.enemyLeft && this.images.enemyLeft.complete
-            ? this.images.enemyLeft
-            : null;
-        } else {
-          image = this.images.enemy && this.images.enemy.complete
-            ? this.images.enemy
-            : null;
-        }
-        if (image) {
-          this.ctx.drawImage(image, enemy.x, enemy.y, enemy.width, enemy.height);
-        } else {
-          this.ctx.fillStyle = '#e74c3c';
-          this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-        }
-      });
-    }
-
-    // Стрельба - как раньше
-    this.ctx.fillStyle = '#f39c12';
-    this.bullets.forEach(bullet => {
-      this.ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
-    });
-
     // Монетки
     this.coins.forEach(coin => {
       const image = this.images.coin;
@@ -613,7 +568,7 @@ export class GameEngine {
       }
     });
 
-    // Пиццы: корректный рендеринг спрайта
+    // Пиццы
     this.pizzas.forEach(pizza => {
       const image = this.images.pizza;
       if (image && image.complete && pizza.width && pizza.height) {
@@ -655,6 +610,58 @@ export class GameEngine {
         this.ctx.fillRect(wine.x, wine.y, wine.width, wine.height);
       }
     });
+
+    // Стрельба/пули (должны быть под врагом и боссом)
+    this.ctx.fillStyle = '#f39c12';
+    this.bullets.forEach(bullet => {
+      this.ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+    });
+
+    // ---- ВРАГИ И БОСС СЮДА: ПОВЕРХ ВСЕХ ----
+    // Сначала босса Lucia
+    if (this.bossLucia) {
+      const image = this.images.bossLucia;
+      if (image && image.complete) {
+        this.ctx.drawImage(image, this.bossLucia.x, this.bossLucia.y, this.bossLucia.width, this.bossLucia.height);
+      } else {
+        this.ctx.fillStyle = "#AA2424";
+        this.ctx.fillRect(this.bossLucia.x, this.bossLucia.y, this.bossLucia.width, this.bossLucia.height);
+      }
+      // HP bar
+      this.ctx.save();
+      this.ctx.globalAlpha = 0.86;
+      this.ctx.fillStyle = "#000";
+      this.ctx.fillRect(this.bossLucia.x, this.bossLucia.y - 18, this.bossLucia.width, 10);
+      this.ctx.fillStyle = "#fcba03";
+      this.ctx.fillRect(
+        this.bossLucia.x, this.bossLucia.y - 18, 
+        (this.bossLucia.health / (200 + (this.player.level - 10) * 40)) * this.bossLucia.width, 10
+      );
+      this.ctx.restore();
+    }
+
+    // Затем обычные враги (акулы)
+    if (!this.bossLucia) {
+      this.enemies.forEach(enemy => {
+        // Если враг движется влево, используйте enemyLeft, иначе обычный enemy
+        let image;
+        if (enemy.x > this.player.x) {
+          image = this.images.enemyLeft && this.images.enemyLeft.complete
+            ? this.images.enemyLeft
+            : null;
+        } else {
+          image = this.images.enemy && this.images.enemy.complete
+            ? this.images.enemy
+            : null;
+        }
+        if (image) {
+          this.ctx.drawImage(image, enemy.x, enemy.y, enemy.width, enemy.height);
+        } else {
+          this.ctx.fillStyle = '#e74c3c';
+          this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        }
+      });
+    }
 
     // Логика перехода уровней — теперь с учётом босса
     if (!this.bossLucia && this.enemies.length === 0 && this.coins.filter(c => c).length === 0) {
