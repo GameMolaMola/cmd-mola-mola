@@ -9,42 +9,50 @@ interface Feature {
   label: string;
 }
 
+// Унифицированная высота/размер эмодзи и монетки
+const ICON_SIZE = 22;
+
 export default function FeatureList({ features }: { features: Feature[] }) {
   const iconMap: Record<string, React.ReactNode> = {
     pixel: (
-      <span className="inline-block align-middle mr-2" style={{ width: 28, minWidth: 28, textAlign: "center" }}>
-        <span role="img" aria-label="gamepad" style={{ fontSize: 21 }}>🎮🎮</span>
+      <span
+        className="inline-block align-middle mr-2"
+        style={{ width: ICON_SIZE, minWidth: ICON_SIZE, textAlign: "center" }}
+      >
+        <span
+          role="img"
+          aria-label="gamepad"
+          style={{ fontSize: ICON_SIZE, display: "inline-block", lineHeight: 1 }}
+        >
+          🎮
+        </span>
       </span>
     ),
     adventure: (
-      <span className="inline-block align-middle mr-2" style={{ width: 28, minWidth: 28, textAlign: "center" }}>
-        <span role="img" aria-label="waves" style={{ fontSize: 21 }}>🌊🌊</span>
+      <span
+        className="inline-block align-middle mr-2"
+        style={{ width: ICON_SIZE, minWidth: ICON_SIZE, textAlign: "center" }}
+      >
+        <span
+          role="img"
+          aria-label="waves"
+          style={{ fontSize: ICON_SIZE, display: "inline-block", lineHeight: 1 }}
+        >
+          🌊
+        </span>
       </span>
     ),
     molamola_coin: (
-      <span className="inline-block align-middle mr-2" style={{ width: 28, minWidth: 28, textAlign: "center" }}>
+      <span
+        className="inline-block align-middle mr-2"
+        style={{ width: ICON_SIZE, minWidth: ICON_SIZE, textAlign: "center" }}
+      >
         <img
           src={MOLA_COIN_IMG}
           alt="Mola Mola Coin"
           style={{
-            width: "18px",
-            height: "18px",
-            marginRight: "1px",
-            marginLeft: "1px",
-            display: "inline-block",
-            objectFit: "contain",
-            verticalAlign: "middle"
-          }}
-          className="align-middle"
-        />
-        <img
-          src={MOLA_COIN_IMG}
-          alt="Mola Mola Coin"
-          style={{
-            width: "18px",
-            height: "18px",
-            marginRight: "1px",
-            marginLeft: "1px",
+            width: ICON_SIZE,
+            height: ICON_SIZE,
             display: "inline-block",
             objectFit: "contain",
             verticalAlign: "middle"
@@ -54,19 +62,37 @@ export default function FeatureList({ features }: { features: Feature[] }) {
       </span>
     ),
     powerup: (
-      <span className="inline-block align-middle mr-2" style={{ width: 28, minWidth: 28, textAlign: "center" }}>
-        <span role="img" aria-label="pizza" style={{ fontSize: 21 }}>🍕🍕</span>
+      <span
+        className="inline-block align-middle mr-2"
+        style={{ width: ICON_SIZE, minWidth: ICON_SIZE, textAlign: "center" }}
+      >
+        <span
+          role="img"
+          aria-label="pizza"
+          style={{ fontSize: ICON_SIZE, display: "inline-block", lineHeight: 1 }}
+        >
+          🍕
+        </span>
       </span>
     ),
     boss: (
-      <span className="inline-block align-middle mr-2" style={{ width: 28, minWidth: 28, textAlign: "center" }}>
-        <span role="img" aria-label="rocket" style={{ fontSize: 21 }}>🚀🚀</span>
+      <span
+        className="inline-block align-middle mr-2"
+        style={{ width: ICON_SIZE, minWidth: ICON_SIZE, textAlign: "center" }}
+      >
+        <span
+          role="img"
+          aria-label="rocket"
+          style={{ fontSize: ICON_SIZE, display: "inline-block", lineHeight: 1 }}
+        >
+          🚀
+        </span>
       </span>
     ),
   };
 
   return (
-    <ul className="list-none pl-0 flex flex-col gap-1 select-none font-[Georgia,serif] text-[1.16rem] leading-relaxed">
+    <ul className="list-none pl-0 flex flex-col gap-1 select-none font-[Georgia,serif] text-[1.12rem] leading-relaxed">
       {features.map((f, idx) => (
         <li key={idx} className="flex items-center">
           <span
@@ -76,7 +102,18 @@ export default function FeatureList({ features }: { features: Feature[] }) {
             •
           </span>
           {iconMap[f.type ?? ""]}
-          <span style={{ color: "#66d9ef", fontWeight: 700, marginRight: "7px", fontSize: 18, lineHeight: 1.15 }}>.</span>
+          <span
+            style={{
+              color: "#66d9ef",
+              fontWeight: 700,
+              marginRight: "7px",
+              fontSize: 18,
+              lineHeight: 1.15,
+              display: "inline-block"
+            }}
+          >
+            .
+          </span>
           <span className="text-[#1dcaff]/[0.92] font-normal" style={{ fontFamily: "inherit" }}>{f.label}</span>
         </li>
       ))}
