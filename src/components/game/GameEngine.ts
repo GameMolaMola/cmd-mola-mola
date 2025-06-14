@@ -3,6 +3,13 @@ import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
 import { handleEnemyCollisions } from './collisionHandlers';
 import { useFreeBrasilena } from './useFreeBrasilena';
 
+import { updatePlayer } from './player';
+import { updateEnemies } from './enemies';
+import { handleBonuses } from './bonuses';
+import { updateBullets } from './bullets';
+import { updateBubbles, drawBubbles, drawPlatforms } from './environment';
+import { checkCollision } from './utils/collision';
+
 export class GameEngine {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -426,228 +433,6 @@ export class GameEngine {
     this.updateGameState();
   }
 
-  private updatePlayer() {
-    let left = this.keys['KeyA'] || this.keys['ArrowLeft'] || !!this.mobileControlState['left'];
-    let right = this.keys['KeyD'] || this.keys['ArrowRight'] || !!this.mobileControlState['right'];
-    let jump = (this.keys['KeyW'] || this.keys['ArrowUp'] || !!this.mobileControlState['jump']);
-    
-    this.player.velY += 0.8;
-    this.player.velX = 0;
-    if (left) this.player.velX = -this.player.speed;
-    if (right) this.player.velX = this.player.speed;
-
-    if (this.player.velX !== 0 && this.player.grounded) {
-      this.player.frameTimer++;
-      if (this.player.frameTimer >= (60 / this.player.frameRate)) {
-        this.player.frame = (this.player.frame + 1) % this.images.playerFrames.length;
-        this.player.frameTimer = 0;
-      }
-    } else {
-      this.player.frame = 0;
-      this.player.frameTimer = 0;
-    }
-
-    if (jump && this.player.grounded) {
-      this.player.velY = this.player.jumpPower;
-      this.player.grounded = false;
-    }
-
-    if (this.mobileControlState['fire']) {
-      this.shoot();
-      this.mobileControlState['fire'] = false;
-    }
-
-    this.player.x += this.player.velX;
-    this.player.y += this.player.velY;
-
-    if (this.player.x < 0) this.player.x = 0;
-    if (this.player.x + this.player.width > this.canvas.width) {
-      this.player.x = this.canvas.width - this.player.width;
-    }
-
-    let landed = false;
-    for (const platform of this.platforms) {
-      const prevBottom = this.player.y + this.player.height - this.player.velY;
-      const currBottom = this.player.y + this.player.height;
-      if (
-        prevBottom <= platform.y &&
-        currBottom >= platform.y &&
-        this.player.x + this.player.width > platform.x + 8 &&
-        this.player.x < platform.x + platform.width - 8 &&
-        this.player.velY >= 0
-      ) {
-        this.player.y = platform.y - this.player.height;
-        this.player.velY = 0;
-        this.player.grounded = true;
-        landed = true;
-        break;
-      }
-    }
-    if (!landed) this.player.grounded = false;
-
-    for (let i = this.coins.length - 1; i >= 0; i--) {
-      const coin = this.coins[i];
-      if (this.checkCollision(this.player, coin)) {
-        this.player.coins++;
-        this.coins.splice(i, 1);
-        this.updateGameState();
-      }
-    }
-
-    for (let i = this.pizzas.length - 1; i >= 0; i--) {
-      const pizza = this.pizzas[i];
-      if (this.checkCollision(this.player, pizza)) {
-        this.player.health = Math.min(this.player.health + 20, 100);
-        this.pizzas.splice(i, 1);
-        this.updateGameState();
-      }
-    }
-
-    if (this.freeBrasilena) {
-      this.freeBrasilena.trigger(this.player.ammo, this.platforms, this.canvas.height, (pos) => {
-        this.brasilenas.push({
-          x: pos.x,
-          y: pos.y,
-          width: 32,
-          height: 32,
-        });
-      });
-    }
-
-    for (let i = this.brasilenas.length - 1; i >= 0; i--) {
-      const brasilena = this.brasilenas[i];
-      if (this.checkCollision(this.player, brasilena)) {
-        this.player.ammo += 10;
-        this.brasilenas.splice(i, 1);
-        if (this.freeBrasilena) this.freeBrasilena.onPickup();
-        this.updateGameState();
-      }
-    }
-
-    for (let i = this.wines.length - 1; i >= 0; i--) {
-      const wine = this.wines[i];
-      if (this.checkCollision(this.player, wine)) {
-        this.player.powerUps.speedBoost = true;
-        this.player.powerUps.speedBoostTime = 300;
-        this.player.speed = 8;
-        this.wines.splice(i, 1);
-        this.updateGameState();
-      }
-    }
-
-    const gameEnded = handleEnemyCollisions(
-      this.player,
-      this.enemies,
-      this.godmode,
-      this.checkCollision.bind(this),
-      this.callbacks
-    );
-    if (gameEnded) return;
-
-    if (this.player.powerUps.speedBoost) {
-      this.player.powerUps.speedBoostTime--;
-      if (this.player.powerUps.speedBoostTime <= 0) {
-        this.player.powerUps.speedBoost = false;
-        this.player.speed = 5;
-        this.updateGameState();
-      }
-    }
-  }
-
-  private updateEnemies() {
-    // Если есть босс - управляем только им
-    if (this.bossLucia) {
-      // Движение босса — плавает влево-вправо, иногда двигается к игроку
-      this.bossLucia.x += this.bossLucia.direction * 2;
-      if (this.bossLucia.x <= 0 || this.bossLucia.x + this.bossLucia.width >= this.canvas.width) {
-        this.bossLucia.direction *= -1;
-      }
-      // Немного вверх-вниз, эффект плавания
-      this.bossLucia.y += Math.sin(Date.now() / 500) * 0.6;
-
-      // Босс атакует игрока (можно добавить поведение), сейчас просто контакт
-      if (this.checkCollision(this.player, this.bossLucia)) {
-        if (isGodmodeActive(this.godmode)) {
-          applyGodmodeIfNeeded(this.player, this.godmode);
-        } else {
-          this.player.health -= 4;
-          this.callbacks.onStateUpdate?.({ health: this.player.health });
-          if (this.player.health <= 0) {
-            this.callbacks.onGameEnd(false, {
-              level: this.player.level,
-              coins: this.player.coins,
-              score: this.player.coins * 10 + this.player.level * 100
-            });
-            return;
-          }
-        }
-      }
-      return; // Не обновлять обычных врагов
-    }
-
-    // Обычные враги
-    this.enemies.forEach(enemy => {
-      if (enemy.x > this.player.x) {
-        enemy.x -= enemy.speed;
-      } else {
-        enemy.x += enemy.speed;
-      }
-
-      if (enemy.x < 0) enemy.x = 0;
-      if (enemy.x + enemy.width > this.canvas.width) {
-        enemy.x = this.canvas.width - enemy.width;
-      }
-    });
-  }
-
-  private updateBullets() {
-    for (let i = this.bullets.length - 1; i >= 0; i--) {
-      const bullet = this.bullets[i];
-      bullet.x += bullet.speed;
-
-      if (bullet.x > this.canvas.width) {
-        this.bullets.splice(i, 1);
-        continue;
-      }
-
-      // Попадание по боссу
-      if (this.bossLucia) {
-        if (this.checkCollision(bullet, this.bossLucia)) {
-          this.bossLucia.health -= 20;
-          this.bullets.splice(i, 1);
-          if (this.bossLucia.health <= 0) {
-            // Победа над боссом
-            this.player.level++;
-            this.callbacks.onGameEnd(true, {
-              level: this.player.level,
-              coins: this.player.coins,
-              score: this.player.coins * 10 + this.player.level * 100
-            });
-            return;
-          }
-        }
-      } else {
-        for (let j = this.enemies.length - 1; j >= 0; j--) {
-          const enemy = this.enemies[j];
-          if (this.checkCollision(bullet, enemy)) {
-            this.enemies.splice(j, 1);
-            this.bullets.splice(i, 1);
-            this.player.coins += 2;
-            this.updateGameState();
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  private checkCollision(rect1: any, rect2: any): boolean {
-    return rect1.x < rect2.x + rect2.width &&
-           rect1.x + rect1.width > rect2.x &&
-           rect1.y < rect2.y + rect2.height &&
-           rect1.y + rect1.height > rect2.y;
-  }
-
   private updateGameState() {
     if (isGodmodeActive(this.godmode)) {
       applyGodmodeIfNeeded(this.player, this.godmode);
@@ -818,9 +603,47 @@ export class GameEngine {
   }
 
   private gameLoop = () => {
-    this.updatePlayer();
-    this.updateEnemies();
-    this.updateBullets();
+    updatePlayer({
+      player: this.player,
+      platforms: this.platforms,
+      coins: this.coins,
+      pizzas: this.pizzas,
+      brasilenas: this.brasilenas,
+      wines: this.wines,
+      freeBrasilena: this.freeBrasilena,
+      canvas: this.canvas,
+      mobileControlState: this.mobileControlState,
+      keys: this.keys,
+      callbacks: this.callbacks
+    });
+    updateEnemies({
+      bossLucia: this.bossLucia,
+      enemies: this.enemies,
+      player: this.player,
+      canvas: this.canvas,
+      callbacks: this.callbacks,
+      checkCollision,
+      godmode: this.godmode
+    });
+    handleBonuses({
+      player: this.player,
+      pizzas: this.pizzas,
+      brasilenas: this.brasilenas,
+      wines: this.wines,
+      freeBrasilena: this.freeBrasilena,
+      callbacks: this.callbacks,
+      checkCollision,
+    });
+    updateBullets({
+      bullets: this.bullets,
+      enemies: this.enemies,
+      bossLucia: this.bossLucia,
+      player: this.player,
+      callbacks: this.callbacks,
+      checkCollision,
+      canvas: this.canvas
+    });
+    updateBubbles(this.bubbles, this.canvas);
     this.render();
     this.animationId = requestAnimationFrame(this.gameLoop);
   };
