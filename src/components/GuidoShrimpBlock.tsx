@@ -11,7 +11,15 @@ export default function GuidoShrimpBlock({ language }: { language: string }) {
   return (
     <div className="w-full flex justify-center my-3">
       <div
-        className="bg-blue-950/80 border-2 border-yellow-300 rounded-xl p-3 px-5 flex flex-row items-center gap-2 shadow-md max-w-xs mx-auto select-none"
+        className="
+          bg-blue-950/80 
+          border-2 border-yellow-300 
+          rounded-xl 
+          py-3 
+          flex flex-row items-center gap-3 shadow-md 
+          max-w-md mx-auto select-none
+          overflow-hidden
+          "
         style={{
           // 5мм минимум ≈ 20px
           paddingLeft: 20,
@@ -25,7 +33,15 @@ export default function GuidoShrimpBlock({ language }: { language: string }) {
           style={{ flexShrink: 0, aspectRatio: "1/1", objectFit: "cover" }}
           loading="lazy"
         />
-        <span className="text-base md:text-lg font-semibold text-yellow-200 whitespace-nowrap" style={{ paddingLeft: 0, paddingRight: 0 }}>
+        <span
+          className="
+            text-base md:text-lg font-semibold text-yellow-200 
+            break-words 
+            whitespace-normal 
+            w-full
+            "
+          style={{ paddingLeft: 0, paddingRight: 0 }}
+        >
           {GUIDO_MESSAGES[language as keyof typeof GUIDO_MESSAGES] || "Guido Shrimp!"}
         </span>
       </div>
