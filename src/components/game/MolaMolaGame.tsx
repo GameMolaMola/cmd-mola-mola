@@ -1,11 +1,12 @@
+
 import React, { useRef, useEffect, useState } from "react";
 import { useGame } from "@/contexts/GameContext";
-import { GameEngine } from "./GameEngine";
 import { Button } from "@/components/ui/button";
 import GameHUD from "./hud/GameHUD";
 import GameOverDialog from "./hud/GameOverDialog";
 import { useFreeBrasilena } from "./useFreeBrasilena";
 import MobileControls from "./MobileControls";
+import GameCanvas from "./GameCanvas"; // импортируем новый компонент
 
 function isMobileDevice() {
   if (typeof navigator === "undefined") return false;
@@ -19,96 +20,34 @@ function isTelegramBrowser() {
 }
 
 const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [gameEngine, setGameEngine] = useState<GameEngine | null>(null);
+  // Состояния для HUD
+  const [hud, setHud] = useState({ health: 100, ammo: 10, coins: 0, level: 1 });
   const [gameEnded, setGameEnded] = useState(false);
   const [victory, setVictory] = useState(false);
   const [finalStats, setFinalStats] = useState<any>(null);
 
-  // state for HUD
-  const [hud, setHud] = useState({ health: 100, ammo: 10, coins: 0, level: 1 });
-
   const { playerData } = useGame();
-  // Use our custom brasilena spawn hook
   const freeBrasilena = useFreeBrasilena();
 
+  // Детектируем, показывать ли mobile controls (мобила ИЛИ Telegram браузер)
+  const showMobileControls = isMobileDevice() || isTelegramBrowser();
+
+  // Callback из движка/canvas
   const onStateUpdate = (updates: any) => {
     setHud((prev) => ({ ...prev, ...updates }));
   };
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const engine = new GameEngine(canvas, ctx, {
-      onGameEnd: (victory, finalStats) => {
-        setGameEnded(true);
-        setVictory(victory);
-        setFinalStats(finalStats);
-      },
-      onStateUpdate: onStateUpdate,
-      initialState: playerData,
-      freeBrasilena, // inject the controller
-    });
-
-    setGameEngine(engine);
-
-    const handleResize = () => {
-      canvas.width = 800;
-      canvas.height = 480;
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      engine.stop();
-    };
-  }, [playerData, freeBrasilena]);
-
-  useEffect(() => {
-    if (autoStart && gameEngine) {
-      gameEngine.start();
-    }
-  }, [autoStart, gameEngine]);
 
   const handleRestart = () => {
     setGameEnded(false);
     setVictory(false);
     setFinalStats(null);
-    if (gameEngine) {
-      gameEngine.stop();
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      const engine = new GameEngine(canvas, ctx, {
-        onGameEnd: (victory, finalStats) => {
-          setGameEnded(true);
-          setVictory(victory);
-          setFinalStats(finalStats);
-        },
-        onStateUpdate: onStateUpdate,
-        initialState: playerData,
-        freeBrasilena,
-      });
-      setGameEngine(engine);
-      engine.start();
-    }
+    // Нет дополнительной логики, так как GameCanvas/Engine обновится по пропсам
   };
 
   const handleControl = (control: string, state: boolean) => {
-    gameEngine?.setMobileControlState(control, state);
+    // Будет прокинуто в GameCanvas через onMobileControl
+    // (или можно обрабатывать здесь для расширения)
   };
-
-  // Детектировать, показывать ли mobile controls (мобила ИЛИ Telegram браузер)
-  const showMobileControls = isMobileDevice() || isTelegramBrowser();
 
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-start">
@@ -118,11 +57,17 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         coins={hud.coins}
         level={hud.level}
       />
-      <canvas
-        ref={canvasRef}
-        width={800}
-        height={480}
-        className="border-2 border-cyan-400 rounded bg-blue-900 shadow-lg"
+      {/* Responsive GameCanvas */}
+      <GameCanvas
+        gameState={playerData}
+        onGameEnd={(victory, finalStats) => {
+          setGameEnded(true);
+          setVictory(victory);
+          setFinalStats(finalStats);
+        }}
+        onStateUpdate={onStateUpdate}
+        onMobileControl={handleControl}
+        isMobile={showMobileControls}
       />
       {/* Покажем мобильные кнопки поверх canvas, если моб устройство или TG */}
       {showMobileControls && (
@@ -143,3 +88,4 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
 };
 
 export default MolaMolaGame;
+
