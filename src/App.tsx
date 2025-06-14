@@ -1,11 +1,12 @@
+
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GameProvider } from "@/contexts/GameContext";
-import GamePage from "./pages/Game";
-import LandingPage from "./pages/Landing";
-import RegistrationPage from "./pages/Registration";
-import AboutPage from "./pages/About";
-import NotFoundPage from "./pages/NotFound";
+import Index from "./pages/Index";
+import Game from "./pages/Game";
+import Registration from "./pages/Registration";
+import About from "./pages/About";
+import NotFound from "./pages/NotFound";
 import { Toaster } from "@/components/ui/toaster";
 
 function App() {
@@ -13,11 +14,11 @@ function App() {
     <GameProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/game" element={<GamePage />} />
-          <Route path="/register" element={<RegistrationPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="*" element={<NotFoundPage />} />
+          <Route path="/" element={<Index />} />
+          <Route path="/game" element={<Game />} />
+          <Route path="/register" element={<Registration />} />
+          <Route path="/about" element={<About />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
       <Toaster />
