@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export type Language = 'ru' | 'en' | 'it';
@@ -21,11 +20,16 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-export const GameProvider = ({ children }: { children: ReactNode }) => {
+export const GameProvider = ({ children }: { children: React.ReactNode }) => {
   const [language, setLanguage] = useState<Language>('ru');
   const [playerData, setPlayerData] = useState<PlayerData | null>(null);
 
   const isRegistered = !!playerData;
+
+  // ЛОГ для контроля
+  React.useEffect(() => {
+    console.log('[GameProvider] language:', language);
+  }, [language]);
 
   return (
     <GameContext.Provider value={{

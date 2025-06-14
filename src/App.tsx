@@ -1,35 +1,28 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { GameProvider } from "@/contexts/GameContext";
-import Index from "./pages/Index";
-import Game from "./pages/Game";
-import NotFound from "./pages/NotFound";
-import AppStoreGuide from "./pages/AppStoreGuide";
-import AndroidGuide from "./pages/AndroidGuide";
+import GamePage from "./pages/Game";
+import LandingPage from "./pages/Landing";
+import RegistrationPage from "./pages/Registration";
+import AboutPage from "./pages/About";
+import NotFoundPage from "./pages/NotFound";
+import { Toaster } from "@/components/ui/toaster";
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+function App() {
+  return (
     <GameProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/game" element={<Game />} />
-            <Route path="/appstore" element={<AppStoreGuide />} />
-            <Route path="/android" element={<AndroidGuide />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/game" element={<GamePage />} />
+          <Route path="/register" element={<RegistrationPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Router>
+      <Toaster />
     </GameProvider>
-  </QueryClientProvider>
-);
+  );
+}
 
 export default App;
