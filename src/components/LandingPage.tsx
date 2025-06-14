@@ -35,11 +35,13 @@ const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-700 flex items-center justify-center px-4 relative">
       <div className="bg-black/80 rounded-xl shadow-xl max-w-xl w-full py-10 px-6 flex flex-col items-center gap-6">
+        {/* Название в самом верху */}
+        <h1 className="text-3xl md:text-4xl text-yellow-400 mb-2 font-bold text-center">{t.title}</h1>
+        {/* Картинка с фиксированными размерами и корректным масштабированием */}
         <img
           src="/lovable-uploads/ee8156f0-ed84-469d-b314-13a6aa436d63.png"
           alt="Mola Mola"
-          className="h-24 mb-1 mx-auto"
-          style={{ maxWidth: "220px", width: "100%" }}
+          className="w-[220px] h-24 mb-1 mx-auto object-contain"
         />
         {/* Language selector block */}
         <div
@@ -80,7 +82,6 @@ const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
             {t.playButton}
           </Button>
         )}
-        <h1 className="text-3xl md:text-4xl text-yellow-400 mb-2 font-bold text-center">{t.title}</h1>
         <p className="text-white text-center text-md">{t.subtitle}</p>
         <div className="bg-blue-950/70 border border-cyan-400 p-4 rounded-lg w-full mb-2">
           <h2 className="text-cyan-200 font-semibold mb-2">{t.aboutTitle}</h2>
@@ -136,3 +137,4 @@ const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
 };
 
 export default LandingPage;
+
