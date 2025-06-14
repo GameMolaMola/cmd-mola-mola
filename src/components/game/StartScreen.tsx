@@ -65,7 +65,7 @@ const translations = {
     pizzaEffect: "🍕 Пицца: +20 здоровья",
     brasilenaEffect: "🧃 Brasilena: +10 патронов",
     wineEffect: "🍷 Вино: ускорение на 5 сек",
-    startButton: "START OPERATION BUCATINI!",
+    startButton: "НАЧАТЬ ОПЕРАЦИЮ БУКАТИНИ!",
     subtitle: "Приключение в морях Калабрии ждет тебя!"
   }
 };
