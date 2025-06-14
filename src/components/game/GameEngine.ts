@@ -75,6 +75,9 @@ export class GameEngine {
     onStateUpdate: (updates: any) => void;
   };
 
+  private mobileControlCallback: ((control: string, state: boolean) => void) | null = null;
+  private mobileControlState: Record<string, boolean> = {};
+
   constructor(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
@@ -135,10 +138,14 @@ export class GameEngine {
     });
   }
 
+  public setMobileControlCallback(fn: ((control: string, state: boolean) => void) | null) {
+    this.mobileControlCallback = fn;
+  }
+
   private setupEventListeners() {
     const handleKeyDown = (e: KeyboardEvent) => {
       this.keys[e.code] = true;
-      
+
       if (e.code === 'Space') {
         e.preventDefault();
         this.shoot();
@@ -151,6 +158,11 @@ export class GameEngine {
 
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keyup', handleKeyUp);
+
+    // Доп. слушатель для мобильных: сохраняет состояние нажатий и имитирует нажатия в keys
+    this.setMobileControlCallback((control, state) => {
+      this.mobileControlState[control] = state;
+    });
   }
 
   private generatePlatforms() {
@@ -238,13 +250,17 @@ export class GameEngine {
   }
 
   private updatePlayer() {
+    // Приоритет отдаем мобильному управлению, если оно активно
+    let left = this.keys['KeyA'] || this.keys['ArrowLeft'] || !!this.mobileControlState['left'];
+    let right = this.keys['KeyD'] || this.keys['ArrowRight'] || !!this.mobileControlState['right'];
+    let jump = (this.keys['KeyW'] || this.keys['ArrowUp'] || !!this.mobileControlState['jump']);
+    
     this.player.velY += 0.8;
-
     this.player.velX = 0;
-    if (this.keys['KeyA'] || this.keys['ArrowLeft']) {
+    if (left) {
       this.player.velX = -this.player.speed;
     }
-    if (this.keys['KeyD'] || this.keys['ArrowRight']) {
+    if (right) {
       this.player.velX = this.player.speed;
     }
 
@@ -260,9 +276,15 @@ export class GameEngine {
       this.player.frameTimer = 0;
     }
 
-    if ((this.keys['KeyW'] || this.keys['ArrowUp']) && this.player.grounded) {
+    if (jump && this.player.grounded) {
       this.player.velY = this.player.jumpPower;
       this.player.grounded = false;
+    }
+
+    // Стрельба на мобильном ("fire" — автоматом разово, как Space)
+    if (this.mobileControlState['fire']) {
+      this.shoot();
+      this.mobileControlState['fire'] = false;
     }
 
     this.player.x += this.player.velX;

@@ -1,9 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import GameCanvas from './GameCanvas';
 import StartScreen from './StartScreen';
 import GameUI from './GameUI';
 import GameOverScreen from './GameOverScreen';
+import MobileControls from "./MobileControls";
 
 export interface GameState {
   screen: 'start' | 'playing' | 'gameOver';
@@ -13,6 +14,17 @@ export interface GameState {
   ammo: number;
   coins: number;
   isVictory: boolean;
+}
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 800 || window.innerHeight > window.innerWidth);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  return isMobile;
 }
 
 const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
@@ -25,8 +37,10 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
     coins: 0,
     isVictory: false
   });
+  const [mobileControl, setMobileControl] = useState<{control: string; state: boolean}>();
+  const isMobile = useIsMobile();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Если autoStart меняется с false на true (и только при монтировании)
   useEffect(() => {
     if (autoStart && gameState.screen === 'start') {
       setGameState({
@@ -71,25 +85,38 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
     setGameState(prev => ({ ...prev, ...updates }));
   };
 
+  // обработка управления с мобильных кнопок
+  const handleMobileControl = (control: string, state: boolean) => {
+    setMobileControl({ control, state });
+    // Еще можно прокинуть прямо на canvas/gameEngine если нужно
+    if (canvasRef.current && "dispatchEvent" in canvasRef.current) {
+      // Можно использовать, если потребуется рефлектить на сам canvas
+    }
+  };
+
   return (
-    <div className="relative w-full max-w-4xl mx-auto">
+    <div className={`relative w-full ${isMobile ? "" : "max-w-4xl"} mx-auto`}>
       <div className="relative bg-black border-4 border-yellow-400 rounded-lg overflow-hidden shadow-2xl shadow-cyan-500/20">
-        <div className="w-full h-[450px] relative">
+        <div className="w-full" style={isMobile ? {height: 'calc(100vh - 60px)'} : {height: 450}}>
           {gameState.screen === 'start' && (
             <StartScreen onStart={startGame} />
           )}
-          
           {gameState.screen === 'playing' && (
             <>
               <GameCanvas 
+                ref={canvasRef}
                 gameState={gameState}
                 onGameEnd={endGame}
                 onStateUpdate={updateGameState}
+                onMobileControl={handleMobileControl}
+                isMobile={isMobile}
               />
               <GameUI gameState={gameState} />
+              {isMobile && (
+                <MobileControls onControl={handleMobileControl} />
+              )}
             </>
           )}
-          
           {gameState.screen === 'gameOver' && (
             <GameOverScreen 
               gameState={gameState}
