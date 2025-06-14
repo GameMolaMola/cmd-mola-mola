@@ -11,6 +11,7 @@ interface GameCanvasProps {
   isMobile?: boolean;
   username?: string;
   isPaused?: boolean;
+  gameSessionId?: number; // новый проп (необязательный)
 }
 
 const GameCanvas: React.FC<GameCanvasProps> = ({
@@ -21,6 +22,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   isMobile,
   username,
   isPaused = false,
+  gameSessionId // новый проп
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<GameEngine | null>(null);
@@ -34,6 +36,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       if (ctx) {
         if (engineRef.current) {
           engineRef.current.stop();
+          engineRef.current = null;
         }
         engineRef.current = new GameEngine(canvas, ctx, {
           onGameEnd,
@@ -49,11 +52,12 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     }
     return () => {
       engineRef.current?.stop();
+      engineRef.current = null;
     };
+    // добавим gameSessionId в зависимости
     // eslint-disable-next-line
-  }, [gameState, username]);
+  }, [gameState, username, gameSessionId]);
 
-  // Остановка/запуск по паузе
   useEffect(() => {
     if (engineRef.current) {
       if (isPaused) {
