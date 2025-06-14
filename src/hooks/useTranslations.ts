@@ -56,7 +56,10 @@ export const translations = {
     player: "Player:",
     finalScore: "Final Score:",
     playAgain: "Play Again",
-    donateButton: "Support the Project"
+    donateButton: "Support the Project",
+    sendingEmail: "Sending notification...",
+    emailSentSuccess: "Notification to admin sent!",
+    emailSentError: "Failed to send admin notification."
   },
   it: {
     // Landing page
@@ -113,7 +116,10 @@ export const translations = {
     player: "Giocatore:",
     finalScore: "Punteggio Finale:",
     playAgain: "Gioca Ancora",
-    donateButton: "Sostieni il progetto"
+    donateButton: "Sostieni il progetto",
+    sendingEmail: "Invio notifica...",
+    emailSentSuccess: "Notifica inviata all’amministratore!",
+    emailSentError: "Errore invio notifica all’amministratore."
   },
   ru: {
     // Landing page
@@ -170,7 +176,10 @@ export const translations = {
     player: "Игрок:",
     finalScore: "Финальный счет:",
     playAgain: "Играть снова",
-    donateButton: "Поддержать проект"
+    donateButton: "Поддержать проект",
+    sendingEmail: "Отправка оповещения...",
+    emailSentSuccess: "Оповещение администратору отправлено!",
+    emailSentError: "Ошибка отправки оповещения админу."
   }
 };
 
