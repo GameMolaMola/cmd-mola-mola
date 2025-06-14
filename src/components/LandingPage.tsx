@@ -1,10 +1,11 @@
+
 import React, { useState } from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { useTranslations } from '@/hooks/useTranslations';
 import PlayerRegistrationForm from './PlayerRegistrationForm';
 import { Button } from '@/components/ui/button';
+import { Youtube } from 'lucide-react';
 
-// Изменен порядок: Italiano, Русский, English
 const LANGS = [{
   value: 'it',
   label: 'Italiano'
@@ -16,6 +17,25 @@ const LANGS = [{
   label: 'English'
 }];
 const DONATE_URL = "https://buymeacoffee.com/com.molamola";
+
+// Icon SVGs for TikTok and Linktree (simple versions)
+const TikTokIcon = ({className = "w-5 h-5"}) => (
+  <svg className={className} viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+    <path d="M25.829 10.785a6.515 6.515 0 0 1-2.135-4.704l-.038-2.05h-4.143v17.236a3.03 3.03 0 1 1-3.036-3.03 3.01 3.01 0 0 1 1.343.314v-4.33a7.35 7.35 0 0 0-1.343-.132 7.362 7.362 0 1 0 7.367 7.36V14.159a10.626 10.626 0 0 0 4.143 1.024v-4.05a6.664 6.664 0 0 1-2.158-.348z"/>
+  </svg>
+);
+
+const LinkIcon = ({className = "w-5 h-5"}) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M10 13a5 5 0 0 1 7 7l-3 3a5 5 0 0 1-7-7"/>
+    <path d="M14 11a5 5 0 0 0-7-7l-3 3a5 5 0 0 0 7 7"/>
+  </svg>
+);
+
+const BookIcon = ({className = "w-5 h-5"}) => (
+  <span role="img" aria-label="Comic" className={className}>📖</span>
+);
+
 const LandingPage = ({
   onPlay
 }: {
@@ -70,14 +90,24 @@ const LandingPage = ({
           <h2 className="text-cyan-200 font-semibold mb-2">{t.aboutTitle}</h2>
           <p className="text-white/90 text-sm">{t.description || t.aboutText}</p>
           <ul className="list-disc ml-5 mt-2 text-cyan-100 text-sm">
-            {t.features?.map?.((f: string, idx: number) => <li key={idx}>{f}</li>)}
+            {t.features?.map?.((f: string, idx: number) =>
+              // Показываем свою иконку если строка - монеты Mola Mola
+              typeof f === 'string' && (
+                (f.includes('монеты Mola Mola') || f.includes('monete Mola Mola') || f.includes('Mola Mola coins'))
+                ? <li key={idx} className="flex items-center gap-2">
+                    <img src="/lovable-uploads/00354654-8e2c-4993-8167-a9e91aef0d44.png" alt="Mola Mola Coin" className="inline w-5 h-5 object-contain mr-1" />
+                    <span>{f.replace(/[🪙]/g, '').trim()}</span>
+                  </li>
+                : <li key={idx}>{f}</li>
+              )
+            )}
           </ul>
         </div>
         <div className="bg-blue-800/70 border border-yellow-400 p-4 rounded-lg w-full mb-4">
           <h2 className="text-yellow-300 font-semibold mb-1">{t.addressTitle}</h2>
           <div className="text-white/80">{t.address}</div>
           <a href={`mailto:${t.email}`} className="text-cyan-300 hover:underline block mt-1">{t.email}</a>
-          <a href="https://buymeacoffee.com/com.molamola" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-3 px-5 py-2 rounded-full font-semibold text-white shadow-md text-base bg-pink-600 hover:bg-pink-700 border border-yellow-300 transition animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite] select-none" style={{
+          <a href={DONATE_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-3 px-5 py-2 rounded-full font-semibold text-white shadow-md text-base bg-pink-600 hover:bg-pink-700 border border-yellow-300 transition animate-[pulse_2.2s_cubic-bezier(0.4,0,0.6,1)_infinite] select-none" style={{
           minWidth: "100px",
           animation: 'pulse 2.2s cubic-bezier(0.4,0,0.6,1) infinite'
         }}>
@@ -86,6 +116,49 @@ const LandingPage = ({
             marginLeft: "4px"
           }} />
           </a>
+          {/* Social/media icon links */}
+          <div className="flex justify-center gap-4 mt-6">
+            {/* Comic link */}
+            <a
+              href="https://www.webtoons.com/en/canvas/commander-mola-mola-operation-bucatini/list?title_no=1062681"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Commander Mola Mola Comic"
+              className="text-yellow-300 bg-[#2d3751] rounded-full p-2 hover:bg-yellow-100 hover:text-blue-900 transition"
+            >
+              <BookIcon />
+            </a>
+            {/* TikTok */}
+            <a
+              href="https://www.tiktok.com/@commandermolamola"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="TikTok"
+              className="text-cyan-300 bg-[#132732] rounded-full p-2 hover:bg-white hover:text-black transition"
+            >
+              <TikTokIcon />
+            </a>
+            {/* YouTube */}
+            <a
+              href="https://www.youtube.com/@CommanderMolaMola"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="YouTube"
+              className="text-red-500 bg-[#1a1919] rounded-full p-2 hover:bg-red-100 hover:text-red-700 transition"
+            >
+              <Youtube className="w-5 h-5" />
+            </a>
+            {/* Linktree */}
+            <a
+              href="https://bit.ly/m/CommanderMolaMola"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Linktree"
+              className="text-green-400 bg-[#26382a] rounded-full p-2 hover:bg-green-100 hover:text-green-800 transition"
+            >
+              <LinkIcon />
+            </a>
+          </div>
         </div>
         {view === 'register' && <div className="w-full">
             <PlayerRegistrationForm />
@@ -94,8 +167,7 @@ const LandingPage = ({
             {t.startButton}
           </Button>}
       </div>
-      {/* DONATE BUTTON */}
-      
     </div>;
 };
+
 export default LandingPage;
