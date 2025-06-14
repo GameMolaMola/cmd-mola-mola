@@ -21,7 +21,7 @@ interface GameContextType {
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider = ({ children }: { children: React.ReactNode }) => {
-  const [language, setLanguage] = useState<Language>('ru');
+  const [language, setLanguage] = useState<Language>('it');
   const [playerData, setPlayerData] = useState<PlayerData | null>(null);
 
   const isRegistered = !!playerData;
