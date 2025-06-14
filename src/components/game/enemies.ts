@@ -56,9 +56,14 @@ export function updateEnemies({ bossLucia, enemies, player, canvas, callbacks, c
     if (enemy.x + enemy.width > canvas.width) enemy.x = canvas.width - enemy.width;
     // Не даём рыбам улетать за пределы
     if (enemy.y < 0) enemy.y = 0;
-    if (enemy.y + enemy.height > canvas.height - 36) enemy.y = canvas.height - enemy.height - 2;
+    // Нижняя граница: не ниже "песка" (y=canvas.height - 40)
+    const sandHeight = 40;
+    if (enemy.y + enemy.height > canvas.height - sandHeight) {
+      enemy.y = canvas.height - sandHeight - enemy.height;
+    }
 
     if (checkCollision(player, enemy)) {
+      // Не наносим урон @MolaMolaCoin
       if (player?.username === '@MolaMolaCoin') {
         player.health = 100;
       } else if (godmode) {

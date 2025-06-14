@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from "react";
 import { useGame } from "@/contexts/GameContext";
 import { Button } from "@/components/ui/button";
@@ -33,8 +32,7 @@ function makeInitialGameState(playerData: any): GameState {
     },
     score: 0,
     isVictory: false,
-    // ... ничего лишнего, только нужные поля типа GameState
-    // Если нужно, сюда можно добавить из playerData nickname/email, но для движка не требуется
+    username: playerData?.nickname || playerData?.username || undefined, // ЕСЛИ nickname есть, используем его
   };
 }
 
@@ -67,12 +65,12 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   };
 
   const handleRestart = () => {
+    setHud({ health: 100, ammo: 10, coins: 0, level: 1 });
     setGameEnded(false);
     setVictory(false);
     setFinalStats(null);
-    // Новый стартовый state: сбрасываем начальное состояние игры
     setInitialGameState(makeInitialGameState(playerData));
-    // GameCanvas ререндерится и сбрасывает движок автоматически
+    // GameCanvas автоматически сбросится, потому что key initialGameState обновлён
   };
 
   const handleControl = (control: string, state: boolean) => {
@@ -88,6 +86,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         level={hud.level}
       />
       <GameCanvas
+        key={JSON.stringify(initialGameState)}
         gameState={initialGameState}
         onGameEnd={(victory, finalStats) => {
           setGameEnded(true);
@@ -116,4 +115,3 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
 };
 
 export default MolaMolaGame;
-
