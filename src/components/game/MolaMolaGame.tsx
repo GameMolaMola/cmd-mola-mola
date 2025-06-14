@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from "react";
 import { useGame } from "@/contexts/GameContext";
 import { GameEngine } from "./GameEngine";
@@ -6,6 +5,18 @@ import { Button } from "@/components/ui/button";
 import GameHUD from "./hud/GameHUD";
 import GameOverDialog from "./hud/GameOverDialog";
 import { useFreeBrasilena } from "./useFreeBrasilena";
+import MobileControls from "./MobileControls";
+
+function isMobileDevice() {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+}
+
+function isTelegramBrowser() {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  return ua.toLowerCase().includes("telegram");
+}
 
 const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -96,6 +107,9 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     gameEngine?.setMobileControlState(control, state);
   };
 
+  // Детектировать, показывать ли mobile controls (мобила ИЛИ Telegram браузер)
+  const showMobileControls = isMobileDevice() || isTelegramBrowser();
+
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-start">
       <GameHUD
@@ -110,6 +124,10 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         height={480}
         className="border-2 border-cyan-400 rounded bg-blue-900 shadow-lg"
       />
+      {/* Покажем мобильные кнопки поверх canvas, если моб устройство или TG */}
+      {showMobileControls && (
+        <MobileControls onControl={handleControl} />
+      )}
       <GameOverDialog
         open={gameEnded}
         victory={victory}
@@ -125,4 +143,3 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
 };
 
 export default MolaMolaGame;
-
