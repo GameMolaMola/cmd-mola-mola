@@ -94,27 +94,25 @@ const LandingPage = ({
           marginLeft: '-20px', // 5mm left ≈ -20px
         }}
       >
-        {/* Название: версия + главный заголовок в одну линию, ver.1.0 строго левее, с равным отступом */}
-        <div className="relative w-full flex items-center justify-center mb-2" style={{minHeight: 40}}>
-          <span
-            className="text-cyan-400 font-bold text-[11px] md:text-xs py-0.5 px-1.5 md:px-2 rounded bg-cyan-900 border border-cyan-500 flex-shrink-0 absolute"
-            style={{
-              left: 38,
-              top: "50%",
-              transform: "translateY(-50%)",
-              letterSpacing: "0.01em",
-              minWidth: 38,
-              maxWidth: 54,
-              lineHeight: "1",
-              textAlign: "center",
-              zIndex: 10
-            }}
-          >
-            ver.1.0
-          </span>
+        {/* Новая строка: маленький блок с версией и заголовком внутри рамки */}
+        <div className="w-full flex flex-col items-center mb-2" style={{minHeight: 48}}>
+          <div className="flex w-full items-center" style={{marginBottom: '2px'}}>
+            <span
+              className="text-cyan-400 font-bold text-[11px] md:text-xs py-0.5 px-2 rounded bg-cyan-900 border border-cyan-500"
+              style={{
+                letterSpacing: "0.01em",
+                minWidth: 44,
+                maxWidth: 58,
+                lineHeight: "1",
+                textAlign: "center"
+              }}
+            >
+              ver.1.0
+            </span>
+          </div>
           <h1
             className="text-2xl md:text-4xl text-yellow-400 font-bold text-center m-0 p-0 leading-tight overflow-hidden text-ellipsis whitespace-nowrap w-auto max-w-full"
-            style={{ marginTop: "28px" }}
+            style={{ marginTop: "56px" }} // 28+28px = 56px
           >
             {t.title}
           </h1>
