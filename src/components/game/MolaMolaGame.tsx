@@ -92,8 +92,14 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   // HUD State Update
   const onStateUpdate = (updates: any) => {
     setHud((prev) => {
-      let score = updates.score ?? (updates.coins ?? prev.coins) * 10 + (updates.level ?? prev.level) * 100;
-      return { ...prev, ...updates, score };
+      // Защита: обновления могут быть пустыми или не содержать score/coins/level
+      const safeUpdates = updates ?? {};
+      const coins = typeof safeUpdates.coins === "number" ? safeUpdates.coins : prev.coins;
+      const level = typeof safeUpdates.level === "number" ? safeUpdates.level : prev.level;
+      const score = typeof safeUpdates.score === "number"
+        ? safeUpdates.score
+        : coins * 10 + level * 100;
+      return { ...prev, ...safeUpdates, score };
     });
   };
 
