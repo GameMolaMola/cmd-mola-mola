@@ -7,12 +7,6 @@ import { updatePlayer } from './player';
 import { updateEnemies } from './enemies';
 import { handleBonuses } from './bonuses';
 import { updateBullets } from './bullets';
-import { updateBubbles, drawBubbles, drawPlatforms } from './environment';
-import { checkCollision } from './utils/collision';
-
-import { renderScene } from './renderer';
-import { gameTick } from './loop';
-import { loadImages } from './imageLoader';
 import { generateBubbles, updateBubbles, drawBubbles } from './bubblesManager';
 import { createDefaultPlatforms } from './platformsManager';
 import { setupKeyboardHandlers } from './controlsManager';
