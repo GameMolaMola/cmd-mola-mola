@@ -83,6 +83,15 @@ const LandingPage = ({
         <LanguageSelector language={language} setLanguage={setLanguage} />
         {/* Guido Shrimp block */}
         <GuidoShrimpBlock language={language} />
+        {/* Кнопка начать операцию Букатини ПОД Guido Shrimp */}
+        {view === 'ready' && (
+          <Button
+            onClick={onPlay}
+            className="bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-3 text-lg"
+          >
+            {t.startButton}
+          </Button>
+        )}
         {/* Форма регистрации ПОД Guido Shrimp */}
         {view === 'register' && <div className="w-full">
           <PlayerRegistrationForm />
@@ -93,9 +102,6 @@ const LandingPage = ({
         <p className="text-white text-center text-md">{t.subtitle}</p>
         <AboutSection t={t} />
         <AddressSection t={t} />
-        {view === 'ready' && <Button onClick={onPlay} className="bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-3 text-lg">
-          {t.startButton}
-        </Button>}
       </div>
     </div>
   );
