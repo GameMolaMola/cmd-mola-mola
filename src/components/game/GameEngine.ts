@@ -541,16 +541,27 @@ export class GameEngine {
     this.updateBubbles();
     this.drawBubbles(this.ctx);
 
-    // --- Новые стильные пиксельные кораллы вместо прошлых платформ ---
-    this.platforms.forEach(platform => {
-      drawPixelCoral(
-        this.ctx,
-        platform.x,
-        platform.y,
-        platform.width,
-        platform.height,
-        ['#ea866c', '#e7b76a', '#fcf596', '#89f4fb']
-      );
+    // --- Платформы: песок снизу, кораллы выше ---
+    this.platforms.forEach((platform, idx) => {
+      // Песок в самом низу (нулевая платформа или по Y)
+      if (platform.y >= this.canvas.height - 40 - 1) {
+        drawPixelSand(
+          this.ctx,
+          platform.x,
+          platform.y,
+          platform.width,
+          platform.height
+        );
+      } else {
+        drawPixelCoral(
+          this.ctx,
+          platform.x,
+          platform.y,
+          platform.width,
+          platform.height,
+          ['#ea866c', '#e7b76a', '#fcf596', '#89f4fb']
+        );
+      }
     });
 
     const playerImage = this.images.playerFrames[this.player.frame];
@@ -654,3 +665,4 @@ export class GameEngine {
 }
 
 import { drawPixelCoral } from './drawPixelCoral';
+import { drawPixelSand } from './drawPixelSand';
