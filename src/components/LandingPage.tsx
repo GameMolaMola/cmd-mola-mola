@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -88,19 +89,21 @@ const LandingPage = ({
   }, [playerData, view]);
   return <div className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-700 flex items-center justify-center px-4 relative">
       <div className="bg-black/80 rounded-xl shadow-xl max-w-xl w-full py-10 px-6 flex flex-col items-center gap-6">
-        {/* Название: версия + главный заголовок в одну линию */}
-        <div className="flex items-center gap-3 mb-2">
+        {/* Название: версия + главный заголовок в одну линию (фикс для рамки) */}
+        <div className="flex items-center gap-2 mb-2 w-full justify-center">
           <span
-            className="text-cyan-400 font-bold text-xs py-0.5 px-2 rounded bg-cyan-900 border border-cyan-500"
+            className="text-cyan-400 font-bold text-[11px] md:text-xs py-0.5 px-1.5 md:px-2 rounded bg-cyan-900 border border-cyan-500 flex-shrink-0"
             style={{
               letterSpacing: "0.01em",
-              minWidth: 44,
-              lineHeight: "1"
+              minWidth: 38,
+              lineHeight: "1",
+              maxWidth: 54,
+              textAlign: "center"
             }}
           >
             ver.1.0
           </span>
-          <h1 className="text-3xl md:text-4xl text-yellow-400 font-bold text-center m-0 p-0 leading-tight">
+          <h1 className="text-2xl md:text-4xl text-yellow-400 font-bold text-center m-0 p-0 leading-tight overflow-hidden text-ellipsis whitespace-nowrap w-auto max-w-[calc(100%-60px)]">
             {t.title}
           </h1>
         </div>
@@ -213,3 +216,4 @@ const LandingPage = ({
 };
 
 export default LandingPage;
+
