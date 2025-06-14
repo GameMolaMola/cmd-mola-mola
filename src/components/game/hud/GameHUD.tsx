@@ -1,11 +1,12 @@
+
 import React from "react";
-import { useGame, Language } from "@/contexts/GameContext";
 import HealthDisplay from "./HealthDisplay";
 import CoinsDisplay from "./CoinsDisplay";
 import AmmoDisplay from "./AmmoDisplay";
 import ScoreDisplay from "./ScoreDisplay";
 import PauseButton from "./PauseButton";
 import LevelDisplay from "./LevelDisplay";
+import { Language } from "@/contexts/GameContext";
 
 interface GameHUDProps {
   health: number;
@@ -15,27 +16,29 @@ interface GameHUDProps {
   score?: number;
   onPause?: () => void;
   isMobile?: boolean;
-  language?: Language;
+  language: Language;
 }
 
+// Не кэшируем язык
 const GameHUD: React.FC<GameHUDProps> = ({
   health, ammo, coins, level, score, onPause, isMobile, language,
 }) => {
-  // Здесь убираем работу с context! Используем только переданный проп языка.
-  const lang: Language = language;
+  // Для проверки, что доходит нужный язык
+  console.log('HUD GameHUD язык:', language);
+
   const finalScore = typeof score === "number" ? score : coins * 10 + level * 100;
 
   return (
     <div className="w-full flex items-center justify-between p-2 md:p-4">
       <div className="flex items-center gap-4 flex-wrap">
-        <HealthDisplay health={health} language={lang} />
-        <CoinsDisplay coins={coins} language={lang} />
-        <AmmoDisplay ammo={ammo} language={lang} />
-        <LevelDisplay level={level} language={lang} />
-        <ScoreDisplay score={finalScore} language={lang} />
+        <HealthDisplay health={health} language={language} />
+        <CoinsDisplay coins={coins} language={language} />
+        <AmmoDisplay ammo={ammo} language={language} />
+        <LevelDisplay level={level} language={language} />
+        <ScoreDisplay score={finalScore} language={language} />
       </div>
       {isMobile && onPause && (
-        <PauseButton onPause={onPause} language={lang} />
+        <PauseButton onPause={onPause} language={language} />
       )}
     </div>
   );

@@ -11,6 +11,8 @@ interface PauseButtonProps {
 
 const PauseButton: React.FC<PauseButtonProps> = ({ onPause, language }) => {
   const t = useTranslations(language);
+  console.log('HUD PauseButton язык:', language);
+
   return (
     <Button
       variant="secondary"

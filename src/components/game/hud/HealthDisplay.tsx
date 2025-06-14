@@ -11,6 +11,8 @@ interface HealthDisplayProps {
 
 const HealthDisplay: React.FC<HealthDisplayProps> = ({ health, language }) => {
   const t = useTranslations(language);
+  console.log('HUD HealthDisplay язык:', language);
+
   return (
     <span className="flex items-center font-semibold text-white whitespace-nowrap">
       <Heart size={18} className="mr-1 text-red-400" />

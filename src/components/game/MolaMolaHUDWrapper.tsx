@@ -1,4 +1,3 @@
-
 import React from "react";
 import GameHUD from "./hud/GameHUD";
 import PauseOverlay from "./PauseOverlay";
@@ -12,20 +11,24 @@ interface Props {
   language: Language;
 }
 
-const MolaMolaHUDWrapper: React.FC<Props> = ({ hud, isMobile, isPaused, onPause, language }) => (
-  <>
-    <GameHUD
-      health={hud.health}
-      ammo={hud.ammo}
-      coins={hud.coins}
-      level={hud.level}
-      score={hud.score}
-      onPause={onPause}
-      isMobile={isMobile}
-      language={language}
-    />
-    <PauseOverlay visible={isPaused} />
-  </>
-);
+const MolaMolaHUDWrapper: React.FC<Props> = ({ hud, isMobile, isPaused, onPause, language }) => {
+  // Для проверки, что доходит нужный язык
+  console.log('HUD MolaMolaHUDWrapper язык:', language);
+  return (
+    <>
+      <GameHUD
+        health={hud.health}
+        ammo={hud.ammo}
+        coins={hud.coins}
+        level={hud.level}
+        score={hud.score}
+        onPause={onPause}
+        isMobile={isMobile}
+        language={language}
+      />
+      <PauseOverlay visible={isPaused} />
+    </>
+  );
+};
 
 export default MolaMolaHUDWrapper;

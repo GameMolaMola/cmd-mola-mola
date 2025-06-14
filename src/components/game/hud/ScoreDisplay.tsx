@@ -10,6 +10,8 @@ interface ScoreDisplayProps {
 
 const ScoreDisplay: React.FC<ScoreDisplayProps> = ({ score, language }) => {
   const t = useTranslations(language);
+  console.log('HUD ScoreDisplay язык:', language);
+
   return (
     <span className="flex items-center font-semibold text-cyan-400 whitespace-nowrap">
       {t.score}: {score}

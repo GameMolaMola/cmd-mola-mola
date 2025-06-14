@@ -11,6 +11,8 @@ interface CoinsDisplayProps {
 
 const CoinsDisplay: React.FC<CoinsDisplayProps> = ({ coins, language }) => {
   const t = useTranslations(language);
+  console.log('HUD CoinsDisplay язык:', language);
+
   return (
     <span className="flex items-center font-semibold text-yellow-300 whitespace-nowrap">
       <Coins size={18} className="mr-1" />
