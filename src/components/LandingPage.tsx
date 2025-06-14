@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -94,6 +93,17 @@ const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
           <h2 className="text-yellow-300 font-semibold mb-1">{t.addressTitle}</h2>
           <div className="text-white/80">{t.address}</div>
           <a href={`mailto:${t.email}`} className="text-cyan-300 hover:underline block mt-1">{t.email}</a>
+          <a
+            href="https://buymeacoffee.com/com.molamola"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mt-3 px-5 py-2 rounded-full font-semibold text-white shadow-md text-base bg-pink-600 hover:bg-pink-700 border border-yellow-300 transition"
+            style={{
+              minWidth: "100px"
+            }}
+          >
+            {t.donateButton}
+          </a>
         </div>
         {view === 'register' && (
           <div className="w-full">
@@ -137,4 +147,3 @@ const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
 };
 
 export default LandingPage;
-
