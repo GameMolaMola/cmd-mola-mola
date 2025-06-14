@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { GameState } from './MolaMolaGame';
+import { GameState } from './types';
 import { useGame } from '@/contexts/GameContext';
 import { useTranslations } from '@/hooks/useTranslations';
 

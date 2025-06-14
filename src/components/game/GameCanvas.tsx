@@ -1,5 +1,6 @@
+
 import React, { useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
-import { GameState } from './MolaMolaGame';
+import { GameState } from './types';
 import { GameEngine } from './GameEngine';
 
 // Универсальная функция для получения максимальных реальных размеров видимой части экрана
