@@ -17,7 +17,7 @@ const About = () => {
         <AboutSection t={t} />
         <Link to="/">
           <Button className="mt-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold px-8 py-2 text-lg">
-            ← {t.backToHome || "Back to Home"}
+            ← Back to Home
           </Button>
         </Link>
       </div>
