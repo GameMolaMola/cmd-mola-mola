@@ -71,6 +71,7 @@ export class GameEngine {
     wine: HTMLImageElement;
     coin: HTMLImageElement;
     backgrounds: { img: HTMLImageElement; level: number }[];
+    bossLucia: HTMLImageElement;
   };
 
   private bubbles: Array<{
@@ -90,6 +91,16 @@ export class GameEngine {
   private godmode: boolean = false;
 
   private freeBrasilena?: ReturnType<typeof useFreeBrasilena>;
+
+  private bossLucia: null | {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    health: number;
+    image: HTMLImageElement;
+    direction: number;
+  } = null;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -146,7 +157,8 @@ export class GameEngine {
       brasilena: '/lovable-uploads/cc5bbfd2-9663-470b-8edf-b5314b29b3f0.png',
       wine: '/lovable-uploads/9132b9d8-ab25-44a7-81ec-031ebfbb97e6.png',
       pizza: '/lovable-uploads/60af68f1-3f70-4928-8512-4f13c4e56a05.png',
-      enemy: '/lovable-uploads/b0b2972b-c98d-4f17-bf93-ac419c59bc60.png'
+      enemy: '/lovable-uploads/b0b2972b-c98d-4f17-bf93-ac419c59bc60.png',
+      bossLucia: '/lovable-uploads/e2e9e94b-84f9-450f-a422-4f25b84dc5c0.png',
     };
 
     this.images.playerFrames[0].src = imageUrls.player1;
@@ -156,6 +168,9 @@ export class GameEngine {
     this.images.brasilena.src = imageUrls.brasilena;
     this.images.wine.src = imageUrls.wine;
     this.images.coin.src = imageUrls.coin;
+
+    this.images.bossLucia = new Image();
+    this.images.bossLucia.src = imageUrls.bossLucia;
 
     Object.entries(imageUrls).forEach(([key, url]) => {
       const img = new Image();
@@ -303,6 +318,48 @@ export class GameEngine {
     this.brasilenas = [];
     this.wines = [];
 
+    // Отдельно обрабатываем босса для 11+ уровней
+    if (this.player.level > 10) {
+      this.bossLucia = {
+        x: 300,
+        y: 150,
+        width: 128,
+        height: 128,
+        health: 200 + (this.player.level - 10) * 40,
+        image: this.images?.bossLucia ?? new Image(),
+        direction: 1,
+      };
+      // Пиццы, вино, коин можно добавлять по желанию
+      for (let i = 0; i < 2; i++) {
+        this.pizzas.push({
+          x: 250 + Math.random() * 350,
+          y: 110 + Math.random() * 200,
+          width: 36,
+          height: 36
+        });
+      }
+      for (let i = 0; i < 2; i++) {
+        this.wines.push({
+          x: 260 + Math.random() * 320,
+          y: 130 + Math.random() * 140,
+          width: 32,
+          height: 32
+        });
+      }
+      for (let i = 0; i < 4; i++) {
+        this.coins.push({
+          x: 200 + Math.random() * 400,
+          y: 100 + Math.random() * 200,
+          width: 32,
+          height: 32
+        });
+      }
+      return;
+    } else {
+      this.bossLucia = null;
+    }
+
+    // Обычные уровни
     const enemyCount = 3 + this.player.level;
     const coinCount = 5 + this.player.level * 2;
 
@@ -499,13 +556,44 @@ export class GameEngine {
   }
 
   private updateEnemies() {
+    // Если есть босс - управляем только им
+    if (this.bossLucia) {
+      // Движение босса — плавает влево-вправо, иногда двигается к игроку
+      this.bossLucia.x += this.bossLucia.direction * 2;
+      if (this.bossLucia.x <= 0 || this.bossLucia.x + this.bossLucia.width >= this.canvas.width) {
+        this.bossLucia.direction *= -1;
+      }
+      // Немного вверх-вниз, эффект плавания
+      this.bossLucia.y += Math.sin(Date.now() / 500) * 0.6;
+
+      // Босс атакует игрока (можно добавить поведение), сейчас просто контакт
+      if (this.checkCollision(this.player, this.bossLucia)) {
+        if (isGodmodeActive(this.godmode)) {
+          applyGodmodeIfNeeded(this.player, this.godmode);
+        } else {
+          this.player.health -= 4;
+          this.callbacks.onStateUpdate?.({ health: this.player.health });
+          if (this.player.health <= 0) {
+            this.callbacks.onGameEnd(false, {
+              level: this.player.level,
+              coins: this.player.coins,
+              score: this.player.coins * 10 + this.player.level * 100
+            });
+            return;
+          }
+        }
+      }
+      return; // Не обновлять обычных врагов
+    }
+
+    // Обычные враги
     this.enemies.forEach(enemy => {
       if (enemy.x > this.player.x) {
         enemy.x -= enemy.speed;
       } else {
         enemy.x += enemy.speed;
       }
-      
+
       if (enemy.x < 0) enemy.x = 0;
       if (enemy.x + enemy.width > this.canvas.width) {
         enemy.x = this.canvas.width - enemy.width;
@@ -523,14 +611,32 @@ export class GameEngine {
         continue;
       }
 
-      for (let j = this.enemies.length - 1; j >= 0; j--) {
-        const enemy = this.enemies[j];
-        if (this.checkCollision(bullet, enemy)) {
-          this.enemies.splice(j, 1);
+      // Попадание по боссу
+      if (this.bossLucia) {
+        if (this.checkCollision(bullet, this.bossLucia)) {
+          this.bossLucia.health -= 20;
           this.bullets.splice(i, 1);
-          this.player.coins += 2;
-          this.updateGameState();
-          break;
+          if (this.bossLucia.health <= 0) {
+            // Победа над боссом
+            this.player.level++;
+            this.callbacks.onGameEnd(true, {
+              level: this.player.level,
+              coins: this.player.coins,
+              score: this.player.coins * 10 + this.player.level * 100
+            });
+            return;
+          }
+        }
+      } else {
+        for (let j = this.enemies.length - 1; j >= 0; j--) {
+          const enemy = this.enemies[j];
+          if (this.checkCollision(bullet, enemy)) {
+            this.enemies.splice(j, 1);
+            this.bullets.splice(i, 1);
+            this.player.coins += 2;
+            this.updateGameState();
+            break;
+          }
         }
       }
     }
@@ -603,6 +709,7 @@ export class GameEngine {
       }
     });
 
+    // Игрок
     const playerImage = this.images.playerFrames[this.player.frame];
     if (playerImage && playerImage.complete) {
       this.ctx.drawImage(playerImage, this.player.x, this.player.y, this.player.width, this.player.height);
@@ -611,21 +718,42 @@ export class GameEngine {
       this.ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
     }
 
-    this.enemies.forEach(enemy => {
-      const image = this.images.enemy;
+    // Обычные враги или босс
+    if (this.bossLucia) {
+      const image = this.images.bossLucia;
       if (image && image.complete) {
-        this.ctx.drawImage(image, enemy.x, enemy.y, enemy.width, enemy.height);
+        this.ctx.drawImage(image, this.bossLucia.x, this.bossLucia.y, this.bossLucia.width, this.bossLucia.height);
       } else {
-        this.ctx.fillStyle = '#e74c3c';
-        this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        this.ctx.fillStyle = "#AA2424";
+        this.ctx.fillRect(this.bossLucia.x, this.bossLucia.y, this.bossLucia.width, this.bossLucia.height);
       }
-    });
+      // Отрисуем полоску хп босса
+      this.ctx.save();
+      this.ctx.globalAlpha = 0.86;
+      this.ctx.fillStyle = "#000";
+      this.ctx.fillRect(this.bossLucia.x, this.bossLucia.y - 18, this.bossLucia.width, 10);
+      this.ctx.fillStyle = "#fcba03";
+      this.ctx.fillRect(this.bossLucia.x, this.bossLucia.y - 18, (this.bossLucia.health / (200 + (this.player.level - 10) * 40)) * this.bossLucia.width, 10);
+      this.ctx.restore();
+    } else {
+      this.enemies.forEach(enemy => {
+        const image = this.images.enemy;
+        if (image && image.complete) {
+          this.ctx.drawImage(image, enemy.x, enemy.y, enemy.width, enemy.height);
+        } else {
+          this.ctx.fillStyle = '#e74c3c';
+          this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        }
+      });
+    }
 
+    // Стрельба - как раньше
     this.ctx.fillStyle = '#f39c12';
     this.bullets.forEach(bullet => {
       this.ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
     });
 
+    // Монетки
     this.coins.forEach(coin => {
       const image = this.images.coin;
       if (image && image.complete) {
@@ -636,9 +764,10 @@ export class GameEngine {
       }
     });
 
+    // Пиццы: корректный рендеринг спрайта
     this.pizzas.forEach(pizza => {
       const image = this.images.pizza;
-      if (image && image.complete) {
+      if (image && image.complete && pizza.width && pizza.height) {
         this.ctx.drawImage(image, pizza.x, pizza.y, pizza.width, pizza.height);
       } else {
         this.ctx.fillStyle = '#e74c3c';
@@ -666,13 +795,21 @@ export class GameEngine {
       }
     });
 
-    if (this.enemies.length === 0 && this.coins.filter(c => c).length === 0) {
+    // Логика перехода уровней — теперь с учётом босса
+    if (!this.bossLucia && this.enemies.length === 0 && this.coins.filter(c => c).length === 0) {
       this.player.level++;
+      // После 10 уровня — босс
       if (this.player.level > 10) {
-        this.callbacks.onGameEnd(true, { 
-          level: this.player.level, 
-          coins: this.player.coins, 
-          score: this.player.coins * 10 + this.player.level * 100 
+        this.generateLevel();
+        this.updateGameState();
+        return;
+      }
+      if (this.player.level > 10) {
+        // Не должно доходить, но на всякий случай
+        this.callbacks.onGameEnd(true, {
+          level: this.player.level,
+          coins: this.player.coins,
+          score: this.player.coins * 10 + this.player.level * 100
         });
         return;
       }
