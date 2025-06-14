@@ -17,9 +17,8 @@ export default function LanguageSelector({
 }) {
   return (
     <div
-      className="flex flex-wrap justify-center items-center gap-2 mb-2 w-full"
+      className="flex flex-row justify-center items-center gap-2 mb-2 w-full"
       style={{
-        maxWidth: 220,
         marginLeft: "auto",
         marginRight: "auto",
       }}
@@ -38,6 +37,7 @@ export default function LanguageSelector({
           style={{
             fontWeight: language === lang.value ? 600 : 400,
             letterSpacing: "0.02em",
+            whiteSpace: "nowrap"
           }}
         >
           {lang.label}
