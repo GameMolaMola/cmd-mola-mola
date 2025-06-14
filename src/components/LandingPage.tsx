@@ -11,6 +11,8 @@ const LANGS = [
   { value: 'it', label: 'Italiano' }
 ];
 
+const DONATE_URL = "https://buymeacoffee.com/com.molamola";
+
 const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
   const { language, setLanguage, playerData } = useGame();
   const t = useTranslations(language);
@@ -30,7 +32,7 @@ const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
   }, [playerData, view]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-700 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-700 flex items-center justify-center px-4 relative">
       <div className="bg-black/80 rounded-xl shadow-xl max-w-xl w-full py-10 px-6 flex flex-col items-center gap-6">
         <img src="/lovable-uploads/ee8156f0-ed84-469d-b314-13a6aa436d63.png" alt="Mola Mola" className="h-24 mb-1 mx-auto" />
         <h1 className="text-3xl md:text-4xl text-yellow-400 mb-2 font-bold text-center">{t.title}</h1>
@@ -76,6 +78,24 @@ const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
           </Button>
         )}
       </div>
+
+      {/* DONATE BUTTON */}
+      <a
+        href={DONATE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 px-7 py-3 rounded-full font-semibold
+                   text-white shadow-lg text-lg bg-pink-600 hover:bg-pink-700
+                   animate-pulse border-2 border-yellow-300 transition
+                   select-none"
+        style={{
+          animation: 'pulse 1s infinite'
+        }}
+      >
+        {t.donateButton}
+        {/* heart icon SVG or emoji */}
+        <span className="ml-2" role="img" aria-label="coffee">☕</span>
+      </a>
     </div>
   );
 };

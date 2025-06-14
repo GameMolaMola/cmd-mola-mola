@@ -1,4 +1,3 @@
-
 import { Language } from '@/contexts/GameContext';
 
 export const translations = {
@@ -56,7 +55,8 @@ export const translations = {
     saveCode: "Save this code! Send it to @commandermolamola to receive your prize.",
     player: "Player:",
     finalScore: "Final Score:",
-    playAgain: "Play Again"
+    playAgain: "Play Again",
+    donateButton: "Support the Project"
   },
   it: {
     // Landing page
@@ -112,7 +112,8 @@ export const translations = {
     saveCode: "Salva questo codice! Invialo a @commandermolamola per ricevere il premio.",
     player: "Giocatore:",
     finalScore: "Punteggio Finale:",
-    playAgain: "Gioca Ancora"
+    playAgain: "Gioca Ancora",
+    donateButton: "Sostieni il progetto"
   },
   ru: {
     // Landing page
@@ -168,7 +169,8 @@ export const translations = {
     saveCode: "Сохраните этот код! Отправьте его на @commandermolamola для получения приза.",
     player: "Игрок:",
     finalScore: "Финальный счет:",
-    playAgain: "Играть снова"
+    playAgain: "Играть снова",
+    donateButton: "Поддержать проект"
   }
 };
 
