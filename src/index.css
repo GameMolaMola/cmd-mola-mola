@@ -175,9 +175,19 @@
 }
 
 /* Гарантия full-viewport на мобилках и Telegram */
+/* Удаляем запрет прокрутки по умолчанию и делаем высоту auto */
 body,
 html,
 #root {
+  min-height: 100dvh !important;
+  min-width: 100vw !important;
+  height: auto !important;
+  width: 100vw !important;
+  overflow: auto !important;
+}
+
+/* Класс для отключения прокрутки — его будем использовать только для страницы игры */
+.no-scroll {
   min-height: 100dvh !important;
   min-width: 100vw !important;
   height: 100dvh !important;
