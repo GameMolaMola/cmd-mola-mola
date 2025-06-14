@@ -126,7 +126,7 @@ const LandingPage = ({
           </div>
           <h1
             className="text-2xl md:text-4xl text-yellow-400 font-bold text-center m-0 p-0 leading-tight overflow-hidden text-ellipsis whitespace-nowrap w-auto max-w-full"
-            style={{ marginTop: "28px" }} // Поднимем на 7мм (28px) вверх от прежнего 56px
+            style={{ marginTop: "8px" }} // Поднято ещё на 5мм (20px) выше
           >
             {t.title}
           </h1>
