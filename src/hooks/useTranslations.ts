@@ -14,11 +14,11 @@ export const translations = {
     address: "Via Roma 123, Cosenza, Calabria, Italy",
     email: "commandermolamola@gmail.com",
     features: [
-      { type: "pixel", label: "🎮 Classic pixel art graphics" },
-      { type: "adventure", label: "🌊 Underwater adventure" },
+      { type: "pixel", label: "Classic pixel art graphics" },
+      { type: "adventure", label: "Underwater adventure" },
       { type: "molamola_coin", label: "Collect Mola Mola coins" },
-      { type: "powerup", label: "🍕 Italian food power-ups" },
-      { type: "boss", label: "🚀 Epic boss battles" }
+      { type: "powerup", label: "Italian food power-ups" },
+      { type: "boss", label: "Epic boss battles" }
     ],
     // Registration form
     playerRegistration: "Player Registration",
@@ -75,11 +75,11 @@ export const translations = {
     address: "Via Roma 123, Cosenza, Calabria, Italia",
     email: "commandermolamola@gmail.com",
     features: [
-      { type: "pixel", label: "🎮 Grafica pixel art classica" },
-      { type: "adventure", label: "🌊 Avventura subacquea" },
+      { type: "pixel", label: "Grafica pixel art classica" },
+      { type: "adventure", label: "Avventura subacquea" },
       { type: "molamola_coin", label: "Raccogli monete Mola Mola" },
-      { type: "powerup", label: "🍕 Power-up di cibo italiano" },
-      { type: "boss", label: "🚀 Battaglie epiche con boss" }
+      { type: "powerup", label: "Power-up di cibo italiano" },
+      { type: "boss", label: "Battaglie epiche con boss" }
     ],
     // Registration form
     playerRegistration: "Registrazione Giocatore",
@@ -136,11 +136,11 @@ export const translations = {
     address: "Via Roma 123, Козенца, Калабрия, Италия",
     email: "commandermolamola@gmail.com",
     features: [
-      { type: "pixel", label: "🎮 Классическая пиксельная графика" },
-      { type: "adventure", label: "🌊 Подводное приключение" },
-      { type: "molamola_coin", label: "Собирай монеты Мола Мола" },
-      { type: "powerup", label: "🍕 Усиления итальянской еды" },
-      { type: "boss", label: "🚀 Эпические битвы с боссами" }
+      { type: "pixel", label: "Классическая пиксельная графика" },
+      { type: "adventure", label: "Подводное приключение" },
+      { type: "molamola_coin", label: "Собирай монеты Mola Mola" },
+      { type: "powerup", label: "Усиления итальянской еды" },
+      { type: "boss", label: "Эпические битвы с боссами" }
     ],
     // Registration form
     playerRegistration: "Регистрация Игрока",
