@@ -116,12 +116,26 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     setGameSessionId(Date.now());
   };
 
-  const handleControl = (control: string, state: boolean) => {
-    // Можно добавить обработку моб. контролов
+  // --- привязываем мобильные контролы к движению ---
+  const lastGameEngine = useRef<any>(null);
+
+  // Получаем ссылку на GameEngine от GameCanvas через ref
+  const collectEngineRef = (engineInstance: any) => {
+    lastGameEngine.current = engineInstance;
   };
 
+  // Реализация: дергаем GameEngine.setMobileControlState для управления
+  const handleControl = (control: string, state: boolean) => {
+    if (lastGameEngine.current && typeof lastGameEngine.current.setMobileControlState === "function") {
+      lastGameEngine.current.setMobileControlState(control, state);
+    }
+  };
+
+  // Переработка структуры разметки: canvas и mobile controls теперь НЕ overlap, а идут друг за другом
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-start">
+    <div className="relative w-full h-full flex flex-col items-center justify-start overflow-hidden"
+         style={{minHeight: showMobileControls ? '100svh' : '100%'}}>
+      {/* HUD и LevelIndicator фиксированы, они поверх canvas */}
       <GameHUD
         health={hud.health}
         ammo={hud.ammo}
@@ -132,21 +146,35 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         isMobile={showMobileControls}
         language={language}
       />
-      {/* Индикатор уровня справа вверху */}
       <LevelIndicator level={hud.level} language={language} />
-      <GameCanvas
-        key={gameSessionId}
-        gameState={initialGameState}
-        onGameEnd={handleGameEnd}
-        onStateUpdate={onStateUpdate}
-        onMobileControl={handleControl}
-        isMobile={showMobileControls}
-        username={username}
-        isPaused={isPaused}
-        gameSessionId={gameSessionId}
-      />
+      {/* Блок для canvas - min-h должен учитывать высоту кнопок управления */}
+      <div className="relative w-full flex flex-col items-center justify-center"
+           style={{
+             maxWidth: 900, width: '100%',
+             margin: '0 auto'
+           }}>
+        <GameCanvas
+          key={gameSessionId}
+          gameState={initialGameState}
+          onGameEnd={handleGameEnd}
+          onStateUpdate={onStateUpdate}
+          onMobileControl={handleControl}
+          isMobile={showMobileControls}
+          username={username}
+          isPaused={isPaused}
+          gameSessionId={gameSessionId}
+          collectEngineRef={collectEngineRef}
+        />
+      </div>
+      {/* Теперь MobileControls вынесены под canvas */}
       {showMobileControls && (
-        <MobileControls onControl={handleControl} />
+        <div className="w-full z-30 bottom-0 left-0 sticky"
+              style={{
+                maxWidth: 900,
+                margin: "0 auto",
+              }}>
+          <MobileControls onControl={handleControl} />
+        </div>
       )}
       <PauseOverlay visible={isPaused} />
       <GameOverDialog
@@ -164,3 +192,4 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
 };
 
 export default MolaMolaGame;
+

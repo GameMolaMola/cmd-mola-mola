@@ -11,7 +11,8 @@ interface GameCanvasProps {
   isMobile?: boolean;
   username?: string;
   isPaused?: boolean;
-  gameSessionId?: number; // новый проп (необязательный)
+  gameSessionId?: number;
+  collectEngineRef?: (engine: GameEngine | null) => void;
 }
 
 const GameCanvas: React.FC<GameCanvasProps> = ({
@@ -22,13 +23,13 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   isMobile,
   username,
   isPaused = false,
-  gameSessionId // новый проп
+  gameSessionId,
+  collectEngineRef
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<GameEngine | null>(null);
   const { playerData } = useGame();
 
-  // Создание/рестарт экземпляра GameEngine
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
@@ -47,6 +48,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
             ...playerData,
           },
         });
+        // Передаем ref наружу, если требуется
+        collectEngineRef?.(engineRef.current);
         if (!isPaused) engineRef.current.start();
       }
     }
@@ -54,7 +57,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       engineRef.current?.stop();
       engineRef.current = null;
     };
-    // добавим gameSessionId в зависимости
     // eslint-disable-next-line
   }, [gameState, username, gameSessionId]);
 
@@ -68,17 +70,19 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     }
   }, [isPaused]);
 
+  // canvas теперь всегда flex-auto, не absolute. Высота минимальная (на мобильных) вычисляется автоматически.
   return (
     <canvas
       ref={canvasRef}
       width={900}
       height={450}
+      className="w-full max-w-full max-h-[58vw] min-h-[220px] flex-auto rounded-2xl shadow-xl outline-none bg-[#011b2e]"
       style={{
-        maxWidth: "100vw",
-        maxHeight: "52vw",
-        borderRadius: 16,
-        background: "#011b2e",
+        display: "block",
+        margin: "0 auto",
         boxShadow: "0 2px 20px 0px #001a3a80",
+        // высота автоматически для резины на мобильных
+        touchAction: "none",
       }}
       tabIndex={0}
     />
@@ -86,3 +90,4 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
 };
 
 export default GameCanvas;
+
