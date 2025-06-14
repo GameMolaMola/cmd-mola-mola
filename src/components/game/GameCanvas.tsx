@@ -24,10 +24,11 @@ interface GameCanvasProps {
   onStateUpdate: (updates: Partial<GameState>) => void;
   onMobileControl?: (control: string, state: boolean) => void;
   isMobile?: boolean;
+  username?: string; // добавим username как отдельный проп
 }
 
 const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
-  ({ gameState, onGameEnd, onStateUpdate, onMobileControl, isMobile }: GameCanvasProps, ref) => {
+  ({ gameState, onGameEnd, onStateUpdate, onMobileControl, isMobile, username }: GameCanvasProps, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const gameEngineRef = useRef<GameEngine | null>(null);
 
@@ -105,10 +106,11 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
       if (!ctx) return;
 
       if (!gameEngineRef.current) {
+        // проксируем username (и прочее без изменений)
         gameEngineRef.current = new GameEngine(canvas, ctx, {
           onGameEnd,
           onStateUpdate,
-          initialState: gameState
+          initialState: { ...gameState, username }, // пробрасываем username; GameEngine корректно обработает
         });
         gameEngineRef.current.start();
       }
@@ -157,3 +159,4 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
 );
 
 export default GameCanvas;
+

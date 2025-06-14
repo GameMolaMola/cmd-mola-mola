@@ -388,10 +388,17 @@ export class GameEngine {
     const enemyCount = 3 + this.player.level;
     const coinCount = 5 + this.player.level * 2;
 
+    // canvas.height и sandHeight гарантированы, т.к. инициализированы к этому моменту
+    const sandHeight = 40;
+    const enemyHeight = 48;
+    const upperBoundY = 20; // минимум отступ сверху для рыб
     for (let i = 0; i < enemyCount; i++) {
+      const minX = 20, maxX = this.canvas.width - 48 - 20;
+      const minY = upperBoundY, maxY = this.canvas.height - sandHeight - enemyHeight - 8;
+      // Не спавним рыб под песком!
       this.enemies.push({
-        x: 400 + Math.random() * 300,
-        y: 100 + Math.random() * 200,
+        x: minX + Math.random() * (maxX - minX),
+        y: minY + Math.random() * (maxY - minY),
         width: 48,
         height: 48,
         speed: 1 + this.player.level * 0.2

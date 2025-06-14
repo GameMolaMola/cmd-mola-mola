@@ -20,7 +20,7 @@ function isTelegramBrowser() {
 }
 
 // Хелпер для создания стартового состояния игры
-function makeInitialGameState(playerData: any): GameState {
+function makeInitialGameState() {
   return {
     health: 100,
     ammo: 10,
@@ -32,7 +32,6 @@ function makeInitialGameState(playerData: any): GameState {
     },
     score: 0,
     isVictory: false,
-    username: playerData?.nickname || playerData?.username || undefined, // ЕСЛИ nickname есть, используем его
   };
 }
 
@@ -46,17 +45,20 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   const { playerData } = useGame();
   const freeBrasilena = useFreeBrasilena();
 
+  // save username отдельно и пробрасываем дальше
+  const username = playerData?.nickname || playerData?.username || undefined;
+
   // Детектируем, показывать ли mobile controls (мобила ИЛИ Telegram браузер)
   const showMobileControls = isMobileDevice() || isTelegramBrowser();
 
   // Сохраняем начальный gameState (чтоб не пересоздавался на каждый рендер)
   const [initialGameState, setInitialGameState] = useState<GameState>(() =>
-    makeInitialGameState(playerData)
+    makeInitialGameState() // нативный state, без username
   );
 
   // Обновляем начальное состояние при смене playerData (например, новый игрок)
   useEffect(() => {
-    setInitialGameState(makeInitialGameState(playerData));
+    setInitialGameState(makeInitialGameState());
   }, [playerData]);
 
   // Callback из движка/canvas
@@ -86,7 +88,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         level={hud.level}
       />
       <GameCanvas
-        key={JSON.stringify(initialGameState)}
+        key={JSON.stringify(initialGameState) + username}
         gameState={initialGameState}
         onGameEnd={(victory, finalStats) => {
           setGameEnded(true);
@@ -96,6 +98,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         onStateUpdate={onStateUpdate}
         onMobileControl={handleControl}
         isMobile={showMobileControls}
+        username={username} // <--- передаем явно пропом для GameCanvas
       />
       {showMobileControls && (
         <MobileControls onControl={handleControl} />

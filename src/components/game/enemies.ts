@@ -1,4 +1,3 @@
-
 export function updateEnemies({ bossLucia, enemies, player, canvas, callbacks, checkCollision, godmode }: any) {
   // Если есть босс - управляем только им
   if (bossLucia) {
@@ -51,15 +50,16 @@ export function updateEnemies({ bossLucia, enemies, player, canvas, callbacks, c
     enemy.x += sideMove;
     enemy.y += enemy._vy || 0;
 
-    // Ограничения по полю
+    // Ограничения по полю (НЕ ДАЁМ уходить под песок)
     if (enemy.x < 0) enemy.x = 0;
     if (enemy.x + enemy.width > canvas.width) enemy.x = canvas.width - enemy.width;
-    // Не даём рыбам улетать за пределы
+    // Верх — не выходить выше canvas!
     if (enemy.y < 0) enemy.y = 0;
     // Нижняя граница: не ниже "песка" (y=canvas.height - 40)
     const sandHeight = 40;
     if (enemy.y + enemy.height > canvas.height - sandHeight) {
       enemy.y = canvas.height - sandHeight - enemy.height;
+      enemy._vy = (Math.random() - 0.5) * 2; // разворачиваем движение вверх
     }
 
     if (checkCollision(player, enemy)) {
