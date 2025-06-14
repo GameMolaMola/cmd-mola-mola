@@ -7,6 +7,8 @@ export interface PlayerData {
   nickname: string;
   email: string;
   language: Language;
+  godmode?: boolean;   // теперь спец-режим может быть сохранён
+  markJump?: boolean;  // спец-флаг для особой способности
 }
 
 interface GameContextType {
