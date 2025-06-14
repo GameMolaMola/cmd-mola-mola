@@ -82,6 +82,8 @@ export class GameEngine {
 
   private mobileControlState: Record<string, boolean> = {};
 
+  private staticSandLayer: HTMLCanvasElement | null = null;
+
   constructor(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
@@ -164,6 +166,34 @@ export class GameEngine {
     document.addEventListener('keyup', handleKeyUp);
   }
 
+  private generateStaticSandLayer() {
+    // Ищем нижнюю платформу (основание уровня)
+    const bottomPlatform = this.platforms.find(
+      (p) => p.y >= this.canvas.height - 40 - 1
+    );
+    if (!bottomPlatform) return;
+
+    // Создаём отдельный canvas чтобы сгенерировать песок ОДИН РАЗ
+    const sandCanvas = document.createElement('canvas');
+    sandCanvas.width = bottomPlatform.width;
+    sandCanvas.height = bottomPlatform.height;
+    const sandCtx = sandCanvas.getContext('2d');
+    if (sandCtx) {
+      // Используем seed для одинаковости или UID платформы (можно расширить)
+      // Math.random даст псевдо случайный но на статичном канвасе
+      // drawPixelSand требует seed, но внутри не используется — опционально доработать для true seed random'а
+      // Но даже стандартный Math.random внутри работает для независимых canvas!
+      drawPixelSand(
+        sandCtx,
+        0,
+        0,
+        bottomPlatform.width,
+        bottomPlatform.height
+      );
+      this.staticSandLayer = sandCanvas;
+    }
+  }
+
   private generatePlatforms() {
     // Позиции платформ останутся прежними, но теперь визуализируем их как кораллы
     this.platforms = [
@@ -173,6 +203,9 @@ export class GameEngine {
       { x: 150, y: 220, width: 80, height: 20, color: '#FBBF24' },
       { x: 650, y: 200, width: 100, height: 20, color: '#A78BFA' }
     ];
+
+    // После генерации платформ перегенерируем слой песка
+    setTimeout(() => this.generateStaticSandLayer(), 0);
   }
 
   private generateBubbles() {
@@ -543,15 +576,30 @@ export class GameEngine {
 
     // --- Платформы: песок снизу, кораллы выше ---
     this.platforms.forEach((platform, idx) => {
-      // Песок в самом низу (нулевая платформа или по Y)
       if (platform.y >= this.canvas.height - 40 - 1) {
-        drawPixelSand(
-          this.ctx,
-          platform.x,
-          platform.y,
-          platform.width,
-          platform.height
-        );
+        // Если есть статик слой — просто копируем
+        if (this.staticSandLayer) {
+          this.ctx.drawImage(
+            this.staticSandLayer,
+            0,
+            0,
+            platform.width,
+            platform.height,
+            platform.x,
+            platform.y,
+            platform.width,
+            platform.height
+          );
+        } else {
+          // fallback на обычный рендер если что-то сломалось
+          drawPixelSand(
+            this.ctx,
+            platform.x,
+            platform.y,
+            platform.width,
+            platform.height
+          );
+        }
       } else {
         drawPixelCoral(
           this.ctx,
