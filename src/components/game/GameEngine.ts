@@ -104,6 +104,7 @@ export class GameEngine {
     Object.assign(this.player, options.initialState);
     // Новый блок для godmode
     this.godmode = !!(options.initialState && options.initialState.godmode);
+    this.applyGodmodeIfNeeded();
     // Если godmode, здоровье всегда 100
     if (this.godmode) {
       this.player.health = 100;
@@ -474,8 +475,9 @@ export class GameEngine {
     for (const enemy of this.enemies) {
       if (this.checkCollision(this.player, enemy)) {
         // Полное бессмертие: не понижаем здоровье и не умираем, если godmode активен
-        if (this.godmode) {
-          this.player.health = 100; // гарантия, даже если что-то пошло не так
+        if (this.isGodmodeActive()) {
+          this.applyGodmodeIfNeeded();
+          // Просто игнорируем любой урон/смерть, даже если коллизия
           continue;
         } else {
           this.player.health -= 2;
@@ -549,6 +551,11 @@ export class GameEngine {
   }
 
   private updateGameState() {
+    // --- ВСТАВКА: подстраховка — принудительно health=100 если godmode ---
+    if (this.isGodmodeActive()) {
+      this.applyGodmodeIfNeeded();
+    }
+    // --- конец вставки ---
     this.callbacks.onStateUpdate({
       health: this.player.health,
       ammo: this.player.ammo,
