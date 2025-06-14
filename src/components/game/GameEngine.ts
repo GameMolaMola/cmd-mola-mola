@@ -1,5 +1,6 @@
 import { GameState } from './types';
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
+import { handleEnemyCollisions } from './collisionHandlers';
 
 export class GameEngine {
   private canvas: HTMLCanvasElement;
@@ -471,29 +472,15 @@ export class GameEngine {
       }
     }
 
-    // Check enemy collisions
-    for (const enemy of this.enemies) {
-      if (this.checkCollision(this.player, enemy)) {
-        if (isGodmodeActive(this.godmode)) {
-          applyGodmodeIfNeeded(this.player, this.godmode);
-          if (this.player.health !== 100) {
-            console.warn('[GameEngine] Godmode active, but health not 100, forced to 100!');
-          }
-          continue;
-        } else {
-          this.player.health -= 2;
-          this.updateGameState();
-          if (this.player.health <= 0) {
-            this.callbacks.onGameEnd(false, { 
-              level: this.player.level, 
-              coins: this.player.coins, 
-              score: this.player.coins * 10 
-            });
-            return;
-          }
-        }
-      }
-    }
+    // Enemy collision, вынесено в отдельную функцию
+    const gameEnded = handleEnemyCollisions(
+      this.player,
+      this.enemies,
+      this.godmode,
+      this.checkCollision.bind(this),
+      this.callbacks
+    );
+    if (gameEnded) return;
 
     // Update power-ups
     if (this.player.powerUps.speedBoost) {
