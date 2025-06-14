@@ -1,6 +1,7 @@
 
 import { updatePlayer } from './player';
 import { updateEnemies } from './enemies';
+import { handleEnemyCollisions } from './collisionHandlers';
 
 export function gameTick(engine: any) {
   // Use standalone functions instead of engine methods.
@@ -30,7 +31,7 @@ export function gameTick(engine: any) {
   });
 
   if (!engine.bossLucia) {
-    engine.handleEnemyCollisions(
+    handleEnemyCollisions(
       engine.player,
       engine.enemies,
       engine.godmode,
