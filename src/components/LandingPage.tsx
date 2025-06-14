@@ -99,7 +99,7 @@ const LandingPage = ({
           <span
             className="text-cyan-400 font-bold text-[11px] md:text-xs py-0.5 px-1.5 md:px-2 rounded bg-cyan-900 border border-cyan-500 flex-shrink-0 absolute"
             style={{
-              left: 38, // увеличено с 28 до 38 для компенсации смещения всей рамки
+              left: 38,
               top: "50%",
               transform: "translateY(-50%)",
               letterSpacing: "0.01em",
@@ -108,12 +108,14 @@ const LandingPage = ({
               lineHeight: "1",
               textAlign: "center",
               zIndex: 10
-              // Комментарий: теперь между краем еще больше равный отступ
             }}
           >
             ver.1.0
           </span>
-          <h1 className="text-2xl md:text-4xl text-yellow-400 font-bold text-center m-0 p-0 leading-tight overflow-hidden text-ellipsis whitespace-nowrap w-auto max-w-full">
+          <h1
+            className="text-2xl md:text-4xl text-yellow-400 font-bold text-center m-0 p-0 leading-tight overflow-hidden text-ellipsis whitespace-nowrap w-auto max-w-full"
+            style={{ marginTop: "28px" }}
+          >
             {t.title}
           </h1>
         </div>
