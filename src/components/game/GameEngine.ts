@@ -107,8 +107,8 @@ export class GameEngine {
     // -- SPECIAL JUMP LOGIC --
     // Передаём ли данный флаг из initialState?
     if (options.initialState?.markJump) {
-      // усиленный прыжок: +80%
-      this.player.jumpPower = -27; // стандарт = -15, стало -27
+      // усиленный прыжок: ~150% от обычного (значительно выше)
+      this.player.jumpPower = -37.5; // стандарт = -15, было -27
     } else {
       this.player.jumpPower = -15;
     }
