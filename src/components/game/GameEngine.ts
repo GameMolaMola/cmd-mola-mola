@@ -1,5 +1,7 @@
 import { GameState } from './types';
 
+import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
+
 export class GameEngine {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -104,7 +106,7 @@ export class GameEngine {
     Object.assign(this.player, options.initialState);
     // Новый блок для godmode
     this.godmode = !!(options.initialState && options.initialState.godmode);
-    this.applyGodmodeIfNeeded();
+    applyGodmodeIfNeeded(this.player, this.godmode);
     // Если godmode, здоровье всегда 100
     if (this.godmode) {
       this.player.health = 100;
@@ -475,8 +477,8 @@ export class GameEngine {
     for (const enemy of this.enemies) {
       if (this.checkCollision(this.player, enemy)) {
         // Если godmode включён, НИКАКОЙ урон
-        if (this.isGodmodeActive()) {
-          this.player.health = 100; // страховка на всякий случай
+        if (isGodmodeActive(this.godmode)) {
+          applyGodmodeIfNeeded(this.player, this.godmode); // страховка
           continue; // полностью игнорируем последствия коллизии
         } else {
           this.player.health -= 2;
@@ -551,8 +553,8 @@ export class GameEngine {
 
   private updateGameState() {
     // --- ВСТАВКА: подстраховка — принудительно health=100 если godmode ---
-    if (this.isGodmodeActive()) {
-      this.applyGodmodeIfNeeded();
+    if (isGodmodeActive(this.godmode)) {
+      applyGodmodeIfNeeded(this.player, this.godmode);
     }
     // --- конец вставки ---
     this.callbacks.onStateUpdate({
@@ -710,16 +712,6 @@ export class GameEngine {
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
-    }
-  }
-
-  private isGodmodeActive(): boolean {
-    return !!this.godmode;
-  }
-  private applyGodmodeIfNeeded() {
-    // При godmode всегда здоровье = 100
-    if (this.isGodmodeActive()) {
-      this.player.health = 100;
     }
   }
 }
