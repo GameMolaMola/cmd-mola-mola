@@ -577,16 +577,18 @@ export class GameEngine {
     this.coins.forEach(coin => {
       const image = this.images.coin;
       if (image && image.complete) {
-        // Рисуем в 2 раза крупнее относительно стандартных размеров
-        const newWidth = coin.width * 2;
-        const newHeight = coin.height * 2;
+        // Рисуем в 1.4 раза крупнее относительно стандартных размеров
+        const scale = 1.4;
+        const newWidth = coin.width * scale;
+        const newHeight = coin.height * scale;
         const offsetX = coin.x - (newWidth - coin.width) / 2;
         const offsetY = coin.y - (newHeight - coin.height) / 2;
         this.ctx.drawImage(image, offsetX, offsetY, newWidth, newHeight);
       } else {
         // Если спрайт не загрузился, fallback — тоже крупнее
-        const newWidth = coin.width * 2;
-        const newHeight = coin.height * 2;
+        const scale = 1.4;
+        const newWidth = coin.width * scale;
+        const newHeight = coin.height * scale;
         const offsetX = coin.x - (newWidth - coin.width) / 2;
         const offsetY = coin.y - (newHeight - coin.height) / 2;
         this.ctx.fillStyle = '#f1c40f';
