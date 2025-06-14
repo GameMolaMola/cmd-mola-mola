@@ -9,7 +9,7 @@ interface Feature {
   label: string;
 }
 
-// Унифицированная высота/размер эмодзи и монетки
+// Размер иконки
 const ICON_SIZE = 22;
 
 export default function FeatureList({ features }: { features: Feature[] }) {
@@ -97,26 +97,28 @@ export default function FeatureList({ features }: { features: Feature[] }) {
         <li key={idx} className="flex items-center">
           <span
             className="text-cyan-200 font-bold mr-2"
-            style={{ fontSize: 20, lineHeight: 1, minWidth: 16, display: "inline-block", textAlign: "center" }}
+            style={{
+              fontSize: 22,
+              lineHeight: 1,
+              minWidth: 16,
+              display: "inline-block",
+              textAlign: "center"
+            }}
           >
             •
           </span>
           {iconMap[f.type ?? ""]}
           <span
+            className="text-[#1dcaff]/[0.92] font-normal"
             style={{
-              color: "#66d9ef",
-              fontWeight: 700,
-              marginRight: "7px",
-              fontSize: 18,
-              lineHeight: 1.15,
-              display: "inline-block"
+              fontFamily: "inherit"
             }}
           >
-            .
+            {f.label}
           </span>
-          <span className="text-[#1dcaff]/[0.92] font-normal" style={{ fontFamily: "inherit" }}>{f.label}</span>
         </li>
       ))}
     </ul>
   );
 }
+
