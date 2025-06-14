@@ -1,9 +1,11 @@
+
 import React, { useRef, useEffect, useState } from "react";
 import { useGame } from "@/contexts/GameContext";
 import { GameEngine } from "./GameEngine";
 import { Button } from "@/components/ui/button";
 import GameHUD from "./hud/GameHUD";
 import GameOverDialog from "./hud/GameOverDialog";
+import { useFreeBrasilena } from "./useFreeBrasilena";
 
 const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -11,12 +13,13 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   const [gameEnded, setGameEnded] = useState(false);
   const [victory, setVictory] = useState(false);
   const [finalStats, setFinalStats] = useState<any>(null);
-  const [mobileControlsVisible, setMobileControlsVisible] = useState(false);
 
   // state for HUD
   const [hud, setHud] = useState({ health: 100, ammo: 10, coins: 0, level: 1 });
 
   const { playerData } = useGame();
+  // Use our custom brasilena spawn hook
+  const freeBrasilena = useFreeBrasilena();
 
   const onStateUpdate = (updates: any) => {
     setHud((prev) => ({ ...prev, ...updates }));
@@ -36,7 +39,8 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         setFinalStats(finalStats);
       },
       onStateUpdate: onStateUpdate,
-      initialState: playerData
+      initialState: playerData,
+      freeBrasilena, // inject the controller
     });
 
     setGameEngine(engine);
@@ -53,7 +57,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
       window.removeEventListener('resize', handleResize);
       engine.stop();
     };
-  }, [playerData]);
+  }, [playerData, freeBrasilena]);
 
   useEffect(() => {
     if (autoStart && gameEngine) {
@@ -80,7 +84,8 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
           setFinalStats(finalStats);
         },
         onStateUpdate: onStateUpdate,
-        initialState: playerData
+        initialState: playerData,
+        freeBrasilena,
       });
       setGameEngine(engine);
       engine.start();
@@ -120,3 +125,4 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
 };
 
 export default MolaMolaGame;
+

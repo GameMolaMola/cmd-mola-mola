@@ -1,6 +1,7 @@
 import { GameState } from './types';
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
 import { handleEnemyCollisions } from './collisionHandlers';
+import { useFreeBrasilena } from './useFreeBrasilena';
 
 export class GameEngine {
   private canvas: HTMLCanvasElement;
@@ -88,8 +89,7 @@ export class GameEngine {
 
   private godmode: boolean = false;
 
-  private freeBrasilenaTimeout: number | null = null;
-  private freeBrasilenaActive: boolean = false;
+  private freeBrasilena?: ReturnType<typeof useFreeBrasilena>;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -98,6 +98,7 @@ export class GameEngine {
       onGameEnd: (victory: boolean, finalStats: any) => void;
       onStateUpdate: (updates: any) => void;
       initialState: any;
+      freeBrasilena?: ReturnType<typeof useFreeBrasilena>;
     }
   ) {
     this.canvas = canvas;
@@ -107,21 +108,19 @@ export class GameEngine {
 
     Object.assign(this.player, options.initialState);
 
-    // -- SPECIAL JUMP LOGIC --
-    // Передаём ли данный флаг из initialState?
     if (options.initialState?.markJump) {
-      // ЕЩЁ выше (для Mark): супер-прыжок ~2.9x стандартного, чтобы 100% достать любого врага
-      this.player.jumpPower = -44; // стандарт = -15
+      this.player.jumpPower = -44;
     } else {
       this.player.jumpPower = -15;
     }
 
-    // -- GODMODE (оставим как было) --
     this.godmode = !!(options.initialState && options.initialState.godmode);
     applyGodmodeIfNeeded(this.player, this.godmode);
     if (this.godmode) {
       this.player.health = 100;
     }
+
+    if (options.freeBrasilena) this.freeBrasilena = options.freeBrasilena;
 
     this.images = {
       playerFrames: [new Image(), new Image()],
@@ -189,7 +188,6 @@ export class GameEngine {
   }
 
   private generateStaticSandLayer() {
-    // Ищем нижнюю платформу (основание уровня)
     const bottomPlatform = this.platforms.find(
       (p) => p.y >= this.canvas.height - 40 - 1
     );
@@ -201,7 +199,6 @@ export class GameEngine {
   }
 
   private generatePlatforms() {
-    // Позиции платформ останутся прежними, но теперь визуализируем их как кораллы
     this.platforms = [
       { x: 0, y: this.canvas.height - 40, width: this.canvas.width, height: 40, color: '#F87171' },
       { x: 300, y: 350, width: 120, height: 20, color: '#7DD3FC' },
@@ -210,12 +207,10 @@ export class GameEngine {
       { x: 650, y: 200, width: 100, height: 20, color: '#A78BFA' }
     ];
 
-    // После генерации платформ перегенерируем слой песка
     setTimeout(() => this.generateStaticSandLayer(), 0);
   }
 
   private generateBubbles() {
-    // Cоздаем до 100 пузырьков
     if (this.bubbles.length < 100) {
       this.bubbles.push({
         x: 8 + Math.random() * (this.canvas.width - 16),
@@ -243,13 +238,11 @@ export class GameEngine {
   }
 
   private drawBubbles(ctx: CanvasRenderingContext2D) {
-    // Много мелких пузырьков разного цвета и размера
     for (const b of this.bubbles) {
       ctx.save();
       ctx.globalAlpha = b.alpha;
       ctx.beginPath();
       ctx.arc(b.x, b.y, b.radius, 0, 2 * Math.PI, false);
-      // Немного белесых и голубых пузырей
       ctx.fillStyle = b.radius > 4 ? '#e0f7fa' : (Math.random() > 0.6 ? '#b9eafe' : '#d1f5fa');
       ctx.shadowColor = '#bcf3f9';
       ctx.shadowBlur = b.radius > 3 ? 8 : 2;
@@ -279,7 +272,6 @@ export class GameEngine {
     ctx.fill();
     ctx.globalAlpha = 1;
 
-    // Коралловые веточки (больше и длиннее)
     let branchCount = 2 + Math.floor(Math.random() * 4);
     for (let b = 0; b < branchCount; b++) {
       let bx = x + 16 + Math.random() * (width - 38);
@@ -379,7 +371,6 @@ export class GameEngine {
   }
 
   private updatePlayer() {
-    // Приоритет отдаем мобильному управлению, если оно активно
     let left = this.keys['KeyA'] || this.keys['ArrowLeft'] || !!this.mobileControlState['left'];
     let right = this.keys['KeyD'] || this.keys['ArrowRight'] || !!this.mobileControlState['right'];
     let jump = (this.keys['KeyW'] || this.keys['ArrowUp'] || !!this.mobileControlState['jump']);
@@ -389,7 +380,6 @@ export class GameEngine {
     if (left) this.player.velX = -this.player.speed;
     if (right) this.player.velX = this.player.speed;
 
-    // Анимация
     if (this.player.velX !== 0 && this.player.grounded) {
       this.player.frameTimer++;
       if (this.player.frameTimer >= (60 / this.player.frameRate)) {
@@ -406,7 +396,6 @@ export class GameEngine {
       this.player.grounded = false;
     }
 
-    // Стрельба на мобильном ("fire" — автоматом разово, как Space)
     if (this.mobileControlState['fire']) {
       this.shoot();
       this.mobileControlState['fire'] = false;
@@ -415,27 +404,22 @@ export class GameEngine {
     this.player.x += this.player.velX;
     this.player.y += this.player.velY;
 
-    // Ограничения по границам экрана
     if (this.player.x < 0) this.player.x = 0;
     if (this.player.x + this.player.width > this.canvas.width) {
       this.player.x = this.canvas.width - this.player.width;
     }
 
-    // --- Главная правка: КОРРЕКТНАЯ КОЛЛИЗИЯ С ПЛАТФОРМАМИ (приземление СВЕРХУ, нет сквозного пролёта) ---
-    // Ищем платформу ниже (на которую можем встать)
     let landed = false;
     for (const platform of this.platforms) {
-      const prevBottom = this.player.y + this.player.height - this.player.velY; // положение до перемещения
+      const prevBottom = this.player.y + this.player.height - this.player.velY;
       const currBottom = this.player.y + this.player.height;
-      // Условие: снизу приближались к платформе, попали в диапазон x платформы
       if (
-        prevBottom <= platform.y && // было выше платформы
-        currBottom >= platform.y && // стало ниже/касается платформы
-        this.player.x + this.player.width > platform.x + 8 && // покрытие по X
+        prevBottom <= platform.y &&
+        currBottom >= platform.y &&
+        this.player.x + this.player.width > platform.x + 8 &&
         this.player.x < platform.x + platform.width - 8 &&
         this.player.velY >= 0
       ) {
-        // Ставим чётко на платформу
         this.player.y = platform.y - this.player.height;
         this.player.velY = 0;
         this.player.grounded = true;
@@ -445,7 +429,6 @@ export class GameEngine {
     }
     if (!landed) this.player.grounded = false;
 
-    // Check collectible collisions
     for (let i = this.coins.length - 1; i >= 0; i--) {
       const coin = this.coins[i];
       if (this.checkCollision(this.player, coin)) {
@@ -464,31 +447,15 @@ export class GameEngine {
       }
     }
 
-    // --- FREE BRASILENA SPAWN CHECK --- (check если ammo <= 0)
-    if (
-      this.player.ammo <= 0 &&
-      !this.freeBrasilenaActive &&
-      this.freeBrasilenaTimeout === null
-    ) {
-      // Не было бесплатной brasilena, ставим таймер на 5 сек
-      this.freeBrasilenaTimeout = window.setTimeout(() => {
-        // Выбираем случайную платформу, не самую нижнюю (нельзя на песок!)
-        const candidatePlatforms = this.platforms.filter(
-          (p) => p.y < this.canvas.height - 41
-        );
-        const platform = candidatePlatforms.length > 0
-          ? candidatePlatforms[Math.floor(Math.random() * candidatePlatforms.length)]
-          : this.platforms[0];
-        // Спауним brasilena чуть выше платформы, по центру
+    if (this.freeBrasilena) {
+      this.freeBrasilena.trigger(this.player.ammo, this.platforms, this.canvas.height, (pos) => {
         this.brasilenas.push({
-          x: platform.x + platform.width / 2 - 16 + Math.random() * 12,
-          y: platform.y - 18,
+          x: pos.x,
+          y: pos.y,
           width: 32,
           height: 32,
         });
-        this.freeBrasilenaActive = true;
-        this.freeBrasilenaTimeout = null;
-      }, 5000);
+      });
     }
 
     for (let i = this.brasilenas.length - 1; i >= 0; i--) {
@@ -496,10 +463,7 @@ export class GameEngine {
       if (this.checkCollision(this.player, brasilena)) {
         this.player.ammo += 10;
         this.brasilenas.splice(i, 1);
-        // Если это "free" brasilena — даём снова шанс появиться при 0 патронах
-        if (this.freeBrasilenaActive) {
-          this.freeBrasilenaActive = false;
-        }
+        if (this.freeBrasilena) this.freeBrasilena.onPickup();
         this.updateGameState();
       }
     }
@@ -515,7 +479,6 @@ export class GameEngine {
       }
     }
 
-    // Enemy collision, вынесено в отдельную функцию
     const gameEnded = handleEnemyCollisions(
       this.player,
       this.enemies,
@@ -525,7 +488,6 @@ export class GameEngine {
     );
     if (gameEnded) return;
 
-    // Update power-ups
     if (this.player.powerUps.speedBoost) {
       this.player.powerUps.speedBoostTime--;
       if (this.player.powerUps.speedBoostTime <= 0) {
@@ -582,11 +544,9 @@ export class GameEngine {
   }
 
   private updateGameState() {
-    // --- ВСТАВКА: подстраховка — принудительно health=100 если godmode ---
     if (isGodmodeActive(this.godmode)) {
       applyGodmodeIfNeeded(this.player, this.godmode);
     }
-    // --- конец вставки ---
     this.callbacks.onStateUpdate({
       health: this.player.health,
       ammo: this.player.ammo,
@@ -596,7 +556,6 @@ export class GameEngine {
   }
 
   private render() {
-    // КРАСИВЫЙ морской градиент
     const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
     gradient.addColorStop(0, "#084e82");
     gradient.addColorStop(0.28, "#1e3a8a");
@@ -606,11 +565,9 @@ export class GameEngine {
     this.ctx.fillStyle = gradient;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // --- Много пузырьков до платформ ---
     this.updateBubbles();
     this.drawBubbles(this.ctx);
 
-    // --- Платформы: песок снизу, кораллы выше ---
     this.platforms.forEach((platform) => {
       if (platform.y >= this.canvas.height - 40 - 1) {
         if (this.staticSandLayer) {
@@ -654,7 +611,6 @@ export class GameEngine {
       this.ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
     }
 
-    // Враги — рисуем картинку медузы
     this.enemies.forEach(enemy => {
       const image = this.images.enemy;
       if (image && image.complete) {
@@ -739,10 +695,8 @@ export class GameEngine {
   }
 
   public stop() {
-    // Очистим pending timeout если движок останавливается (например, рестарт или выход)
-    if (this.freeBrasilenaTimeout) {
-      window.clearTimeout(this.freeBrasilenaTimeout);
-      this.freeBrasilenaTimeout = null;
+    if (this.freeBrasilena) {
+      this.freeBrasilena.cleanup();
     }
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
