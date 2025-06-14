@@ -1,5 +1,4 @@
-
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { GameState } from './MolaMolaGame';
 import { GameEngine } from './GameEngine';
 
@@ -13,7 +12,7 @@ const GameCanvas = ({ gameState, onGameEnd, onStateUpdate }: GameCanvasProps) =>
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameEngineRef = useRef<GameEngine | null>(null);
 
-  const initializeGame = useCallback(() => {
+  useEffect(() => {
     if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
@@ -24,26 +23,24 @@ const GameCanvas = ({ gameState, onGameEnd, onStateUpdate }: GameCanvasProps) =>
     canvas.width = 800;
     canvas.height = 450;
 
-    // Initialize game engine
-    gameEngineRef.current = new GameEngine(canvas, ctx, {
-      onGameEnd,
-      onStateUpdate,
-      initialState: gameState
-    });
-
-    // Start game loop
-    gameEngineRef.current.start();
-  }, [gameState, onGameEnd, onStateUpdate]);
-
-  useEffect(() => {
-    initializeGame();
+    // ВНИМАНИЕ: GameEngine создаётся ТОЛЬКО ПРИ МОНТИРОВАНИИ, не перезапускается на каждый апдейт gameState!
+    if (!gameEngineRef.current) {
+      gameEngineRef.current = new GameEngine(canvas, ctx, {
+        onGameEnd,
+        onStateUpdate,
+        initialState: gameState
+      });
+      gameEngineRef.current.start();
+    }
 
     return () => {
       if (gameEngineRef.current) {
         gameEngineRef.current.stop();
+        gameEngineRef.current = null;
       }
     };
-  }, [initializeGame]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <canvas

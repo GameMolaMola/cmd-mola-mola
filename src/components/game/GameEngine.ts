@@ -1,4 +1,3 @@
-
 import { GameState } from './types';
 
 export class GameEngine {
@@ -116,12 +115,13 @@ export class GameEngine {
       coin: '/lovable-uploads/8cb50a4f-d767-4a5d-bdf6-751db3255aec.png',
       brasilena: '/lovable-uploads/2d15af34-fad3-4789-80a2-b0f9d9a204a0.png',
       wine: '/lovable-uploads/9132b9d8-ab25-44a7-81ec-031ebfbb97e6.png',
-      pizza: '/lovable-uploads/60af68f1-3f70-4928-8512-4f13c4e56a05.png'
+      pizza: '/lovable-uploads/60af68f1-3f70-4928-8512-4f13c4e56a05.png',
+      enemy: '/lovable-uploads/ee8156f0-ed84-469d-b314-13a6aa436d63.png'
     };
 
     this.images.playerFrames[0].src = imageUrls.player1;
     this.images.playerFrames[1].src = imageUrls.player2;
-    this.images.enemy.src = imageUrls.coin; // Temporary fallback
+    this.images.enemy.src = imageUrls.enemy;
     this.images.pizza.src = imageUrls.pizza;
     this.images.brasilena.src = imageUrls.brasilena;
     this.images.wine.src = imageUrls.wine;
@@ -426,9 +426,15 @@ export class GameEngine {
       this.ctx.fillRect(this.player.x, this.player.y, this.player.width, this.player.height);
     }
 
-    this.ctx.fillStyle = '#e74c3c';
+    // Враги — рисуем картинку медузы
     this.enemies.forEach(enemy => {
-      this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+      const image = this.images.enemy;
+      if (image && image.complete) {
+        this.ctx.drawImage(image, enemy.x, enemy.y, enemy.width, enemy.height);
+      } else {
+        this.ctx.fillStyle = '#e74c3c';
+        this.ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+      }
     });
 
     this.ctx.fillStyle = '#f39c12';
