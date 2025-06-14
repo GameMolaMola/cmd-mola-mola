@@ -70,6 +70,11 @@ export class GameEngine {
     backgrounds: { img: HTMLImageElement; level: number }[];
   };
 
+  private bubbles: Array<{
+    x: number; y: number; radius: number; speed: number; drift: number; driftPhase: number;
+    alpha: number;
+  }> = [];
+
   private callbacks: {
     onGameEnd: (victory: boolean, finalStats: any) => void;
     onStateUpdate: (updates: any) => void;
@@ -160,13 +165,102 @@ export class GameEngine {
   }
 
   private generatePlatforms() {
+    // Позиции платформ останутся прежними, но теперь визуализируем их как кораллы
     this.platforms = [
-      { x: 0, y: this.canvas.height - 40, width: this.canvas.width, height: 40, color: '#8B4513' },
-      { x: 300, y: 350, width: 120, height: 20, color: '#2E8B57' },
-      { x: 500, y: 280, width: 100, height: 20, color: '#1E90FF' },
-      { x: 150, y: 220, width: 80, height: 20, color: '#2E8B57' },
-      { x: 650, y: 200, width: 100, height: 20, color: '#1E90FF' }
+      { x: 0, y: this.canvas.height - 40, width: this.canvas.width, height: 40, color: '#F87171' },
+      { x: 300, y: 350, width: 120, height: 20, color: '#7DD3FC' },
+      { x: 500, y: 280, width: 100, height: 20, color: '#6EE7B7' },
+      { x: 150, y: 220, width: 80, height: 20, color: '#FBBF24' },
+      { x: 650, y: 200, width: 100, height: 20, color: '#A78BFA' }
     ];
+  }
+
+  private generateBubbles() {
+    // Поддерживаем ~30-40 пузырьков, плавно появляющихся снизу
+    if (this.bubbles.length < 40) {
+      this.bubbles.push({
+        x: 20 + Math.random() * (this.canvas.width - 40),
+        y: this.canvas.height + Math.random() * 30,
+        radius: 2 + Math.random() * 5,
+        speed: 0.5 + Math.random(),
+        drift: (Math.random() - 0.5) * 0.3,
+        driftPhase: Math.random() * Math.PI * 2,
+        alpha: 0.2 + Math.random() * 0.5
+      });
+    }
+  }
+
+  private updateBubbles() {
+    for (let i = this.bubbles.length - 1; i >= 0; i--) {
+      const b = this.bubbles[i];
+      b.y -= b.speed;
+      b.x += Math.sin(Date.now() * 0.001 + b.driftPhase) * b.drift;
+      b.alpha = Math.max(0.05, b.alpha - 0.0008);
+      if (b.y + b.radius < 0 || b.x < -10 || b.x > this.canvas.width + 10) {
+        this.bubbles.splice(i, 1);
+      }
+    }
+    this.generateBubbles();
+  }
+
+  private drawBubbles(ctx: CanvasRenderingContext2D) {
+    for (const b of this.bubbles) {
+      ctx.save();
+      ctx.globalAlpha = b.alpha;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, b.radius, 0, 2 * Math.PI, false);
+      ctx.fillStyle = '#e0f7fa';
+      ctx.shadowColor = '#a7f3d0';
+      ctx.shadowBlur = 8;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    }
+  }
+
+  private drawCoral(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string) {
+    ctx.save();
+    ctx.beginPath();
+    // Wavy base:
+    let waviness = 6 + Math.random() * 8;
+    ctx.moveTo(x, y + height);
+    for (let i = 0; i <= width; i += 8) {
+      ctx.lineTo(x + i, y + height - Math.sin(i / 18) * waviness);
+    }
+    ctx.lineTo(x + width, y + height);
+    ctx.lineTo(x + width, y);
+
+    // Tall main body
+    ctx.lineTo(x, y);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.shadowColor = "#fef08a";
+    ctx.shadowBlur = 9;
+    ctx.globalAlpha = 0.97;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Draw coral branches (randomly 2-4 per platform)
+    let branchCount = 2 + Math.floor(Math.random() * 3);
+    for (let b = 0; b < branchCount; b++) {
+      let bx = x + 10 + Math.random() * (width - 30);
+      let by = y + 8 + Math.random() * (height/2);
+      ctx.beginPath();
+      ctx.moveTo(bx, by + height/3);
+      let len = 20 + Math.random() * 30;
+      let dir = (Math.random() - 0.5) * 0.7;
+      ctx.bezierCurveTo(
+        bx + 10*dir, by - len/2,               // control1
+        bx + 20*dir, by - len,                 // control2
+        bx + 25*dir, by - len                  // end
+      );
+      ctx.lineWidth = 5 + Math.random() * 5;
+      ctx.strokeStyle = color;
+      ctx.shadowBlur = 5;
+      ctx.shadowColor = "#f9fafb";
+      ctx.stroke();
+    }
+    ctx.restore();
   }
 
   private generateLevel() {
@@ -258,7 +352,7 @@ export class GameEngine {
       this.player.velX = this.player.speed;
     }
 
-    // Animation
+    // Анимация
     if (this.player.velX !== 0 && this.player.grounded) {
       this.player.frameTimer++;
       if (this.player.frameTimer >= (60 / this.player.frameRate)) {
@@ -289,14 +383,20 @@ export class GameEngine {
       this.player.x = this.canvas.width - this.player.width;
     }
 
+    // Исправление: только если падаем сверху, ставим на платформу
     this.player.grounded = false;
     for (const platform of this.platforms) {
-      if (this.checkCollision(this.player, platform) && this.player.velY >= 0) {
-        if (this.player.y + this.player.height <= platform.y + 10) {
-          this.player.y = platform.y - this.player.height;
-          this.player.velY = 0;
-          this.player.grounded = true;
-        }
+      if (
+        this.player.velY >= 0 && // Только если падаем
+        this.player.y + this.player.height <= platform.y + Math.abs(this.player.velY) &&
+        this.player.y + this.player.height + this.player.velY >= platform.y &&
+        this.player.x + this.player.width > platform.x + 8 &&
+        this.player.x < platform.x + platform.width - 8
+      ) {
+        // Ставим на платформу
+        this.player.y = platform.y - this.player.height;
+        this.player.velY = 0;
+        this.player.grounded = true;
       }
     }
 
@@ -423,15 +523,22 @@ export class GameEngine {
   private render() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+    // --- Рисуем морской градиент ---
     const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-    gradient.addColorStop(0, '#1a2980');
-    gradient.addColorStop(1, '#26d0ce');
+    gradient.addColorStop(0, "#1e3a8a");
+    gradient.addColorStop(0.4, "#2563eb");
+    gradient.addColorStop(0.65, "#60a5fa");
+    gradient.addColorStop(1, "#7dd3fc");
     this.ctx.fillStyle = gradient;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    this.ctx.fillStyle = '#8B4513';
+    // --- Bubbles (before game objects) ---
+    this.updateBubbles();
+    this.drawBubbles(this.ctx);
+
+    // --- Кораллы (платформы) ---
     this.platforms.forEach(platform => {
-      this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+      this.drawCoral(this.ctx, platform.x, platform.y, platform.width, platform.height, platform.color);
     });
 
     const playerImage = this.images.playerFrames[this.player.frame];
