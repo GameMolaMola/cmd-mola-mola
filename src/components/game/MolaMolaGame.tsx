@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from "react";
 import { useGame } from "@/contexts/GameContext";
 import { Button } from "@/components/ui/button";
@@ -45,8 +46,13 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   const { playerData } = useGame();
   const freeBrasilena = useFreeBrasilena();
 
-  // save username отдельно и пробрасываем дальше
-  const username = playerData?.nickname || playerData?.username || undefined;
+  // Исправлено: получение username теперь через опциональное поле (nickname/username)
+  const username =
+    typeof playerData?.nickname === "string"
+      ? playerData.nickname
+      : typeof playerData?.username === "string"
+      ? playerData.username
+      : undefined;
 
   // Детектируем, показывать ли mobile controls (мобила ИЛИ Telegram браузер)
   const showMobileControls = isMobileDevice() || isTelegramBrowser();
@@ -71,7 +77,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     setGameEnded(false);
     setVictory(false);
     setFinalStats(null);
-    setInitialGameState(makeInitialGameState(playerData));
+    setInitialGameState(makeInitialGameState());
     // GameCanvas автоматически сбросится, потому что key initialGameState обновлён
   };
 
