@@ -1,7 +1,9 @@
+
 import { updatePlayer } from './player';
 import { updateEnemies } from './enemies';
 import { handleEnemyCollisions } from './collisionHandlers';
 import { checkCollision } from './utils/collision';
+import { handleBonuses } from './bonuses';
 
 export function gameTick(engine: any) {
   // Use standalone functions instead of engine methods.
@@ -40,7 +42,7 @@ export function gameTick(engine: any) {
     );
   }
 
-  engine.handleBonuses({
+  handleBonuses({
     player: engine.player,
     pizzas: engine.pizzas,
     brasilenas: engine.brasilenas,
