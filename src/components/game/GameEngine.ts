@@ -470,8 +470,11 @@ export class GameEngine {
     // Check enemy collisions
     for (const enemy of this.enemies) {
       if (this.checkCollision(this.player, enemy)) {
-        // Если godmode, не уменьшаем здоровье и не убиваем игрока
-        if (!this.godmode) {
+        // Полное бессмертие: не понижаем здоровье и не умираем, если godmode активен
+        if (this.godmode) {
+          // Игнорируем урон и смерть
+          continue;
+        } else {
           this.player.health -= 2;
           this.updateGameState();
           if (this.player.health <= 0) {
@@ -483,7 +486,6 @@ export class GameEngine {
             return;
           }
         }
-        // Если godmode — ничего не делаем, здоровье сохраняется и не умираем
       }
     }
 
