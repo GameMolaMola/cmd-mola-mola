@@ -141,6 +141,7 @@ export class GameEngine {
       wine: new Image(),
       coin: new Image(),
       backgrounds: [],
+      bossLucia: new Image(),
     };
 
     this.loadImages();
@@ -155,7 +156,7 @@ export class GameEngine {
       player2: '/lovable-uploads/00354654-8e2c-4993-8167-a9e91aef0d44.png',
       coin: '/lovable-uploads/8cb50a4f-d767-4a5d-bdf6-751db3255aec.png',
       brasilena: '/lovable-uploads/cc5bbfd2-9663-470b-8edf-b5314b29b3f0.png',
-      wine: '/lovable-uploads/9132b9d8-ab25-44a7-81ec-031ebfbb97e6.png',
+      wine: '/lovable-uploads/989f5507-8b03-451b-b9c1-b0e2d1cc1aaa.png', // NEW WINE SPRITE !!!
       pizza: '/lovable-uploads/60af68f1-3f70-4928-8512-4f13c4e56a05.png',
       enemy: '/lovable-uploads/b0b2972b-c98d-4f17-bf93-ac419c59bc60.png',
       bossLucia: '/lovable-uploads/e2e9e94b-84f9-450f-a422-4f25b84dc5c0.png',
@@ -168,8 +169,6 @@ export class GameEngine {
     this.images.brasilena.src = imageUrls.brasilena;
     this.images.wine.src = imageUrls.wine;
     this.images.coin.src = imageUrls.coin;
-
-    this.images.bossLucia = new Image();
     this.images.bossLucia.src = imageUrls.bossLucia;
 
     Object.entries(imageUrls).forEach(([key, url]) => {
