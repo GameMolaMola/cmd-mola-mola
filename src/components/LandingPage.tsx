@@ -34,15 +34,15 @@ const LandingPage = ({
     }
   }, [playerData, view]);
   return (
-    <div className="w-full h-screen min-h-screen overflow-y-auto bg-gradient-to-b from-blue-900 to-blue-700 flex justify-center px-2 py-6 md:py-10 relative">
+    <div className="w-full min-h-screen overflow-y-auto bg-gradient-to-b from-blue-900 to-blue-700 flex justify-center px-2 pt-2 pb-6 md:pt-4 md:pb-10 relative">
       <div
-        className="bg-black/80 rounded-xl shadow-xl max-w-xl w-full py-8 md:py-10 px-2 md:px-6 flex flex-col items-center gap-6 relative"
+        className="bg-black/80 rounded-xl shadow-xl max-w-xl w-full py-5 md:py-8 px-2 md:px-6 flex flex-col items-center gap-4 md:gap-6 relative"
         style={{
           marginTop: 0,
           marginLeft: 0,
         }}
       >
-        <div className="w-full flex flex-col items-center mb-2" style={{ minHeight: 48 }}>
+        <div className="w-full flex flex-col items-center mb-1" style={{ minHeight: 44 }}>
           <div
             className="flex w-full justify-start items-center"
             style={{ marginBottom: '2px', maxWidth: '100%' }}
@@ -72,13 +72,17 @@ const LandingPage = ({
             </span>
           </div>
           <h1
-            className="text-2xl md:text-4xl text-yellow-400 font-bold text-center m-0 p-0 leading-tight overflow-hidden text-ellipsis whitespace-nowrap w-auto max-w-full"
-            style={{ marginTop: "8px" }}
+            className="text-2xl md:text-4xl text-yellow-400 font-bold text-center m-0 p-0 leading-tight overflow-visible text-ellipsis whitespace-nowrap w-auto max-w-full drop-shadow-lg"
+            style={{ marginTop: "0px" }}
           >
             {t.title}
           </h1>
         </div>
-        <img src="/lovable-uploads/ee8156f0-ed84-469d-b314-13a6aa436d63.png" alt="Mola Mola" className="w-[220px] h-24 mb-1 mx-auto object-contain" />
+        <img
+          src="/lovable-uploads/ee8156f0-ed84-469d-b314-13a6aa436d63.png"
+          alt="Mola Mola"
+          className="w-[160px] md:w-[210px] h-20 md:h-24 mb-1 mx-auto object-contain"
+        />
         {/* Language selector block */}
         <LanguageSelector language={language} setLanguage={setLanguage} />
         {/* Guido Shrimp block */}
@@ -108,3 +112,4 @@ const LandingPage = ({
 };
 
 export default LandingPage;
+
