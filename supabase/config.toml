@@ -1,1 +1,5 @@
+
 project_id = "smdjmmefqherrlxcqfhp"
+
+[functions.send-new-player-email]
+verify_jwt = false

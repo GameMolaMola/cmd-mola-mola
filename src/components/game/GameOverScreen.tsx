@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { GameState } from './MolaMolaGame';
@@ -15,22 +14,49 @@ const GameOverScreen = ({ gameState, onRestart }: GameOverScreenProps) => {
   const t = useTranslations(language);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [uniqueCode, setUniqueCode] = useState('');
+  const [emailSent, setEmailSent] = useState<"pending" | "sent" | "error" | null>(null);
 
   const handleSubmit = async () => {
     if (!playerData) return;
     
-    // Generate unique code
+    // Генерируем уникальный код
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
     setUniqueCode(code);
     setIsSubmitted(true);
-    
-    // Here we would save to Supabase when tables are created
-    console.log('Player registered:', { 
+
+    // Отправляем на Supabase Edge Function для email уведомления
+    setEmailSent("pending");
+    try {
+      const res = await fetch(
+        "https://smdjmmefqherrlxcqfhp.supabase.co/functions/v1/send-new-player-email",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nickname: playerData.nickname,
+            email: playerData.email,
+            score: gameState.score,
+            code,
+            language: playerData.language,
+          }),
+        }
+      );
+      if (res.ok) {
+        setEmailSent("sent");
+      } else {
+        setEmailSent("error");
+      }
+    } catch (e) {
+      setEmailSent("error");
+    }
+
+    // ... логируем для отладки
+    console.log("Player registered & email sent (attempted):", { 
       nickname: playerData.nickname, 
       email: playerData.email, 
       score: gameState.score, 
       code,
-      language: playerData.language
+      language: playerData.language 
     });
   };
 
@@ -49,6 +75,9 @@ const GameOverScreen = ({ gameState, onRestart }: GameOverScreenProps) => {
               <div className="text-2xl font-bold text-yellow-400 bg-black/50 p-3 rounded border">
                 {uniqueCode}
               </div>
+              {emailSent === "pending" && (<div className="text-cyan-300 text-xs">{t.sendingEmail || "Отправка сообщения..."}</div>)}
+              {emailSent === "sent" && (<div className="text-green-300 text-xs">{t.emailSentSuccess || "Уведомление администратору отправлено!"}</div>)}
+              {emailSent === "error" && (<div className="text-red-400 text-xs">{t.emailSentError || "Ошибка отправки уведомления админу."}</div>)}
               <p className="text-cyan-300 text-xs">
                 {t.saveCode}
               </p>
