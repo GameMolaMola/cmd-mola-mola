@@ -72,8 +72,9 @@ export class GameEngine {
 
   private images: {
     playerFrames: HTMLImageElement[];
+    playerLeft: HTMLImageElement; // добавим
     enemy: HTMLImageElement;
-    enemyLeft: HTMLImageElement;     // <-- Добавили второй спрайт для врага
+    enemyLeft: HTMLImageElement;
     pizza: HTMLImageElement;
     brasilena: HTMLImageElement;
     wine: HTMLImageElement;
@@ -143,8 +144,9 @@ export class GameEngine {
 
     this.images = {
       playerFrames: [new Image(), new Image()],
+      playerLeft: new Image(),
       enemy: new Image(),
-      enemyLeft: new Image(),     // <-- Добавили второй спрайт для врага
+      enemyLeft: new Image(),
       pizza: new Image(),
       brasilena: new Image(),
       wine: new Image(),
@@ -163,19 +165,19 @@ export class GameEngine {
     const imageUrls = {
       player1: '/lovable-uploads/d62d1b89-98ee-462d-bbc4-37715a91950f.png',
       player2: '/lovable-uploads/00354654-8e2c-4993-8167-a9e91aef0d44.png',
+      playerLeft: '/lovable-uploads/2c28ddc1-8540-47f5-9b8d-78887b6c289f.png',
       coin: '/lovable-uploads/8cb50a4f-d767-4a5d-bdf6-751db3255aec.png',
       brasilena: '/lovable-uploads/cc5bbfd2-9663-470b-8edf-b5314b29b3f0.png',
       wine: '/lovable-uploads/989f5507-8b03-451b-b9c1-b0e2d1cc1aaa.png',
       pizza: '/lovable-uploads/204b20b0-06cb-45cd-b3e7-8a94e658a065.png',
-      // Вправо — тот, что был ранее
       enemy: '/lovable-uploads/080fcc27-fe7b-448a-9661-9e1a894abab7.png',
-      // Влево — ваш новый загруженный спрайт
       enemyLeft: '/lovable-uploads/65338906-ef6b-4097-bcbc-73770f962827.png',
       bossLucia: '/lovable-uploads/e2e9e94b-84f9-450f-a422-4f25b84dc5c0.png',
     };
 
     this.images.playerFrames[0].src = imageUrls.player1;
     this.images.playerFrames[1].src = imageUrls.player2;
+    this.images.playerLeft.src = imageUrls.playerLeft;
     this.images.enemy.src = imageUrls.enemy;
     this.images.enemyLeft = new Image();
     this.images.enemyLeft.src = imageUrls.enemyLeft;
@@ -507,9 +509,19 @@ export class GameEngine {
       }
     });
 
-    // Игрок
-    const playerImage = this.images.playerFrames[this.player.frame];
-    if (playerImage && playerImage.complete) {
+    // Игрок: спрайт зависит от направления движения
+    let playerImage;
+    if (this.player.velX < 0) {
+      playerImage = this.images.playerLeft && this.images.playerLeft.complete
+        ? this.images.playerLeft
+        : this.images.playerFrames[0];
+    } else {
+      playerImage = this.images.playerFrames[this.player.frame] && this.images.playerFrames[this.player.frame].complete
+        ? this.images.playerFrames[this.player.frame]
+        : this.images.playerFrames[0];
+    }
+
+    if (playerImage) {
       this.ctx.drawImage(playerImage, this.player.x, this.player.y, this.player.width, this.player.height);
     } else {
       this.ctx.fillStyle = '#3498db';
