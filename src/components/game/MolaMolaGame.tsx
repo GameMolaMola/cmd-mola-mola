@@ -46,12 +46,12 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   const { playerData } = useGame();
   const freeBrasilena = useFreeBrasilena();
 
-  // Исправлено: получение username теперь через опциональное поле (nickname/username)
+  // Получаем username: стараемся брать nickname, либо email, иначе undefined
   const username =
     typeof playerData?.nickname === "string"
       ? playerData.nickname
-      : typeof playerData?.username === "string"
-      ? playerData.username
+      : typeof playerData?.email === "string"
+      ? playerData.email
       : undefined;
 
   // Детектируем, показывать ли mobile controls (мобила ИЛИ Telegram браузер)
@@ -104,7 +104,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         onStateUpdate={onStateUpdate}
         onMobileControl={handleControl}
         isMobile={showMobileControls}
-        username={username} // <--- передаем явно пропом для GameCanvas
+        username={username}
       />
       {showMobileControls && (
         <MobileControls onControl={handleControl} />
@@ -124,3 +124,4 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
 };
 
 export default MolaMolaGame;
+
