@@ -150,7 +150,6 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         isMobile={showMobileControls}
         isPaused={isPaused}
         onPause={onPause}
-        language={language}
       />
       <div className="relative w-full flex flex-col items-center justify-center"
            style={{
@@ -180,7 +179,6 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
           score: hud.score
         }}
         onRestart={handleRestart}
-        language={language}
       />
     </div>
   );

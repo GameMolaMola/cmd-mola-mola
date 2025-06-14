@@ -1,4 +1,3 @@
-
 import React from "react";
 import HealthDisplay from "./HealthDisplay";
 import CoinsDisplay from "./CoinsDisplay";
@@ -36,7 +35,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
         <ScoreDisplay score={finalScore} />
       </div>
       {isMobile && onPause && (
-        <PauseButton onPause={onPause} language={language} />
+        <PauseButton onPause={onPause} />
       )}
     </div>
   );
