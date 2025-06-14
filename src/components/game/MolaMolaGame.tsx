@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from "react";
 import { useGame } from "@/contexts/GameContext";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import GameOverDialog from "./hud/GameOverDialog";
 import { useFreeBrasilena } from "./useFreeBrasilena";
 import MobileControls from "./MobileControls";
 import GameCanvas from "./GameCanvas";
+import PauseOverlay from "./PauseOverlay";
 import type { GameState } from "./types";
 
 function isMobileDevice() {
@@ -42,6 +42,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   const [gameEnded, setGameEnded] = useState(false);
   const [victory, setVictory] = useState(false);
   const [finalStats, setFinalStats] = useState<any>(null);
+  const [isPaused, setIsPaused] = useState(false);
 
   const { playerData } = useGame();
   const freeBrasilena = useFreeBrasilena();
@@ -66,6 +67,27 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   useEffect(() => {
     setInitialGameState(makeInitialGameState());
   }, [playerData]);
+
+  // --- Pause logic
+  // Клавиши: P для паузы (только когда не GameOver)
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.code === "KeyP" && !gameEnded) {
+        setIsPaused((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [gameEnded]);
+
+  // Если ушли с паузы, отменим pause overlay если надо после рестарта
+  useEffect(() => {
+    if (!gameEnded) setIsPaused(false);
+  }, [gameEnded]);
+
+  const onPause = () => {
+    if (!gameEnded) setIsPaused((p) => !p);
+  };
 
   // Callback из движка/canvas
   const onStateUpdate = (updates: any) => {
@@ -94,6 +116,8 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         ammo={hud.ammo}
         coins={hud.coins}
         level={hud.level}
+        onPause={onPause}
+        isMobile={showMobileControls}
       />
       <GameCanvas
         key={JSON.stringify(initialGameState) + username}
@@ -107,10 +131,12 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         onMobileControl={handleControl}
         isMobile={showMobileControls}
         username={username}
+        isPaused={isPaused}
       />
       {showMobileControls && (
         <MobileControls onControl={handleControl} />
       )}
+      <PauseOverlay visible={isPaused} />
       <GameOverDialog
         open={gameEnded}
         victory={victory}
