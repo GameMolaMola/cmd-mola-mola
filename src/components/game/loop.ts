@@ -8,7 +8,6 @@ import { updateBullets } from './bullets';
 import { updateBubbles } from './environment';
 
 export function gameTick(engine: any) {
-  // Use standalone functions instead of engine methods.
   updatePlayer({
     player: engine.player,
     platforms: engine.platforms,
@@ -34,15 +33,11 @@ export function gameTick(engine: any) {
     godmode: engine.godmode,
   });
 
-  // ---- ADD WIN CONDITION CHECK FOR REGULAR LEVELS ----
+  // --- если нет босса и все враги убиты — ПЕРЕХОД НА СЛЕДУЮЩИЙ УРОВЕНЬ
   if (!engine.bossLucia && engine.enemies.length === 0) {
-    // Player has completed the level: win!
-    engine.callbacks.onGameEnd(true, {
-      level: engine.player.level,
-      coins: engine.player.coins,
-      score: (engine.player.coins ?? 0) * 10 + (engine.player.level ?? 1) * 100,
-    });
-    return; // Stop further processing; next frame will reset or game will stop.
+    // увеличиваем уровень, запускаем новый, жизни/монеты/амму сохраняются
+    engine.setNextLevel?.();
+    return;
   }
 
   if (!engine.bossLucia) {
@@ -81,4 +76,3 @@ export function gameTick(engine: any) {
   updateBubbles(engine.bubbles, engine.canvas);
   engine.renderer(engine.ctx, engine);
 }
-

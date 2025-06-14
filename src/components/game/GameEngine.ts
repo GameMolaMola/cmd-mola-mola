@@ -430,6 +430,16 @@ export class GameEngine {
     this.animationId = requestAnimationFrame(this.gameLoop);
   };
 
+  // ---- ДОБАВЛЯЕМ ПУБЛИЧНЫЙ МЕТОД --- //
+  public setNextLevel = () => {
+    // Сохраняем текущие показатели
+    this.player.level = (this.player.level ?? 1) + 1;
+    // Параметры оставляем как есть (health, coins, ammo и пр.)
+    this.generateLevel();
+    // Перезапуск кадров (если был stop по какой-то причине)
+    this.updateGameState();
+  }
+
   public start() {
     console.log('Starting game engine...');
     this.gameLoop();

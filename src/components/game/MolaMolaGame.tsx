@@ -9,6 +9,8 @@ import MobileControls from "./MobileControls";
 import GameCanvas from "./GameCanvas";
 import PauseOverlay from "./PauseOverlay";
 import type { GameState } from "./types";
+import { useTranslations } from "@/hooks/useTranslations";
+import LevelIndicator from "./hud/LevelIndicator";
 
 function isMobileDevice() {
   if (typeof navigator === "undefined") return false;
@@ -21,13 +23,12 @@ function isTelegramBrowser() {
   return ua.toLowerCase().includes("telegram");
 }
 
-// Хелпер для создания стартового состояния игры
-function makeInitialGameState() {
+function makeInitialGameState(playerLevel = 1) {
   return {
     health: 100,
     ammo: 10,
     coins: 0,
-    level: 1,
+    level: playerLevel,
     powerUps: {
       speedBoost: false,
       speedBoostTime: 0,
@@ -38,20 +39,17 @@ function makeInitialGameState() {
 }
 
 const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
-  // Состояния для HUD
   const [hud, setHud] = useState({ health: 100, ammo: 10, coins: 0, level: 1, score: 110 });
   const [gameEnded, setGameEnded] = useState(false);
   const [victory, setVictory] = useState(false);
   const [finalStats, setFinalStats] = useState<any>(null);
   const [isPaused, setIsPaused] = useState(false);
-
-  // Ключ игрового сеанса, меняется при каждом рестарте и GameOver
   const [gameSessionId, setGameSessionId] = useState<number>(() => Date.now());
 
-  const { playerData } = useGame();
+  const { playerData, language } = useGame();
   const freeBrasilena = useFreeBrasilena();
+  const t = useTranslations(language);
 
-  // Получаем username
   const username =
     typeof playerData?.nickname === "string"
       ? playerData.nickname
@@ -65,7 +63,6 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     makeInitialGameState()
   );
 
-  // --- Обновляем начальное состояние при смене playerData
   useEffect(() => {
     setInitialGameState(makeInitialGameState());
     setGameSessionId(Date.now());
@@ -89,29 +86,26 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     if (!gameEnded) setIsPaused((p) => !p);
   };
 
-  // HUD State Update
+  // --- обновляем HUD и score на лету ---
   const onStateUpdate = (updates: any) => {
     setHud((prev) => {
-      // Защита: обновления могут быть пустыми или не содержать score/coins/level
       const safeUpdates = updates ?? {};
       const coins = typeof safeUpdates.coins === "number" ? safeUpdates.coins : prev.coins;
       const level = typeof safeUpdates.level === "number" ? safeUpdates.level : prev.level;
       const score = typeof safeUpdates.score === "number"
         ? safeUpdates.score
         : coins * 10 + level * 100;
-      return { ...prev, ...safeUpdates, score };
+      return { ...prev, ...safeUpdates, score, level, coins };
     });
   };
 
-  // Как только закончилась игра — обновляем gameSessionId чтобы GameCanvas пересоздался при рестарте
   const handleGameEnd = (isVictory: boolean, stats: any) => {
     setGameEnded(true);
     setVictory(isVictory);
     setFinalStats(stats);
-    setGameSessionId(Date.now()); // гарантированный update
+    setGameSessionId(Date.now());
   };
 
-  // Исправлено: при рестарте используем новое состояние и новый ключ
   const handleRestart = () => {
     const newState = makeInitialGameState();
     setHud({ health: 100, ammo: 10, coins: 0, level: 1, score: 110 });
@@ -120,11 +114,10 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     setFinalStats(null);
     setInitialGameState(newState);
     setGameSessionId(Date.now());
-    // GameCanvas гарантированно пересоздаётся из-за key!
   };
 
   const handleControl = (control: string, state: boolean) => {
-    // Здесь можно добавить логику обработки мобильных контролов
+    // Можно добавить обработку моб. контролов
   };
 
   return (
@@ -137,7 +130,10 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         score={hud.score}
         onPause={onPause}
         isMobile={showMobileControls}
+        language={language}
       />
+      {/* Индикатор уровня справа вверху */}
+      <LevelIndicator level={hud.level} language={language} />
       <GameCanvas
         key={gameSessionId}
         gameState={initialGameState}
