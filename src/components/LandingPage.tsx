@@ -121,9 +121,10 @@ const LandingPage = ({
                     <img
                       src="/lovable-uploads/84eff824-67c6-4d5d-a334-63ed4014cc36.png"
                       alt="Mola Mola Coin"
-                      className="inline w-5 h-5 object-contain mr-1"
+                      className="inline w-4 h-4 object-contain mr-1"
+                      style={{ minWidth: 16, minHeight: 16 }}
                     />
-                    <span>{f.label}</span>
+                    <span>. {f.label}</span>
                   </li>
                 );
               }
