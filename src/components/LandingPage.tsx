@@ -85,6 +85,12 @@ const GUIDO_MESSAGES = {
   it: "Guido Shrimp ti saluta!"
 };
 
+const GAL_MESSAGES = {
+  en: "Join the galactic adventure with Commander Mola Mola and Guido Shrimp!",
+  ru: "Вступай в галактическое приключение с командиром Мола Мола и Гвидо Креветкой!",
+  it: "Unisciti all’avventura galattica con Commander Mola Mola e Guido Shrimp!"
+};
+
 const GuidoShrimpBlock = ({ language }: { language: string }) => (
   <div className="w-full flex flex-col items-center my-3">
     <div className="bg-blue-950/80 border-2 border-yellow-300 rounded-xl p-3 flex items-center gap-3 shadow-md max-w-xs mx-auto select-none">
@@ -97,6 +103,12 @@ const GuidoShrimpBlock = ({ language }: { language: string }) => (
       />
       <span className="text-base md:text-lg font-semibold text-yellow-200 px-2">
         {GUIDO_MESSAGES[language as keyof typeof GUIDO_MESSAGES] || "Guido Shrimp!"}
+      </span>
+    </div>
+    {/* Новый блок gal под картинкой - надпись для каждого языка */}
+    <div className="flex flex-col items-center gap-4 gal mt-2 max-w-xs">
+      <span className="text-yellow-100 text-center text-sm md:text-base font-medium">
+        {GAL_MESSAGES[language as keyof typeof GAL_MESSAGES] || GAL_MESSAGES.en}
       </span>
     </div>
   </div>
