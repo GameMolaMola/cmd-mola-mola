@@ -39,6 +39,7 @@ export class GameEngine {
       speedBoost: false,
       speedBoostTime: 0,
     },
+    username: '', // login игрока, теперь есть всегда!
   };
 
   private bullets: Array<{
@@ -128,8 +129,13 @@ export class GameEngine {
 
     Object.assign(this.player, options.initialState);
 
+    // Протаскиваем логин (username) в player, если есть
+    if (options.initialState && options.initialState.username) {
+      this.player.username = options.initialState.username;
+    }
+
     if (options.initialState?.markJump) {
-      this.player.jumpPower = -44;
+      this.player.jumpPower = -15;
     } else {
       this.player.jumpPower = -15;
     }
