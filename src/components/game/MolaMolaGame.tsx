@@ -9,6 +9,9 @@ import GameCanvas from "./GameCanvas";
 import PauseOverlay from "./PauseOverlay";
 import type { GameState } from "./types";
 import { useTranslations } from "@/hooks/useTranslations";
+import MolaMolaHUDWrapper from "./MolaMolaHUDWrapper";
+import MolaMolaGameEndDialog from "./MolaMolaGameEndDialog";
+import MolaMolaMobileControlsWrapper from "./MolaMolaMobileControlsWrapper";
 
 function isMobileDevice() {
   if (typeof navigator === "undefined") return false;
@@ -60,7 +63,6 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
 
   React.useEffect(() => {
     if (showMobileControls) {
-      // Здесь можно заменить на toast если захотите
       console.log("Mobile controls are enabled: управление осуществляется с мобильного устройства или Telegram браузера.");
     } else {
       console.log("Desktop controls: управление осуществляется с ПК/ноутбука.");
@@ -143,17 +145,13 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-start overflow-hidden"
          style={{minHeight: showMobileControls ? '100svh' : '100%'}}>
-      <GameHUD
-        health={hud.health}
-        ammo={hud.ammo}
-        coins={hud.coins}
-        level={hud.level}
-        score={hud.score}
-        onPause={onPause}
+      <MolaMolaHUDWrapper
+        hud={hud}
         isMobile={showMobileControls}
+        isPaused={isPaused}
+        onPause={onPause}
         language={language}
       />
-      {/* CANVAS */}
       <div className="relative w-full flex flex-col items-center justify-center"
            style={{
              maxWidth: 900, width: '100%',
@@ -172,18 +170,8 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
           collectEngineRef={collectEngineRef}
         />
       </div>
-      {/* MobileControls */}
-      {showMobileControls && (
-        <div className="w-full z-30 bottom-0 left-0 sticky"
-              style={{
-                maxWidth: 900,
-                margin: "0 auto",
-              }}>
-          <MobileControls onControl={handleControl} />
-        </div>
-      )}
-      <PauseOverlay visible={isPaused} />
-      <GameOverDialog
+      <MolaMolaMobileControlsWrapper show={showMobileControls} onControl={handleControl} />
+      <MolaMolaGameEndDialog
         open={gameEnded}
         victory={victory}
         stats={{
