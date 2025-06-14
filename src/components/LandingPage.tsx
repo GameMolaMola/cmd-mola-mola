@@ -68,17 +68,6 @@ const RACCOON_MESSAGES = {
   it: "Il procione ti saluta!"
 };
 
-const RaccoonBlock = ({ language }: { language: string }) => (
-  <div className="w-full flex flex-col items-center my-3">
-    <div className="bg-blue-950/80 border-2 border-yellow-300 rounded-xl p-3 flex items-center gap-3 shadow-md max-w-xs mx-auto select-none">
-      <span className="text-3xl md:text-4xl" role="img" aria-label="raccoon">🦝</span>
-      <span className="text-base md:text-lg font-semibold text-yellow-200 px-2">
-        {RACCOON_MESSAGES[language as keyof typeof RACCOON_MESSAGES] || "Raccoon!"}
-      </span>
-    </div>
-  </div>
-);
-
 const GUIDO_MESSAGES = {
   en: "Guido Shrimp greets you!",
   ru: "Гвидо Креветка приветствует тебя!",
@@ -88,7 +77,7 @@ const GUIDO_MESSAGES = {
 const GAL_MESSAGES = {
   en: "Join the galactic adventure with Commander Mola Mola and Guido Shrimp!",
   ru: "Вступай в галактическое приключение с командиром Мола Мола и Гвидо Креветкой!",
-  it: "Unisciti all’avventura galattica con Commander Mola Mola e Guido Shrimp!"
+  it: "Unisciti all'avventura galattica con Commander Mola Mola e Guido Shrimp!"
 };
 
 const GuidoShrimpBlock = ({ language }: { language: string }) => (
@@ -105,7 +94,6 @@ const GuidoShrimpBlock = ({ language }: { language: string }) => (
         {GUIDO_MESSAGES[language as keyof typeof GUIDO_MESSAGES] || "Guido Shrimp!"}
       </span>
     </div>
-    {/* Новый блок gal под картинкой - надпись для каждого языка */}
     <div className="flex flex-col items-center gap-4 gal mt-2 max-w-xs">
       <span className="text-yellow-100 text-center text-sm md:text-base font-medium">
         {GAL_MESSAGES[language as keyof typeof GAL_MESSAGES] || GAL_MESSAGES.en}
@@ -204,6 +192,11 @@ const LandingPage = ({
         {/* Guido Shrimp block */}
         <GuidoShrimpBlock language={language} />
 
+        {/* Форма регистрации ПОД Guido Shrimp */}
+        {view === 'register' && <div className="w-full">
+            <PlayerRegistrationForm />
+          </div>}
+
         {view === 'language' && <Button onClick={handleStart} className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-8 py-3 text-lg mb-2">
             {t.playButton}
           </Button>}
@@ -284,9 +277,6 @@ const LandingPage = ({
             </a>
           </div>
         </div>
-        {view === 'register' && <div className="w-full">
-            <PlayerRegistrationForm />
-          </div>}
         {view === 'ready' && <Button onClick={onPlay} className="bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-3 text-lg">
             {t.startButton}
           </Button>}
