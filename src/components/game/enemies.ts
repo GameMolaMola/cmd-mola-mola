@@ -1,3 +1,4 @@
+
 export function updateEnemies({ bossLucia, enemies, player, canvas, callbacks, checkCollision, godmode }: any) {
   // Если есть босс - управляем только им
   if (bossLucia) {
@@ -10,25 +11,7 @@ export function updateEnemies({ bossLucia, enemies, player, canvas, callbacks, c
     bossLucia.y += Math.sin(Date.now() / 500) * 0.6;
 
     // Босс атакует игрока (можно добавить поведение), сейчас просто контакт
-    if (checkCollision(player, bossLucia)) {
-      // Не наносим урон @MolaMolaCoin
-      if (player?.username === '@MolaMolaCoin') {
-        player.health = 100;
-      } else if (godmode) {
-        player.health = 100;
-      } else {
-        player.health -= 4;
-        callbacks.onStateUpdate?.({ health: player.health });
-        if (player.health <= 0) {
-          callbacks.onGameEnd(false, {
-            level: player.level,
-            coins: player.coins,
-            score: player.coins * 10 + player.level * 100
-          });
-          return;
-        }
-      }
-    }
+    // УРОН больше не начисляем здесь, логику урона контролирует handleEnemyCollisions
     return; // Не обновлять обычных врагов
   }
 
@@ -62,24 +45,6 @@ export function updateEnemies({ bossLucia, enemies, player, canvas, callbacks, c
       enemy._vy = (Math.random() - 0.5) * 2; // разворачиваем движение вверх
     }
 
-    if (checkCollision(player, enemy)) {
-      // Не наносим урон @MolaMolaCoin
-      if (player?.username === '@MolaMolaCoin') {
-        player.health = 100;
-      } else if (godmode) {
-        player.health = 100;
-      } else {
-        player.health -= 2;
-        callbacks.onStateUpdate?.({ health: player.health });
-        if (player.health <= 0) {
-          callbacks.onGameEnd(false, {
-            level: player.level,
-            coins: player.coins,
-            score: player.coins * 10
-          });
-          return;
-        }
-      }
-    }
+    // БОЛЬШЕ не уменьшаем здоровье игрока! Проверка столкновений только для handleEnemyCollisions
   });
 }

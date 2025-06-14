@@ -701,6 +701,7 @@ export class GameEngine {
       callbacks: this.callbacks,
       godmode: this.godmode
     });
+
     updateEnemies({
       bossLucia: this.bossLucia,
       enemies: this.enemies,
@@ -710,6 +711,19 @@ export class GameEngine {
       checkCollision,
       godmode: this.godmode
     });
+
+    // Добавляем единый вызов handleEnemyCollisions —
+    // он корректно обрабатывает урон и завершение игры только при столкновении!
+    if (!this.bossLucia) {
+      handleEnemyCollisions(
+        this.player,
+        this.enemies,
+        this.godmode,
+        checkCollision,
+        this.callbacks
+      );
+    }
+    // Для босса Lucia урон всё же происходит только при контакте внутри updateEnemies (не трогаем)
     handleBonuses({
       player: this.player,
       pizzas: this.pizzas,
