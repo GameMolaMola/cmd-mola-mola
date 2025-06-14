@@ -9,7 +9,6 @@ import GameCanvas from "./GameCanvas";
 import PauseOverlay from "./PauseOverlay";
 import type { GameState } from "./types";
 import { useTranslations } from "@/hooks/useTranslations";
-import LevelIndicator from "./hud/LevelIndicator";
 
 function isMobileDevice() {
   if (typeof navigator === "undefined") return false;
@@ -140,7 +139,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     }
   };
 
-  // HUD и LevelIndicator теперь языки передаются явно
+  // HUD и Level теперь явно получают язык через props, строго по цепочке.
   return (
     <div className="relative w-full h-full flex flex-col items-center justify-start overflow-hidden"
          style={{minHeight: showMobileControls ? '100svh' : '100%'}}>
@@ -154,8 +153,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         isMobile={showMobileControls}
         language={language}
       />
-      {/* Убираем LevelIndicator, т.к. теперь уровень показывается в HUD */}
-      {/* Блок для canvas - min-h должен учитывать высоту кнопок управления */}
+      {/* CANVAS */}
       <div className="relative w-full flex flex-col items-center justify-center"
            style={{
              maxWidth: 900, width: '100%',
@@ -174,7 +172,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
           collectEngineRef={collectEngineRef}
         />
       </div>
-      {/* Теперь MobileControls вынесены под canvas */}
+      {/* MobileControls */}
       {showMobileControls && (
         <div className="w-full z-30 bottom-0 left-0 sticky"
               style={{
