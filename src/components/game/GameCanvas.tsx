@@ -3,6 +3,21 @@ import React, { useRef, useEffect, useImperativeHandle, forwardRef } from 'react
 import { GameState } from './MolaMolaGame';
 import { GameEngine } from './GameEngine';
 
+// Универсальная функция для получения максимальных реальных размеров видимой части экрана
+const getSafeScreenSize = () => {
+  const width = Math.min(
+    window.innerWidth,
+    document.documentElement.clientWidth || 0,
+    window.screen.width || 0
+  );
+  const height = Math.min(
+    window.innerHeight,
+    document.documentElement.clientHeight || 0,
+    window.screen.height || 0
+  );
+  return { width, height };
+};
+
 interface GameCanvasProps {
   gameState: GameState;
   onGameEnd: (victory: boolean, finalStats: Partial<GameState>) => void;
@@ -10,17 +25,6 @@ interface GameCanvasProps {
   onMobileControl?: (control: string, state: boolean) => void;
   isMobile?: boolean;
 }
-
-const getSafeMobileScreenSize = () => {
-  // Берём самое большое из всех возможных значений высоты — актуально для iOS/Safari
-  const width = window.innerWidth;
-  const height = Math.max(
-    window.innerHeight,
-    document.documentElement.clientHeight || 0,
-    window.screen.height || 0
-  );
-  return { width, height };
-};
 
 const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
   ({ gameState, onGameEnd, onStateUpdate, onMobileControl, isMobile }: GameCanvasProps, ref) => {
@@ -31,26 +35,28 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
 
     useEffect(() => {
       if (!canvasRef.current) return;
-
       let resizeTimeout: NodeJS.Timeout | undefined;
 
       function resizeCanvas() {
         const canvas = canvasRef.current!;
         if (isMobile) {
-          // 90px — запас под контролы, но гарантируем полное перекрытие
-          const { width, height } = getSafeMobileScreenSize();
-          let croppedHeight = height - 90;
+          // 90px запас под виртуальные кнопки, гарантируем покрытие
+          const { width, height } = getSafeScreenSize();
+          let controlsReserved = 90;
+          let croppedHeight = height - controlsReserved;
+          croppedHeight = Math.max(200, croppedHeight); // не даём уйти ниже минимума
+
+          // Соотношение 16:9 (ширина к высоте)
           const targetRatio = 9 / 16;
           let finalWidth = width;
           let finalHeight = croppedHeight;
 
-          // Fit в 9:16
           if (finalWidth / finalHeight > targetRatio) {
             finalWidth = finalHeight * targetRatio;
           } else {
             finalHeight = finalWidth / targetRatio;
           }
-          // Ограничение, чтобы холст не был выше/шире экрана
+
           finalWidth = Math.min(finalWidth, width);
           finalHeight = Math.min(finalHeight, croppedHeight);
 
@@ -60,24 +66,34 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
           canvas.style.height = `${finalHeight}px`;
           canvas.style.touchAction = 'none';
           canvas.style.userSelect = 'none';
-          canvas.style.borderRadius = '16px';
+          canvas.style.borderRadius = '0px';
           canvas.style.display = 'block';
           canvas.style.margin = '0 auto';
           canvas.style.background = 'linear-gradient(to bottom, #2563eb, #1e3a8a)';
         } else {
-          canvas.width = 800;
-          canvas.height = 450;
-          canvas.style.width = '100%';
-          canvas.style.height = '100%';
-          canvas.style.borderRadius = '';
+          // Для десктопа — максимум 800x450, либо вписываться в родителя (100vw/100vh)
+          let baseWidth = 800;
+          let baseHeight = 450;
+          const { width, height } = getSafeScreenSize();
+          let scale = Math.min(width / baseWidth, height / baseHeight, 1);
+          let finalWidth = Math.round(baseWidth * scale);
+          let finalHeight = Math.round(baseHeight * scale);
+
+          canvas.width = finalWidth;
+          canvas.height = finalHeight;
+          canvas.style.width = `${finalWidth}px`;
+          canvas.style.height = `${finalHeight}px`;
+          canvas.style.borderRadius = '16px';
           canvas.style.background = '';
+          canvas.style.display = 'block';
+          canvas.style.margin = '0 auto';
         }
       }
 
       resizeCanvas();
       const debouncedResize = () => {
         if (resizeTimeout) clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => resizeCanvas(), 180);
+        resizeTimeout = setTimeout(resizeCanvas, 120);
       };
 
       window.addEventListener('resize', debouncedResize);
@@ -114,7 +130,6 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Новый обработчик!
     useEffect(() => {
       if (!gameEngineRef.current) return;
       if (!onMobileControl) return;
@@ -140,7 +155,7 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
         className="w-full h-full bg-gradient-to-b from-blue-600 to-blue-800 touch-none select-none"
         style={{
           imageRendering: 'pixelated',
-          borderRadius: isMobile ? 16 : undefined,
+          borderRadius: isMobile ? 0 : 16,
           background: isMobile
             ? 'linear-gradient(to bottom, #2563eb, #1e3a8a)'
             : undefined,
@@ -151,4 +166,3 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
 );
 
 export default GameCanvas;
-

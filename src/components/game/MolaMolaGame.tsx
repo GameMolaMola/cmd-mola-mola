@@ -6,6 +6,17 @@ import GameUI from './GameUI';
 import GameOverScreen from './GameOverScreen';
 import MobileControls from "./MobileControls";
 
+// Универсальная функция для чтения полной видимой области — теперь и для webkit-браузеров
+const getVisibleViewport = () => {
+  let w = window.innerWidth;
+  let h = Math.max(
+    window.innerHeight,
+    document.documentElement.clientHeight || 0,
+    window.screen.height || 0
+  );
+  return { width: w, height: h };
+};
+
 export interface GameState {
   screen: 'start' | 'playing' | 'gameOver';
   level: number;
@@ -31,17 +42,6 @@ function useIsMobile() {
   return isMobile;
 }
 
-// Получаем реальную высоту и ширину для мобильного блока (для адаптации после смены ориентации)
-const getMobileContainerSize = () => {
-  const width = window.innerWidth;
-  const height = Math.max(
-    window.innerHeight,
-    document.documentElement.clientHeight || 0,
-    window.screen.height || 0
-  );
-  return { width, height };
-};
-
 const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
   const [gameState, setGameState] = useState<GameState>({
     screen: autoStart ? 'playing' : 'start',
@@ -52,14 +52,14 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
     coins: 0,
     isVictory: false
   });
-  const [mobileContainerSize, setMobileContainerSize] = useState<{width: number, height: number}>({width: 0, height: 0});
+  // Храним актуальный viewport
+  const [viewport, setViewport] = useState<{width: number, height: number}>({width: 0, height: 0});
   const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Следим за изменением размеров для мобильных
+  // Следим за изменением размеров
   useEffect(() => {
-    if (!isMobile) return;
-    const update = () => setMobileContainerSize(getMobileContainerSize());
+    const update = () => setViewport(getVisibleViewport());
     update();
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', update);
@@ -67,7 +67,7 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
       window.removeEventListener('resize', update);
       window.removeEventListener('orientationchange', update);
     };
-  }, [isMobile]);
+  }, []);
 
   useEffect(() => {
     if (autoStart && gameState.screen === 'start') {
@@ -115,46 +115,57 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
 
   const handleMobileControl = (control: string, state: boolean) => {};
 
-  // Styles for mobile container (ensure real full-screen cover, even after orientation changes)
-  const mobileContainerStyles = isMobile 
+  // Стили для контейнера — обеспечиваем, что он всегда по центру и без полос
+  const containerStyles = isMobile
     ? {
-        minHeight: mobileContainerSize.height || '100dvh',
-        height: mobileContainerSize.height || '100dvh',
-        minWidth: mobileContainerSize.width || '100vw',
-        width: mobileContainerSize.width || '100vw',
+        position: 'fixed' as const,
+        left: 0,
+        top: 0,
+        width: viewport.width || '100vw',
+        height: viewport.height || '100dvh',
+        minWidth: viewport.width || '100vw',
+        minHeight: viewport.height || '100dvh',
         maxWidth: '100vw',
         maxHeight: '100dvh',
         background: 'linear-gradient(to bottom, #2563eb, #1e3a8a)',
-        zIndex: 0,
         overflow: 'hidden',
+        zIndex: 0,
+        padding: 0,
+        margin: 0,
       }
-    : { minHeight: 450, height: 450 };
+    : {
+        minHeight: 450,
+        height: 450,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      };
 
   return (
     <div
-      className={`relative w-full h-full ${isMobile ? "fixed inset-0 left-0 top-0" : "max-w-4xl"} mx-auto`}
-      style={mobileContainerStyles}
+      className={`relative w-full h-full ${isMobile ? "" : "max-w-4xl mx-auto"}`}
+      style={containerStyles}
     >
       <div
         className="relative w-full h-full bg-black border-4 border-yellow-400 rounded-lg overflow-hidden shadow-2xl shadow-cyan-500/20"
         style={
           isMobile
             ? {
-                width: '100vw',
-                height: mobileContainerSize.height || '100dvh',
+                width: viewport.width || '100vw',
+                height: viewport.height || '100dvh',
                 borderRadius: 0,
                 maxWidth: '100vw',
                 maxHeight: '100dvh',
-                margin: 0,
                 left: 0,
                 top: 0,
+                margin: 0,
               }
             : {}
         }
       >
         <div
           className="w-full h-full"
-          style={isMobile ? { height: mobileContainerSize.height || '100dvh' } : { height: 450 }}
+          style={isMobile ? { height: viewport.height || '100dvh' } : { height: 450 }}
         >
           {gameState.screen === 'start' && (
             <StartScreen onStart={startGame} />
@@ -187,10 +198,10 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
             <div
               className="fixed inset-0 z-40"
               style={{
-                width: '100vw',
-                height: mobileContainerSize.height || '100dvh',
-                minHeight: mobileContainerSize.height || '100dvh',
-                minWidth: mobileContainerSize.width || '100vw',
+                width: viewport.width || '100vw',
+                height: viewport.height || '100dvh',
+                minHeight: viewport.height || '100dvh',
+                minWidth: viewport.width || '100vw',
                 left: 0,
                 top: 0,
                 background: 'linear-gradient(to bottom, #0a2147, #000000)',
