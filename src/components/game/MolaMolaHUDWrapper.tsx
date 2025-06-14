@@ -1,3 +1,4 @@
+
 import React from "react";
 import GameHUD from "./hud/GameHUD";
 import PauseOverlay from "./PauseOverlay";
@@ -23,7 +24,6 @@ const MolaMolaHUDWrapper: React.FC<Props> = ({ hud, isMobile, isPaused, onPause 
         score={hud.score}
         onPause={onPause}
         isMobile={isMobile}
-        language={undefined as any}
       />
       <PauseOverlay visible={isPaused} />
     </>

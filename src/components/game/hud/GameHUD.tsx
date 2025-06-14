@@ -15,12 +15,15 @@ interface GameHUDProps {
   score?: number;
   onPause?: () => void;
   isMobile?: boolean;
-  language: Language;
 }
 
 const GameHUD: React.FC<GameHUDProps> = ({
-  health, ammo, coins, level, score, onPause, isMobile, language,
+  health, ammo, coins, level, score, onPause, isMobile
 }) => {
+  // Use language from context instead of props
+  // eslint-disable-next-line
+  // @ts-ignore
+  const { language } = require('@/contexts/GameContext').useGame(); // ensures language in context
   console.log('HUD GameHUD язык:', language);
 
   const finalScore = typeof score === "number" ? score : coins * 10 + level * 100;
