@@ -4,6 +4,8 @@ import { updateEnemies } from './enemies';
 import { handleEnemyCollisions } from './collisionHandlers';
 import { checkCollision } from './utils/collision';
 import { handleBonuses } from './bonuses';
+import { updateBullets } from './bullets';
+import { updateBubbles } from './environment';
 
 export function gameTick(engine: any) {
   // Use standalone functions instead of engine methods.
@@ -56,7 +58,7 @@ export function gameTick(engine: any) {
     canvasHeight: engine.canvas.height
   });
 
-  engine.updateBullets({
+  updateBullets({
     bullets: engine.bullets,
     enemies: engine.enemies,
     bossLucia: engine.bossLucia,
@@ -65,6 +67,6 @@ export function gameTick(engine: any) {
     checkCollision,
     canvas: engine.canvas
   });
-  engine.updateBubbles(engine.bubbles, engine.canvas);
+  updateBubbles(engine.bubbles, engine.canvas);
   engine.renderer(engine.ctx, engine);
 }
