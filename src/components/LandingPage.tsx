@@ -112,7 +112,7 @@ const LandingPage = ({
         <p className="text-white text-center text-md">{t.subtitle}</p>
         <div className="bg-blue-950/70 border border-cyan-400 p-4 rounded-lg w-full mb-2">
           <h2 className="text-cyan-200 font-semibold mb-2">{t.aboutTitle}</h2>
-          <p className="text-white/90 text-sm">{t.description || t.aboutText}</p>
+          <p className="text-white/90 text-sm">{t.aboutText}</p>
           <ul className="list-disc ml-5 mt-2 text-cyan-100 text-sm">
             {t.features?.map?.((f: string, idx: number) =>
               // Показываем свою иконку если строка - монеты Mola Mola

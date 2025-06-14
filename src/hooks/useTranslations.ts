@@ -8,7 +8,8 @@ export const translations = {
     description: "Dive into an epic underwater pixel adventure where you control Commander Mola Mola through the dangerous waters of Calabria. Collect coins, defeat enemies, and survive the depths!",
     playButton: "PLAY NOW",
     aboutTitle: "About the Game",
-    aboutText: "Commander Mola Mola is a retro-style underwater adventure game featuring classic pixel art graphics and exciting gameplay mechanics.",
+    aboutText:
+      "Commander Mola Mola is a retro-style underwater adventure game, inspired by the original comic 'Commander Mola Mola: Operation Bucatini'. Enjoy classic pixel art graphics and exciting gameplay mechanics.",
     addressTitle: "Contact Us",
     address: "Via Roma 123, Cosenza, Calabria, Italy",
     email: "commandermolamola@gmail.com",
@@ -68,7 +69,8 @@ export const translations = {
     description: "Immergiti in un'epica avventura subacquea pixel dove controlli Commander Mola Mola attraverso le acque pericolose della Calabria. Raccogli monete, sconfiggi nemici e sopravvivi agli abissi!",
     playButton: "GIOCA ORA",
     aboutTitle: "Sul Gioco",
-    aboutText: "Commander Mola Mola è un gioco d'avventura subacquea in stile retrò con grafica pixel art classica e meccaniche di gioco emozionanti.",
+    aboutText:
+      "Commander Mola Mola è un gioco d'avventura subacquea in stile retrò, ispirato al fumetto originale 'Commander Mola Mola: Operazione Bucatini'. Grafica pixel art classica e meccaniche di gioco emozionanti!",
     addressTitle: "Contattaci",
     address: "Via Roma 123, Cosenza, Calabria, Italia",
     email: "commandermolamola@gmail.com",
@@ -128,7 +130,8 @@ export const translations = {
     description: "Погрузись в эпическое подводное пиксельное приключение, где ты управляешь Командиром Мола Мола через опасные воды Калабрии. Собирай монеты, побеждай врагов и выживай в глубинах!",
     playButton: "ИГРАТЬ СЕЙЧАС",
     aboutTitle: "О Игре",
-    aboutText: "Commander Mola Mola - это подводная приключенческая игра в ретро стиле с классической пиксельной графикой и захватывающими игровыми механиками.",
+    aboutText:
+      "Commander Mola Mola — подводная приключенческая игра в ретро стиле, созданная на основе оригинального комикса «Commander Mola Mola: Операция Букатини». Классическая пиксельная графика и захватывающий геймплей!",
     addressTitle: "Свяжитесь с нами",
     address: "Via Roma 123, Козенца, Калабрия, Италия",
     email: "commandermolamola@gmail.com",
