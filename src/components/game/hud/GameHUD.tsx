@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Heart, Coins } from "lucide-react";
 import { useTranslations } from "@/hooks/useTranslations";
-import { useGame } from "@/contexts/GameContext";
+import { useGame, Language } from "@/contexts/GameContext";
 
 interface GameHUDProps {
   health: number;
@@ -13,15 +13,14 @@ interface GameHUDProps {
   score?: number;
   onPause?: () => void;
   isMobile?: boolean;
-  language?: string; // убираем значение по умолчанию!
+  language?: Language;
 }
 
 const GameHUD: React.FC<GameHUDProps> = ({
   health, ammo, coins, level, score, onPause, isMobile, language
 }) => {
-  // Всегда используем из контекста, если не явно передали проп
   const context = useGame();
-  const lang = language || context.language;
+  const lang: Language = language ?? context.language;
   const t = useTranslations(lang);
 
   return (
