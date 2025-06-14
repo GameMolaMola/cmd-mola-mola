@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { GameState } from './MolaMolaGame';
 import { GameEngine } from './GameEngine';
@@ -39,46 +38,37 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
 
       function resizeCanvas() {
         const canvas = canvasRef.current!;
+        // Гарантия полного охвата без полос и недостаюших краёв, с учетом виртуальных контролов
+        const { width, height } = getSafeScreenSize();
         if (isMobile) {
-          // 90px запас под виртуальные кнопки, гарантируем покрытие
-          const { width, height } = getSafeScreenSize();
-          let controlsReserved = 90;
-          let croppedHeight = height - controlsReserved;
-          croppedHeight = Math.max(200, croppedHeight); // не даём уйти ниже минимума
-
-          // Соотношение 16:9 (ширина к высоте)
-          const targetRatio = 9 / 16;
+          // 1. Убираем резервы — используем всю видимую область браузера!
           let finalWidth = width;
-          let finalHeight = croppedHeight;
-
+          let finalHeight = height;
+          const targetRatio = 16 / 9;
+          // Поддержка ratio, но ОТКАЗЫВАЕМСЯ от вырезания области (пусть остаются поля, лучше чем обрезать)
           if (finalWidth / finalHeight > targetRatio) {
             finalWidth = finalHeight * targetRatio;
           } else {
             finalHeight = finalWidth / targetRatio;
           }
-
-          finalWidth = Math.min(finalWidth, width);
-          finalHeight = Math.min(finalHeight, croppedHeight);
-
+          // Только вписываемся, не урезаем
           canvas.width = Math.round(finalWidth);
           canvas.height = Math.round(finalHeight);
           canvas.style.width = `${finalWidth}px`;
           canvas.style.height = `${finalHeight}px`;
-          canvas.style.touchAction = 'none';
-          canvas.style.userSelect = 'none';
           canvas.style.borderRadius = '0px';
           canvas.style.display = 'block';
           canvas.style.margin = '0 auto';
           canvas.style.background = 'linear-gradient(to bottom, #2563eb, #1e3a8a)';
+          canvas.style.touchAction = 'none';
+          canvas.style.userSelect = 'none';
         } else {
-          // Для десктопа — максимум 800x450, либо вписываться в родителя (100vw/100vh)
+          // Для десктопа тоже используем всё пространство (max 800x450) внутри окна/контейнера
           let baseWidth = 800;
           let baseHeight = 450;
-          const { width, height } = getSafeScreenSize();
           let scale = Math.min(width / baseWidth, height / baseHeight, 1);
           let finalWidth = Math.round(baseWidth * scale);
           let finalHeight = Math.round(baseHeight * scale);
-
           canvas.width = finalWidth;
           canvas.height = finalHeight;
           canvas.style.width = `${finalWidth}px`;
@@ -93,7 +83,7 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
       resizeCanvas();
       const debouncedResize = () => {
         if (resizeTimeout) clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(resizeCanvas, 120);
+        resizeTimeout = setTimeout(resizeCanvas, 80);
       };
 
       window.addEventListener('resize', debouncedResize);
