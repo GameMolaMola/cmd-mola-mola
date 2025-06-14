@@ -94,32 +94,39 @@ const LandingPage = ({
           marginLeft: '-20px', // 5mm left ≈ -20px
         }}
       >
-        {/* ver.1.0 полностью внутри рамки */}
+        {/* ver.1.0 полностью внутри рамки - фиксация переполнения */}
         <div className="w-full flex flex-col items-center mb-2" style={{ minHeight: 48 }}>
-          <div className="flex w-full items-center justify-start" style={{ marginBottom: '2px' }}>
+          <div
+            className="flex w-full justify-start items-center"
+            style={{ marginBottom: '2px', maxWidth: '100%' }}
+          >
             <span
-              className="font-bold bg-cyan-900 border border-cyan-500 text-cyan-400 text-[11px] md:text-xs py-1 px-3 rounded-lg overflow-hidden"
+              className="font-bold bg-cyan-900 border border-cyan-500 text-cyan-400 text-[11px] md:text-xs px-2 py-0.5 rounded-lg overflow-hidden"
               style={{
                 letterSpacing: "0.01em",
-                minWidth: 70,
-                maxWidth: 90,
-                lineHeight: 1.2,
+                minWidth: 56,
+                maxWidth: 78,
+                width: "auto",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+                overflow: "hidden",
+                lineHeight: 1.15,
                 textAlign: "center",
                 fontFamily: "inherit",
-                whiteSpace: "nowrap",
-                boxSizing: "border-box",
                 fontWeight: 700,
+                boxSizing: "border-box",
                 display: "inline-block",
                 marginLeft: 0,
                 marginRight: 0,
               }}
+              title="ver.1.0"
             >
               ver.1.0
             </span>
           </div>
           <h1
             className="text-2xl md:text-4xl text-yellow-400 font-bold text-center m-0 p-0 leading-tight overflow-hidden text-ellipsis whitespace-nowrap w-auto max-w-full"
-            style={{ marginTop: "84px" }} // 56px + 28px = 84px (ровно вниз как просили)
+            style={{ marginTop: "112px" }} // 56px + 28px + 28px = 112px (7mm еще вниз)
           >
             {t.title}
           </h1>
