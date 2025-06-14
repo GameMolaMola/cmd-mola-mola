@@ -713,6 +713,17 @@ export class GameEngine {
       this.animationId = null;
     }
   }
+
+  private isGodmodeActive(): boolean {
+    return !!this.godmode;
+  }
+
+  private applyGodmodeIfNeeded() {
+    // При godmode всегда здоровье = 100
+    if (this.isGodmodeActive()) {
+      this.player.health = 100;
+    }
+  }
 }
 
 import { drawPixelCoral } from './drawPixelCoral';
