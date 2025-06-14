@@ -154,7 +154,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         isMobile={showMobileControls}
         language={language}
       />
-      <LevelIndicator level={hud.level} language={language} />
+      {/* Убираем LevelIndicator, т.к. теперь уровень показывается в HUD */}
       {/* Блок для canvas - min-h должен учитывать высоту кнопок управления */}
       <div className="relative w-full flex flex-col items-center justify-center"
            style={{

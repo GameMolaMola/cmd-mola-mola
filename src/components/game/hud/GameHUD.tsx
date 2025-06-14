@@ -6,6 +6,7 @@ import CoinsDisplay from "./CoinsDisplay";
 import AmmoDisplay from "./AmmoDisplay";
 import ScoreDisplay from "./ScoreDisplay";
 import PauseButton from "./PauseButton";
+import LevelDisplay from "./LevelDisplay";
 
 interface GameHUDProps {
   health: number;
@@ -30,6 +31,7 @@ const GameHUD: React.FC<GameHUDProps> = ({
       <div className="flex items-center gap-4 flex-wrap">
         <HealthDisplay health={health} language={lang} />
         <CoinsDisplay coins={coins} language={lang} />
+        <LevelDisplay level={level} language={lang} />
         <AmmoDisplay ammo={ammo} language={lang} />
         <ScoreDisplay score={finalScore} language={lang} />
       </div>
