@@ -1,171 +1,81 @@
 
 import React, { useState } from 'react';
 import { useGame } from '@/contexts/GameContext';
-import { useTranslations, Language } from '@/hooks/useTranslations';
+import { useTranslations } from '@/hooks/useTranslations';
 import PlayerRegistrationForm from './PlayerRegistrationForm';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
-const LandingPage = () => {
-  const { language, setLanguage, isRegistered } = useGame();
+const LANGS = [
+  { value: 'ru', label: 'Русский' },
+  { value: 'en', label: 'English' },
+  { value: 'it', label: 'Italiano' }
+];
+
+const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
+  const { language, setLanguage, playerData } = useGame();
   const t = useTranslations(language);
-  const navigate = useNavigate();
-  const [showRegistration, setShowRegistration] = useState(false);
 
-  const handleLanguageChange = (value: Language) => {
-    setLanguage(value);
+  const [view, setView] = useState<'language' | 'register' | 'ready'>('language');
+
+  // Переключение вида в пошаговом режиме
+  const handleStart = () => {
+    setView('register');
   };
 
-  const handlePlayClick = () => {
-    if (isRegistered) {
-      navigate('/game');
-    } else {
-      setShowRegistration(true);
+  // Сохраняем переход на игру после регистрации
+  React.useEffect(() => {
+    if (playerData && view !== 'ready') {
+      setView('ready');
     }
-  };
-
-  const handleRegistrationComplete = () => {
-    navigate('/game');
-  };
-
-  if (showRegistration) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-900 via-blue-800 to-blue-700 flex items-center justify-center p-4">
-        <div className="w-full max-w-4xl">
-          {/* Language selector */}
-          <div className="flex justify-center mb-8">
-            <Select onValueChange={handleLanguageChange} defaultValue={language}>
-              <SelectTrigger className="w-[180px] bg-blue-800 border-blue-400 text-white">
-                <SelectValue placeholder="Select Language" />
-              </SelectTrigger>
-              <SelectContent className="bg-blue-800 text-white border-blue-400">
-                <SelectItem value="ru">🇷🇺 Русский</SelectItem>
-                <SelectItem value="en">🇬🇧 English</SelectItem>
-                <SelectItem value="it">🇮🇹 Italiano</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <PlayerRegistrationForm onRegister={handleRegistrationComplete} />
-        </div>
-      </div>
-    );
-  }
+  }, [playerData, view]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-900 via-blue-800 to-blue-700">
-      {/* Header */}
-      <header className="container mx-auto px-4 py-6">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-2xl font-bold text-yellow-400 font-mono">
-              {t.title}
-            </h1>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Select onValueChange={handleLanguageChange} defaultValue={language}>
-              <SelectTrigger className="w-[180px] bg-blue-800 border-blue-400 text-white">
-                <SelectValue placeholder="Select Language" />
-              </SelectTrigger>
-              <SelectContent className="bg-blue-800 text-white border-blue-400">
-                <SelectItem value="ru">🇷🇺 Русский</SelectItem>
-                <SelectItem value="en">🇬🇧 English</SelectItem>
-                <SelectItem value="it">🇮🇹 Italiano</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+    <div className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-700 flex items-center justify-center px-4">
+      <div className="bg-black/80 rounded-xl shadow-xl max-w-xl w-full py-10 px-6 flex flex-col items-center gap-6">
+        <img src="/lovable-uploads/ee8156f0-ed84-469d-b314-13a6aa436d63.png" alt="Mola Mola" className="h-24 mb-1 mx-auto" />
+        <h1 className="text-3xl md:text-4xl text-yellow-400 mb-2 font-bold text-center">{t.title}</h1>
+        <div className="flex gap-3 mb-2">
+          {LANGS.map((lang) =>
+            <Button variant={language === lang.value ? "default" : "ghost"} key={lang.value} onClick={() => setLanguage(lang.value as any)}>
+              {lang.label}
+            </Button>
+          )}
         </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-12 text-center">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-6xl font-bold text-yellow-400 mb-6 font-mono animate-pulse">
-            {t.title}
-          </h2>
-          <p className="text-xl text-cyan-300 mb-8 font-mono">
-            {t.subtitle}
-          </p>
-          <p className="text-lg text-white mb-12 max-w-2xl mx-auto leading-relaxed">
-            {t.description}
-          </p>
-          
-          <button
-            onClick={handlePlayClick}
-            className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-12 py-6 text-xl animate-bounce rounded-md transition-colors"
+        <p className="text-white text-center text-md">{t.subtitle}</p>
+        <div className="bg-blue-950/70 border border-cyan-400 p-4 rounded-lg w-full mb-2">
+          <h2 className="text-cyan-200 font-semibold mb-2">{t.aboutTitle}</h2>
+          <p className="text-white/90 text-sm">{t.description || t.aboutText}</p>
+          <ul className="list-disc ml-5 mt-2 text-cyan-100 text-sm">
+            {t.features?.map?.((f: string, idx: number) => <li key={idx}>{f}</li>)}
+          </ul>
+        </div>
+        <div className="bg-blue-800/70 border border-yellow-400 p-4 rounded-lg w-full mb-4">
+          <h2 className="text-yellow-300 font-semibold mb-1">{t.addressTitle}</h2>
+          <div className="text-white/80">{t.address}</div>
+          <a href={`mailto:${t.email}`} className="text-cyan-300 hover:underline block mt-1">{t.email}</a>
+        </div>
+        {view === 'language' && (
+          <Button
+            onClick={handleStart}
+            className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-8 py-3 text-lg"
           >
             {t.playButton}
-          </button>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <h3 className="text-3xl font-bold text-center text-cyan-400 mb-12 font-mono">
-            {t.aboutTitle}
-          </h3>
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <p className="text-white text-lg mb-8 leading-relaxed">
-                {t.aboutText}
-              </p>
-              <ul className="space-y-4">
-                {t.features.map((feature: string, index: number) => (
-                  <li key={index} className="text-cyan-300 font-mono text-lg">
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="bg-black/50 p-8 rounded-lg border-2 border-cyan-400">
-              <div className="text-center">
-                <div className="text-6xl mb-4">🐟</div>
-                <p className="text-yellow-400 font-mono text-xl">
-                  Commander Mola Mola
-                </p>
-                <p className="text-cyan-300 font-mono">
-                  Pixel Adventure
-                </p>
-              </div>
-            </div>
+          </Button>
+        )}
+        {view === 'register' && (
+          <div className="w-full">
+            <PlayerRegistrationForm />
           </div>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="max-w-2xl mx-auto text-center">
-          <h3 className="text-3xl font-bold text-cyan-400 mb-8 font-mono">
-            {t.addressTitle}
-          </h3>
-          <div className="bg-black/50 p-8 rounded-lg border-2 border-yellow-400">
-            <div className="space-y-4">
-              <div className="flex items-center justify-center space-x-2">
-                <span className="text-2xl">📍</span>
-                <p className="text-white font-mono">{t.address}</p>
-              </div>
-              <div className="flex items-center justify-center space-x-2">
-                <span className="text-2xl">📧</span>
-                <p className="text-cyan-300 font-mono">{t.email}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="container mx-auto px-4 py-8 text-center">
-        <p className="text-cyan-400 font-mono">
-          © 2024 Commander Mola Mola. Made with ❤️ in Calabria, Italy
-        </p>
-      </footer>
+        )}
+        {view === 'ready' && (
+          <Button
+            onClick={onPlay}
+            className="bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-3 text-lg"
+          >
+            {t.startButton}
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
