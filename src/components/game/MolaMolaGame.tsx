@@ -26,6 +26,8 @@ export interface GameState {
   coins: number;
   isVictory: boolean;
   godmode: boolean;
+  // Новое: спец-флаг MarkJump (повышенный прыжок)
+  markJump?: boolean;
 }
 
 function useIsMobile() {
@@ -46,8 +48,9 @@ function useIsMobile() {
 const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
   const { playerData } = useGame();
 
-  // Вспомогательное определение godmode
+  // Вспомогательное определение режимов
   const isGodmode = playerData && playerData.nickname === '@MolaMolaCoin';
+  const isMarkJump = !!(playerData && (playerData.markJump || playerData.nickname === '@Molamola_9@'));
 
   const [gameState, setGameState] = useState<GameState>({
     screen: autoStart ? 'playing' : 'start',
@@ -58,6 +61,7 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
     coins: 0,
     isVictory: false,
     godmode: isGodmode,
+    markJump: isMarkJump,
   });
 
   // Храним актуальный viewport
@@ -88,14 +92,14 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
         coins: 0,
         isVictory: false,
         godmode: isGodmode,
+        markJump: isMarkJump,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoStart, isGodmode]);
+  }, [autoStart, isGodmode, isMarkJump]);
 
-  // Функция старта — всегда пересчитывает актуальный godmode
+  // Функция старта — пересчитываем оба флага
   const startGame = () => {
-    console.log('[MolaMolaGame] Start game! Godmode:', isGodmode);
     setGameState({
       screen: 'playing',
       level: 1,
@@ -105,6 +109,7 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
       coins: 0,
       isVictory: false,
       godmode: isGodmode,
+      markJump: isMarkJump,
     });
   };
 
@@ -192,8 +197,7 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
                 onStateUpdate={updateGameState}
                 onMobileControl={handleMobileControl}
                 isMobile={isMobile}
-                // добавляем godmode явно, если GameCanvas это позволяет
-                // иначе GameEngine заберёт его из initialState внутри gameState
+                // gameState теперь включает markJump
               />
               <GameUI gameState={gameState} />
               {isMobile && (
@@ -238,3 +242,5 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
 };
 
 export default MolaMolaGame;
+
+// Файл становится крупным — советуем вынести GameState, start/restart/handlers и др. в отдельные хуки/модули!

@@ -103,9 +103,18 @@ export class GameEngine {
     this.callbacks = options;
 
     Object.assign(this.player, options.initialState);
-    // Новый блок для godmode
+
+    // -- SPECIAL JUMP LOGIC --
+    // Передаём ли данный флаг из initialState?
+    if (options.initialState?.markJump) {
+      // усиленный прыжок
+      this.player.jumpPower = -22.5; // стандарт = -15, тут +50%
+    } else {
+      this.player.jumpPower = -15;
+    }
+
+    // -- GODMODE (оставим как было) --
     this.godmode = !!(options.initialState && options.initialState.godmode);
-    console.log('[GameEngine] GODMODE is', this.godmode, '(from initialState:', options.initialState?.godmode, ')');
     applyGodmodeIfNeeded(this.player, this.godmode);
     if (this.godmode) {
       this.player.health = 100;

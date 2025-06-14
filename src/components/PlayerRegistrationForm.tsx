@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+
+const SPECIAL_LOGIN = '@Molamola_9@';
 
 const PlayerRegistrationForm = () => {
   const { language, setPlayerData } = useGame();
@@ -11,8 +14,30 @@ const PlayerRegistrationForm = () => {
   const [email, setEmail] = useState('');
   const [submitError, setSubmitError] = useState('');
 
-  // Определяем режим "бог" по никнейму
   const godmode = nickname.trim() === '@MolaMolaCoin';
+  // Новый спец-режим (Molamola Mark)
+  const isMark = nickname.trim() === SPECIAL_LOGIN;
+
+  // Всплывающее окно для Mark
+  const [showMarkModal, setShowMarkModal] = useState(false);
+
+  // Для автозапуска игры после спец-логина
+  React.useEffect(() => {
+    if (showMarkModal) {
+      const timer = setTimeout(() => {
+        setShowMarkModal(false);
+        setPlayerData({
+          nickname: SPECIAL_LOGIN,
+          email: '-',
+          language,
+          // Передаем индивидуальный спец-флаг
+          markJump: true,
+        } as any);
+        setSubmitError('');
+      }, 1700);
+      return () => clearTimeout(timer);
+    }
+  }, [showMarkModal, setPlayerData, language]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,19 +45,20 @@ const PlayerRegistrationForm = () => {
       setSubmitError(t.nicknameRequired || 'Nickname required');
       return;
     }
-    // email обязателен только если не godmode
+    if (isMark) {
+      setShowMarkModal(true);
+      return;
+    }
     if (!godmode && email.trim() === '') {
       setSubmitError(t.emailRequired || 'Email required');
       return;
     }
-    // Вместо email подставим "-" если godmode и ничего не введено
     setPlayerData({
       nickname,
       email: godmode ? '-' : email,
       language,
-      // явно прокидываем godmode
       godmode,
-    } as any); // тип расширяем для godmode (или добавить в контекст новый тип, если нужно)
+    } as any);
     setSubmitError('');
   };
 
@@ -46,8 +72,8 @@ const PlayerRegistrationForm = () => {
         onChange={(e) => setNickname(e.target.value)}
         required
       />
-      {/* email не требуется если режим бога */}
-      {!godmode && (
+      {/* email не требуется если режим бога или Mark */}
+      {!godmode && !isMark && (
         <input
           type="email"
           className="w-full rounded bg-blue-950/80 border border-cyan-300 px-3 py-2 text-white"
@@ -66,8 +92,34 @@ const PlayerRegistrationForm = () => {
       <Button type="submit" className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-6 py-2">
         {t.registerAndPlay}
       </Button>
+      {isMark && (
+        <div className="text-cyan-200 text-xs mt-2 font-mono">Special power is waiting...</div>
+      )}
+      <Dialog open={showMarkModal} onOpenChange={(open) => setShowMarkModal(open)}>
+        <DialogContent className="flex flex-col items-center gap-6 bg-black/90 border-cyan-400">
+          <img src="/lovable-uploads/64235a5a-8a4e-4fac-83fe-14e82ff1bba0.png" alt="Molamola Mark" className="w-40 h-40 object-contain mx-auto" />
+          <div className="text-2xl text-yellow-300 font-bold text-center animate-bounce mb-2">CIAO MARK!!!</div>
+          <Button
+            autoFocus
+            onClick={() => {
+              setShowMarkModal(false);
+              setPlayerData({
+                nickname: SPECIAL_LOGIN,
+                email: '-',
+                language,
+                markJump: true,
+              } as any);
+              setSubmitError('');
+            }}
+            className="bg-cyan-500 hover:bg-cyan-600 mt-2"
+          >
+            OK
+          </Button>
+        </DialogContent>
+      </Dialog>
     </form>
   );
 };
 
 export default PlayerRegistrationForm;
+
