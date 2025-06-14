@@ -176,16 +176,16 @@ export class GameEngine {
   }
 
   private generateBubbles() {
-    // Поддерживаем ~30-40 пузырьков, плавно появляющихся снизу
-    if (this.bubbles.length < 40) {
+    // Cоздаем до 100 пузырьков
+    if (this.bubbles.length < 100) {
       this.bubbles.push({
-        x: 20 + Math.random() * (this.canvas.width - 40),
-        y: this.canvas.height + Math.random() * 30,
-        radius: 2 + Math.random() * 5,
-        speed: 0.5 + Math.random(),
-        drift: (Math.random() - 0.5) * 0.3,
+        x: 8 + Math.random() * (this.canvas.width - 16),
+        y: this.canvas.height + Math.random() * 20,
+        radius: 1.5 + Math.random() * 5.5,
+        speed: 0.7 + Math.random() * 1.3,
+        drift: (Math.random() - 0.5) * 0.35,
         driftPhase: Math.random() * Math.PI * 2,
-        alpha: 0.2 + Math.random() * 0.5
+        alpha: 0.15 + Math.random() * 0.7
       });
     }
   }
@@ -204,14 +204,16 @@ export class GameEngine {
   }
 
   private drawBubbles(ctx: CanvasRenderingContext2D) {
+    // Много мелких пузырьков разного цвета и размера
     for (const b of this.bubbles) {
       ctx.save();
       ctx.globalAlpha = b.alpha;
       ctx.beginPath();
       ctx.arc(b.x, b.y, b.radius, 0, 2 * Math.PI, false);
-      ctx.fillStyle = '#e0f7fa';
-      ctx.shadowColor = '#a7f3d0';
-      ctx.shadowBlur = 8;
+      // Немного белесых и голубых пузырей
+      ctx.fillStyle = b.radius > 4 ? '#e0f7fa' : (Math.random() > 0.6 ? '#b9eafe' : '#d1f5fa');
+      ctx.shadowColor = '#bcf3f9';
+      ctx.shadowBlur = b.radius > 3 ? 8 : 2;
       ctx.fill();
       ctx.globalAlpha = 1;
       ctx.restore();
@@ -221,44 +223,44 @@ export class GameEngine {
   private drawCoral(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string) {
     ctx.save();
     ctx.beginPath();
-    // Wavy base:
-    let waviness = 6 + Math.random() * 8;
+    let waviness = 8 + Math.random() * 20;
     ctx.moveTo(x, y + height);
-    for (let i = 0; i <= width; i += 8) {
-      ctx.lineTo(x + i, y + height - Math.sin(i / 18) * waviness);
+    for (let i = 0; i <= width; i += 6) {
+      ctx.lineTo(x + i, y + height - Math.sin(i / 17) * waviness);
     }
     ctx.lineTo(x + width, y + height);
     ctx.lineTo(x + width, y);
 
-    // Tall main body
     ctx.lineTo(x, y);
     ctx.closePath();
     ctx.fillStyle = color;
     ctx.shadowColor = "#fef08a";
-    ctx.shadowBlur = 9;
+    ctx.shadowBlur = 18;
     ctx.globalAlpha = 0.97;
     ctx.fill();
     ctx.globalAlpha = 1;
 
-    // Draw coral branches (randomly 2-4 per platform)
-    let branchCount = 2 + Math.floor(Math.random() * 3);
+    // Коралловые веточки (больше и длиннее)
+    let branchCount = 2 + Math.floor(Math.random() * 4);
     for (let b = 0; b < branchCount; b++) {
-      let bx = x + 10 + Math.random() * (width - 30);
+      let bx = x + 16 + Math.random() * (width - 38);
       let by = y + 8 + Math.random() * (height/2);
       ctx.beginPath();
       ctx.moveTo(bx, by + height/3);
-      let len = 20 + Math.random() * 30;
-      let dir = (Math.random() - 0.5) * 0.7;
+      let len = 38 + Math.random() * 40;
+      let dir = (Math.random() - 0.5) * 0.8;
       ctx.bezierCurveTo(
-        bx + 10*dir, by - len/2,               // control1
-        bx + 20*dir, by - len,                 // control2
-        bx + 25*dir, by - len                  // end
+        bx + 12*dir, by - len/1.5,
+        bx + 24*dir, by - len*0.75,
+        bx + 30*dir, by - len
       );
-      ctx.lineWidth = 5 + Math.random() * 5;
+      ctx.lineWidth = 5 + Math.random() * 8;
       ctx.strokeStyle = color;
-      ctx.shadowBlur = 5;
+      ctx.shadowBlur = 9;
       ctx.shadowColor = "#f9fafb";
+      ctx.globalAlpha = 0.95;
       ctx.stroke();
+      ctx.globalAlpha = 1;
     }
     ctx.restore();
   }
@@ -345,12 +347,8 @@ export class GameEngine {
     
     this.player.velY += 0.8;
     this.player.velX = 0;
-    if (left) {
-      this.player.velX = -this.player.speed;
-    }
-    if (right) {
-      this.player.velX = this.player.speed;
-    }
+    if (left) this.player.velX = -this.player.speed;
+    if (right) this.player.velX = this.player.speed;
 
     // Анимация
     if (this.player.velX !== 0 && this.player.grounded) {
@@ -378,27 +376,35 @@ export class GameEngine {
     this.player.x += this.player.velX;
     this.player.y += this.player.velY;
 
+    // Ограничения по границам экрана
     if (this.player.x < 0) this.player.x = 0;
     if (this.player.x + this.player.width > this.canvas.width) {
       this.player.x = this.canvas.width - this.player.width;
     }
 
-    // Исправление: только если падаем сверху, ставим на платформу
-    this.player.grounded = false;
+    // --- Главная правка: КОРРЕКТНАЯ КОЛЛИЗИЯ С ПЛАТФОРМАМИ (приземление СВЕРХУ, нет сквозного пролёта) ---
+    // Ищем платформу ниже (на которую можем встать)
+    let landed = false;
     for (const platform of this.platforms) {
+      const prevBottom = this.player.y + this.player.height - this.player.velY; // положение до перемещения
+      const currBottom = this.player.y + this.player.height;
+      // Условие: снизу приближались к платформе, попали в диапазон x платформы
       if (
-        this.player.velY >= 0 && // Только если падаем
-        this.player.y + this.player.height <= platform.y + Math.abs(this.player.velY) &&
-        this.player.y + this.player.height + this.player.velY >= platform.y &&
-        this.player.x + this.player.width > platform.x + 8 &&
-        this.player.x < platform.x + platform.width - 8
+        prevBottom <= platform.y && // было выше платформы
+        currBottom >= platform.y && // стало ниже/касается платформы
+        this.player.x + this.player.width > platform.x + 8 && // покрытие по X
+        this.player.x < platform.x + platform.width - 8 &&
+        this.player.velY >= 0
       ) {
-        // Ставим на платформу
+        // Ставим чётко на платформу
         this.player.y = platform.y - this.player.height;
         this.player.velY = 0;
         this.player.grounded = true;
+        landed = true;
+        break;
       }
     }
+    if (!landed) this.player.grounded = false;
 
     // Check collectible collisions
     for (let i = this.coins.length - 1; i >= 0; i--) {
@@ -521,22 +527,21 @@ export class GameEngine {
   }
 
   private render() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // --- Рисуем морской градиент ---
+    // КРАСИВЫЙ морской градиент
     const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height);
-    gradient.addColorStop(0, "#1e3a8a");
-    gradient.addColorStop(0.4, "#2563eb");
-    gradient.addColorStop(0.65, "#60a5fa");
-    gradient.addColorStop(1, "#7dd3fc");
+    gradient.addColorStop(0, "#084e82");
+    gradient.addColorStop(0.28, "#1e3a8a");
+    gradient.addColorStop(0.55, "#2d6cbb");
+    gradient.addColorStop(0.77, "#60a5fa");
+    gradient.addColorStop(1, "#8bf0ff");
     this.ctx.fillStyle = gradient;
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // --- Bubbles (before game objects) ---
+    // --- Много пузырьков до платформ ---
     this.updateBubbles();
     this.drawBubbles(this.ctx);
 
-    // --- Кораллы (платформы) ---
+    // --- Коралловые платформы ---
     this.platforms.forEach(platform => {
       this.drawCoral(this.ctx, platform.x, platform.y, platform.width, platform.height, platform.color);
     });
