@@ -694,7 +694,9 @@ export class GameEngine {
       callbacks: this.callbacks,
       checkCollision,
       spawnBrasilenaWidth: 21, // 21px ширина!
-      spawnBrasilenaHeight: 64 // 64px высота!
+      spawnBrasilenaHeight: 64, // 64px высота!
+      platforms: this.platforms,
+      canvasHeight: this.canvas.height
     });
     updateBullets({
       bullets: this.bullets,

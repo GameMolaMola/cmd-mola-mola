@@ -1,3 +1,4 @@
+
 export function handleBonuses({
   player,
   pizzas,
@@ -7,7 +8,9 @@ export function handleBonuses({
   callbacks,
   checkCollision,
   spawnBrasilenaWidth = 21,
-  spawnBrasilenaHeight = 64
+  spawnBrasilenaHeight = 64,
+  platforms, // <--- добавлено!
+  canvasHeight // <--- добавлено!
 }: any) {
   for (let i = pizzas.length - 1; i >= 0; i--) {
     const pizza = pizzas[i];
@@ -21,8 +24,8 @@ export function handleBonuses({
   if (freeBrasilena) {
     freeBrasilena.trigger(
       player.ammo,
-      [],
-      0,
+      platforms || [], // <-- исправлено!
+      canvasHeight || 0, // <-- исправлено!
       (pos: { x: number; y: number }) => {
         brasilenas.push({
           x: pos.x,
