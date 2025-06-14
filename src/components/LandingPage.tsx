@@ -43,6 +43,15 @@ const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
             </Button>
           )}
         </div>
+        {/* КНОПКА "ИГРАТЬ СЕЙЧАС" ПЕРЕМЕЩЕНА СЮДА */}
+        {view === 'language' && (
+          <Button
+            onClick={handleStart}
+            className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-8 py-3 text-lg mb-2"
+          >
+            {t.playButton}
+          </Button>
+        )}
         <p className="text-white text-center text-md">{t.subtitle}</p>
         <div className="bg-blue-950/70 border border-cyan-400 p-4 rounded-lg w-full mb-2">
           <h2 className="text-cyan-200 font-semibold mb-2">{t.aboutTitle}</h2>
@@ -56,14 +65,6 @@ const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
           <div className="text-white/80">{t.address}</div>
           <a href={`mailto:${t.email}`} className="text-cyan-300 hover:underline block mt-1">{t.email}</a>
         </div>
-        {view === 'language' && (
-          <Button
-            onClick={handleStart}
-            className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-8 py-3 text-lg"
-          >
-            {t.playButton}
-          </Button>
-        )}
         {view === 'register' && (
           <div className="w-full">
             <PlayerRegistrationForm />
@@ -105,3 +106,4 @@ const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
 };
 
 export default LandingPage;
+
