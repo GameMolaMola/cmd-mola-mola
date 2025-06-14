@@ -1,4 +1,15 @@
-export function handleBonuses({ player, pizzas, brasilenas, wines, freeBrasilena, callbacks, checkCollision, spawnBrasilenaWidth = 64, spawnBrasilenaHeight = 32 }: any) {
+
+export function handleBonuses({
+  player,
+  pizzas,
+  brasilenas,
+  wines,
+  freeBrasilena,
+  callbacks,
+  checkCollision,
+  spawnBrasilenaWidth = 21,
+  spawnBrasilenaHeight = 32
+}: any) {
   for (let i = pizzas.length - 1; i >= 0; i--) {
     const pizza = pizzas[i];
     if (checkCollision(player, pizza)) {
