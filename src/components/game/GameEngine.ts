@@ -401,18 +401,19 @@ export class GameEngine {
       });
     }
 
+    // Исправляем ширину для Бразильена и Вина (x2)
     for (let i = 0; i < 2; i++) {
       this.brasilenas.push({
         x: 200 + Math.random() * 400,
         y: 100 + Math.random() * 200,
-        width: 32,
+        width: 64, // было 32
         height: 32
       });
 
       this.wines.push({
         x: 200 + Math.random() * 400,
         y: 100 + Math.random() * 200,
-        width: 32,
+        width: 64, // было 32
         height: 32
       });
     }
@@ -563,20 +564,32 @@ export class GameEngine {
       }
     });
 
+    // Бонусы Brasilena (отрисовка - ширина x2, но hitbox уже учли выше)
     this.brasilenas.forEach(brasilena => {
       const image = this.images.brasilena;
       if (image && image.complete) {
-        this.ctx.drawImage(image, brasilena.x, brasilena.y, brasilena.width, brasilena.height);
+        this.ctx.drawImage(
+          image,
+          0, 0, image.width, image.height, // исходный спрайт полностью
+          brasilena.x, brasilena.y,
+          brasilena.width, brasilena.height // теперь шире
+        );
       } else {
         this.ctx.fillStyle = '#8e44ad';
         this.ctx.fillRect(brasilena.x, brasilena.y, brasilena.width, brasilena.height);
       }
     });
 
+    // Бонусы Wine (отрисовка - ширина x2, как и у brasilena)
     this.wines.forEach(wine => {
       const image = this.images.wine;
       if (image && image.complete) {
-        this.ctx.drawImage(image, wine.x, wine.y, wine.width, wine.height);
+        this.ctx.drawImage(
+          image,
+          0, 0, image.width, image.height,
+          wine.x, wine.y,
+          wine.width, wine.height
+        );
       } else {
         this.ctx.fillStyle = '#c0392b';
         this.ctx.fillRect(wine.x, wine.y, wine.width, wine.height);
@@ -637,6 +650,8 @@ export class GameEngine {
       freeBrasilena: this.freeBrasilena,
       callbacks: this.callbacks,
       checkCollision,
+      spawnBrasilenaWidth: 64,
+      spawnBrasilenaHeight: 32
     });
     updateBullets({
       bullets: this.bullets,

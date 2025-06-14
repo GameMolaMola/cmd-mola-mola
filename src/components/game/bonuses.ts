@@ -1,4 +1,4 @@
-export function handleBonuses({ player, pizzas, brasilenas, wines, freeBrasilena, callbacks, checkCollision }: any) {
+export function handleBonuses({ player, pizzas, brasilenas, wines, freeBrasilena, callbacks, checkCollision, spawnBrasilenaWidth = 64, spawnBrasilenaHeight = 32 }: any) {
   for (let i = pizzas.length - 1; i >= 0; i--) {
     const pizza = pizzas[i];
     if (checkCollision(player, pizza)) {
@@ -9,14 +9,19 @@ export function handleBonuses({ player, pizzas, brasilenas, wines, freeBrasilena
   }
 
   if (freeBrasilena) {
-    freeBrasilena.trigger(player.ammo, [], 0, (pos: { x: any; y: any; }) => {
-      brasilenas.push({
-        x: pos.x,
-        y: pos.y,
-        width: 32,
-        height: 32,
-      });
-    });
+    freeBrasilena.trigger(
+      player.ammo,
+      [],
+      0,
+      (pos: { x: number; y: number }) => {
+        brasilenas.push({
+          x: pos.x,
+          y: pos.y,
+          width: spawnBrasilenaWidth,
+          height: spawnBrasilenaHeight,
+        });
+      }
+    );
   }
 
   for (let i = brasilenas.length - 1; i >= 0; i--) {
