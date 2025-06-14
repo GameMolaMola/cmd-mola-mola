@@ -62,6 +62,23 @@ const WebtoonIcon = ({ className = "w-5 h-5" }) => (
 
 import FeatureList from './FeatureList';
 
+const RACCOON_MESSAGES = {
+  en: "Raccoon greets you!",
+  ru: "Енот приветствует тебя!",
+  it: "Il procione ti saluta!"
+};
+
+const RaccoonBlock = ({ language }: { language: string }) => (
+  <div className="w-full flex flex-col items-center my-3">
+    <div className="bg-blue-950/80 border-2 border-yellow-300 rounded-xl p-3 flex items-center gap-3 shadow-md max-w-xs mx-auto select-none">
+      <span className="text-3xl md:text-4xl" role="img" aria-label="raccoon">🦝</span>
+      <span className="text-base md:text-lg font-semibold text-yellow-200 px-2">
+        {RACCOON_MESSAGES[language as keyof typeof RACCOON_MESSAGES] || "Raccoon!"}
+      </span>
+    </div>
+  </div>
+);
+
 const LandingPage = ({
   onPlay
 }: {
@@ -148,6 +165,9 @@ const LandingPage = ({
             </Button>)}
         </div>
         {/* End language selector */}
+
+        {/* Raccoon block */}
+        <RaccoonBlock language={language} />
 
         {view === 'language' && <Button onClick={handleStart} className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-8 py-3 text-lg mb-2">
             {t.playButton}
