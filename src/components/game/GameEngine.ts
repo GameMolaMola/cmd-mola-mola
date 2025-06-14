@@ -318,6 +318,10 @@ export class GameEngine {
   }
 
   private generateLevel() {
+    if (this.freeBrasilena && typeof this.freeBrasilena.reset === "function") {
+      this.freeBrasilena.reset();
+    }
+
     this.enemies = [];
     this.coins = [];
     this.pizzas = [];

@@ -5,6 +5,7 @@ export interface FreeBrasilenaController {
   trigger: (ammo: number, platforms: any[], canvasHeight: number, spawn: (position: {x:number, y:number}) => void) => void;
   onPickup: () => void;
   cleanup: () => void;
+  reset: () => void; // <--- добавлено
 }
 
 /**
@@ -14,9 +15,9 @@ export interface FreeBrasilenaController {
  *   freeBrasilena.trigger(ammo, platforms, canvasHeight, spawnFn)
  *   freeBrasilena.onPickup()
  *   freeBrasilena.cleanup()
+ *   freeBrasilena.reset()
  */
 export function useFreeBrasilena(): FreeBrasilenaController {
-  // Timeout and state refs kept outside React state since used in imperative game logic.
   const timeoutRef = useRef<number | null>(null);
   const activeRef = useRef<boolean>(false);
 
@@ -55,6 +56,10 @@ export function useFreeBrasilena(): FreeBrasilenaController {
     activeRef.current = false;
   }
 
-  return { trigger, onPickup, cleanup };
-}
+  // call every time a new level starts or game restarts
+  const reset = () => {
+    cleanup();
+  }
 
+  return { trigger, onPickup, cleanup, reset };
+}
