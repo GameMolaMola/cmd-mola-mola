@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import GameCanvas from './GameCanvas';
 import StartScreen from './StartScreen';
 import GameUI from './GameUI';
 import GameOverScreen from './GameOverScreen';
 import MobileControls from "./MobileControls";
+import { useGame } from '@/contexts/GameContext';
 
 // Универсальная функция для чтения полной видимой области — теперь и для webkit-браузеров
 const getVisibleViewport = () => {
@@ -25,6 +25,7 @@ export interface GameState {
   ammo: number;
   coins: number;
   isVictory: boolean;
+  godmode: boolean;
 }
 
 function useIsMobile() {
@@ -50,7 +51,8 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
     health: 100,
     ammo: 20,
     coins: 0,
-    isVictory: false
+    isVictory: false,
+    godmode: false,
   });
   // Храним актуальный viewport
   const [viewport, setViewport] = useState<{width: number, height: number}>({width: 0, height: 0});
@@ -78,11 +80,17 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
         health: 100,
         ammo: 20,
         coins: 0,
-        isVictory: false
+        isVictory: false,
+        godmode: false,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoStart]);
+
+  const { playerData } = useGame();
+
+  // Вспомогательное определение godmode
+  const isGodmode = playerData && playerData.nickname === '@MolaMolaCoin';
 
   const startGame = () => {
     setGameState({
@@ -92,8 +100,9 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
       health: 100,
       ammo: 20,
       coins: 0,
-      isVictory: false
-    });
+      isVictory: false,
+      godmode: isGodmode,
+    } as any);
   };
 
   const restartGame = () => {
@@ -223,4 +232,3 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
 };
 
 export default MolaMolaGame;
-

@@ -102,9 +102,12 @@ export class GameEngine {
 
     // Apply initial state
     Object.assign(this.player, options.initialState);
-    // NEW: Сохраняем godmode флаг если он есть в initialState
-    // Используем this.godmode свойства для быстрой проверки
+    // Новый блок для godmode
     this.godmode = !!(options.initialState && options.initialState.godmode);
+    // Если godmode, здоровье всегда 100
+    if (this.godmode) {
+      this.player.health = 100;
+    }
 
     this.images = {
       playerFrames: [new Image(), new Image()],
@@ -472,7 +475,7 @@ export class GameEngine {
       if (this.checkCollision(this.player, enemy)) {
         // Полное бессмертие: не понижаем здоровье и не умираем, если godmode активен
         if (this.godmode) {
-          // Игнорируем урон и смерть
+          this.player.health = 100; // гарантия, даже если что-то пошло не так
           continue;
         } else {
           this.player.health -= 2;
