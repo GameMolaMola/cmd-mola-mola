@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { GameState } from './types';
 import { GameEngine } from './GameEngine';
@@ -40,46 +39,44 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
 
       function resizeCanvas() {
         const canvas = canvasRef.current!;
-        // Гарантия полного охвата без полос и недостаюших краёв, с учетом виртуальных контролов
-        const { width, height } = getSafeScreenSize();
-        if (isMobile) {
-          // 1. Убираем резервы — используем всю видимую область браузера!
-          let finalWidth = width;
-          let finalHeight = height;
-          const targetRatio = 16 / 9;
-          // Поддержка ratio, но ОТКАЗЫВАЕМСЯ от вырезания области (пусть остаются поля, лучше чем обрезать)
-          if (finalWidth / finalHeight > targetRatio) {
-            finalWidth = finalHeight * targetRatio;
-          } else {
-            finalHeight = finalWidth / targetRatio;
-          }
-          // Только вписываемся, не урезаем
-          canvas.width = Math.round(finalWidth);
-          canvas.height = Math.round(finalHeight);
-          canvas.style.width = `${finalWidth}px`;
-          canvas.style.height = `${finalHeight}px`;
-          canvas.style.borderRadius = '0px';
-          canvas.style.display = 'block';
-          canvas.style.margin = '0 auto';
-          canvas.style.background = 'linear-gradient(to bottom, #2563eb, #1e3a8a)';
-          canvas.style.touchAction = 'none';
-          canvas.style.userSelect = 'none';
-        } else {
-          // Для десктопа тоже используем всё пространство (max 800x450) внутри окна/контейнера
-          let baseWidth = 800;
-          let baseHeight = 450;
-          let scale = Math.min(width / baseWidth, height / baseHeight, 1);
-          let finalWidth = Math.round(baseWidth * scale);
-          let finalHeight = Math.round(baseHeight * scale);
-          canvas.width = finalWidth;
-          canvas.height = finalHeight;
-          canvas.style.width = `${finalWidth}px`;
-          canvas.style.height = `${finalHeight}px`;
-          canvas.style.borderRadius = '16px';
-          canvas.style.background = '';
-          canvas.style.display = 'block';
-          canvas.style.margin = '0 auto';
+        const parent = canvas.parentElement;
+        const { width: screenW, height: screenH } = getSafeScreenSize();
+        const targetRatio = 16 / 9;
+
+        // Определяем доступный размер canvas из контейнера или viewport (чтобы никогда не "выпирал" за пределы)
+        let maxWidth = (parent?.clientWidth ?? screenW);
+        let maxHeight = (parent?.clientHeight ?? screenH);
+
+        // Всегда максимально центрируем, canvas не вылазит за границы
+        let finalWidth = maxWidth;
+        let finalHeight = maxWidth / targetRatio;
+        if (finalHeight > maxHeight) {
+          finalHeight = maxHeight;
+          finalWidth = finalHeight * targetRatio;
         }
+
+        // Округляем до целого
+        finalWidth = Math.round(finalWidth);
+        finalHeight = Math.round(finalHeight);
+
+        canvas.width = finalWidth;
+        canvas.height = finalHeight;
+
+        // Стили для центрирования и корректного растяжения
+        canvas.style.width = `${finalWidth}px`;
+        canvas.style.height = `${finalHeight}px`;
+        canvas.style.maxWidth = "100vw";
+        canvas.style.maxHeight = "100vh";
+        canvas.style.display = 'block';
+        canvas.style.margin = "auto";
+        canvas.style.position = "relative"; // помогает центрировать в flex-контейнере
+        canvas.style.background = isMobile
+          ? 'linear-gradient(to bottom, #2563eb, #1e3a8a)'
+          : '';
+        canvas.style.borderRadius = isMobile ? '0px' : '16px';
+        canvas.style.boxShadow = isMobile ? 'none' : '0 4px 24px rgba(0,0,0,0.18)';
+        canvas.style.touchAction = 'none';
+        canvas.style.userSelect = 'none';
       }
 
       resizeCanvas();
@@ -148,10 +145,6 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
         className="w-full h-full bg-gradient-to-b from-blue-600 to-blue-800 touch-none select-none"
         style={{
           imageRendering: 'pixelated',
-          borderRadius: isMobile ? 0 : 16,
-          background: isMobile
-            ? 'linear-gradient(to bottom, #2563eb, #1e3a8a)'
-            : undefined,
         }}
       />
     );
@@ -159,4 +152,3 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
 );
 
 export default GameCanvas;
-
