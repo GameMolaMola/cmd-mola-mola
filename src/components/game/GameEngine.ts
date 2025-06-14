@@ -143,7 +143,7 @@ export class GameEngine {
       player1: '/lovable-uploads/d62d1b89-98ee-462d-bbc4-37715a91950f.png',
       player2: '/lovable-uploads/00354654-8e2c-4993-8167-a9e91aef0d44.png',
       coin: '/lovable-uploads/8cb50a4f-d767-4a5d-bdf6-751db3255aec.png',
-      brasilena: '/lovable-uploads/cc5bbfd2-9663-470b-8edf-b5314b29b3f0.png', // Новый спрайт бонуса Бразильена
+      brasilena: '/lovable-uploads/cc5bbfd2-9663-470b-8edf-b5314b29b3f0.png',
       wine: '/lovable-uploads/9132b9d8-ab25-44a7-81ec-031ebfbb97e6.png',
       pizza: '/lovable-uploads/60af68f1-3f70-4928-8512-4f13c4e56a05.png',
       enemy: '/lovable-uploads/b0b2972b-c98d-4f17-bf93-ac419c59bc60.png'
@@ -153,7 +153,7 @@ export class GameEngine {
     this.images.playerFrames[1].src = imageUrls.player2;
     this.images.enemy.src = imageUrls.enemy;
     this.images.pizza.src = imageUrls.pizza;
-    this.images.brasilena.src = imageUrls.brasilena; // уже использует новый путь
+    this.images.brasilena.src = imageUrls.brasilena;
     this.images.wine.src = imageUrls.wine;
     this.images.coin.src = imageUrls.coin;
 
