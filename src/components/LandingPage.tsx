@@ -88,8 +88,22 @@ const LandingPage = ({
   }, [playerData, view]);
   return <div className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-700 flex items-center justify-center px-4 relative">
       <div className="bg-black/80 rounded-xl shadow-xl max-w-xl w-full py-10 px-6 flex flex-col items-center gap-6">
-        {/* Название в самом верху */}
-        <h1 className="text-3xl md:text-4xl text-yellow-400 mb-2 font-bold text-center">{t.title}</h1>
+        {/* Название: версия + главный заголовок в одну линию */}
+        <div className="flex items-center gap-3 mb-2">
+          <span
+            className="text-cyan-400 font-bold text-xs py-0.5 px-2 rounded bg-cyan-900 border border-cyan-500"
+            style={{
+              letterSpacing: "0.01em",
+              minWidth: 44,
+              lineHeight: "1"
+            }}
+          >
+            ver.1.0
+          </span>
+          <h1 className="text-3xl md:text-4xl text-yellow-400 font-bold text-center m-0 p-0 leading-tight">
+            {t.title}
+          </h1>
+        </div>
         {/* Картинка с фиксированными размерами и корректным масштабированием */}
         <img src="/lovable-uploads/ee8156f0-ed84-469d-b314-13a6aa436d63.png" alt="Mola Mola" className="w-[220px] h-24 mb-1 mx-auto object-contain" />
         {/* Language selector block */}
