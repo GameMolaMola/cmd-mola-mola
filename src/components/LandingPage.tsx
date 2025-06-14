@@ -60,6 +60,8 @@ const WebtoonIcon = ({ className = "w-5 h-5" }) => (
   </svg>
 );
 
+import FeatureList from './FeatureList';
+
 const LandingPage = ({
   onPlay
 }: {
@@ -113,28 +115,7 @@ const LandingPage = ({
         <div className="bg-blue-950/70 border border-cyan-400 p-4 rounded-lg w-full mb-2">
           <h2 className="text-cyan-200 font-semibold mb-2">{t.aboutTitle}</h2>
           <p className="text-white/90 text-sm">{t.aboutText}</p>
-          <ul className="list-disc ml-5 mt-2 text-cyan-100 text-sm">
-            {t.features?.map?.((f: any, idx: number) => {
-              if (typeof f === "object" && f.type === "molamola_coin") {
-                return (
-                  <li key={idx} className="flex items-center gap-2">
-                    <img
-                      src="/lovable-uploads/84eff824-67c6-4d5d-a334-63ed4014cc36.png"
-                      alt="Mola Mola Coin"
-                      className="inline w-4 h-4 object-contain mr-1"
-                      style={{ minWidth: 16, minHeight: 16 }}
-                    />
-                    <span>. {f.label}</span>
-                  </li>
-                );
-              }
-              return (
-                <li key={idx}>
-                  {typeof f === "object" && f.label ? f.label : f}
-                </li>
-              );
-            })}
-          </ul>
+          <FeatureList features={t.features} />
         </div>
         <div className="bg-blue-800/70 border border-yellow-400 p-4 rounded-lg w-full mb-4">
           <h2 className="text-yellow-300 font-semibold mb-1">{t.addressTitle}</h2>
