@@ -172,26 +172,10 @@ export class GameEngine {
       (p) => p.y >= this.canvas.height - 40 - 1
     );
     if (!bottomPlatform) return;
-
-    // Создаём отдельный canvas чтобы сгенерировать песок ОДИН РАЗ
-    const sandCanvas = document.createElement('canvas');
-    sandCanvas.width = bottomPlatform.width;
-    sandCanvas.height = bottomPlatform.height;
-    const sandCtx = sandCanvas.getContext('2d');
-    if (sandCtx) {
-      // Используем seed для одинаковости или UID платформы (можно расширить)
-      // Math.random даст псевдо случайный но на статичном канвасе
-      // drawPixelSand требует seed, но внутри не используется — опционально доработать для true seed random'а
-      // Но даже стандартный Math.random внутри работает для независимых canvas!
-      drawPixelSand(
-        sandCtx,
-        0,
-        0,
-        bottomPlatform.width,
-        bottomPlatform.height
-      );
-      this.staticSandLayer = sandCanvas;
-    }
+    this.staticSandLayer = createStaticSandLayer(
+      bottomPlatform.width,
+      bottomPlatform.height
+    );
   }
 
   private generatePlatforms() {
@@ -575,9 +559,8 @@ export class GameEngine {
     this.drawBubbles(this.ctx);
 
     // --- Платформы: песок снизу, кораллы выше ---
-    this.platforms.forEach((platform, idx) => {
+    this.platforms.forEach((platform) => {
       if (platform.y >= this.canvas.height - 40 - 1) {
-        // Если есть статик слой — просто копируем
         if (this.staticSandLayer) {
           this.ctx.drawImage(
             this.staticSandLayer,
@@ -591,7 +574,6 @@ export class GameEngine {
             platform.height
           );
         } else {
-          // fallback на обычный рендер если что-то сломалось
           drawPixelSand(
             this.ctx,
             platform.x,
@@ -714,3 +696,4 @@ export class GameEngine {
 
 import { drawPixelCoral } from './drawPixelCoral';
 import { drawPixelSand } from './drawPixelSand';
+import { createStaticSandLayer } from './staticSandLayer';
