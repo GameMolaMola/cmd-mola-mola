@@ -5,10 +5,11 @@ import { useTranslations } from '@/hooks/useTranslations';
 import PlayerRegistrationForm from './PlayerRegistrationForm';
 import { Button } from '@/components/ui/button';
 
+// Изменен порядок: Italiano, Русский, English
 const LANGS = [
+  { value: 'it', label: 'Italiano' },
   { value: 'ru', label: 'Русский' },
-  { value: 'en', label: 'English' },
-  { value: 'it', label: 'Italiano' }
+  { value: 'en', label: 'English' }
 ];
 
 const DONATE_URL = "https://buymeacoffee.com/com.molamola";
@@ -38,12 +39,25 @@ const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
         <h1 className="text-3xl md:text-4xl text-yellow-400 mb-2 font-bold text-center">{t.title}</h1>
         <div className="flex gap-3 mb-2">
           {LANGS.map((lang) =>
-            <Button variant={language === lang.value ? "default" : "ghost"} key={lang.value} onClick={() => setLanguage(lang.value as any)}>
+            <Button
+              variant="ghost"
+              key={lang.value}
+              onClick={() => setLanguage(lang.value as any)}
+              className={
+                language === lang.value
+                  ? "bg-[#212334] text-white font-[Georgia,serif] text-lg shadow-lg border border-cyan-400 px-7 py-2 transition-all duration-200 pointer-events-none"
+                  : "bg-[#11121a]/75 text-gray-400 font-[Georgia,serif] text-lg hover:bg-[#23253a] hover:text-white px-7 py-2 border border-transparent"
+              }
+              style={{
+                fontWeight: language === lang.value ? 600 : 400,
+                letterSpacing: "0.02em",
+                transition: "all 0.18s"
+              }}
+            >
               {lang.label}
             </Button>
           )}
         </div>
-        {/* КНОПКА "ИГРАТЬ СЕЙЧАС" ПЕРЕМЕЩЕНА СЮДА */}
         {view === 'language' && (
           <Button
             onClick={handleStart}
@@ -85,20 +99,22 @@ const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
         href={DONATE_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 px-4 py-1.5 rounded-full font-semibold
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 px-4 py-1 rounded-full font-semibold
                    text-white shadow-lg text-base bg-pink-600 hover:bg-pink-700
                    animate-pulse border border-yellow-300 transition
                    select-none flex items-center"
         style={{
-          animation: 'pulse 1s infinite'
+          animation: 'pulse 1s infinite',
+          minWidth: '100px',
+          maxWidth: '160px'
         }}
       >
         <span>{t.donateButton}</span>
         <img
           src="/lovable-uploads/9b1300ba-7697-468a-991e-4c29d0a221a0.png"
           alt="Donate Cup"
-          className="ml-2"
-          style={{ height: "24px", width: "24px", objectFit: "contain" }}
+          className="ml-1"
+          style={{ height: "17px", width: "17px", objectFit: "contain" }}
         />
       </a>
     </div>
