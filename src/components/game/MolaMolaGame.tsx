@@ -93,15 +93,55 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
   };
 
   return (
-    <div className={`relative w-full ${isMobile ? "" : "max-w-4xl"} mx-auto`}>
-      <div className="relative bg-black border-4 border-yellow-400 rounded-lg overflow-hidden shadow-2xl shadow-cyan-500/20">
-        <div className="w-full" style={isMobile ? {height: 'calc(100vh - 60px)'} : {height: 450}}>
+    <div
+      className={`relative w-full h-full ${isMobile ? "fixed inset-0 left-0 top-0" : "max-w-4xl"} mx-auto`}
+      style={
+        isMobile
+          ? {
+              minHeight: '100dvh',
+              height: '100dvh',
+              minWidth: '100vw',
+              width: '100vw',
+              maxWidth: '100vw',
+              maxHeight: '100dvh',
+              background: 'linear-gradient(to bottom, #2563eb, #1e3a8a)',
+              zIndex: 0,
+              overflow: 'hidden',
+              // prevent scrolling at all
+            }
+          : {
+              minHeight: 450,
+              height: 450,
+            }
+      }
+    >
+      <div
+        className="relative w-full h-full bg-black border-4 border-yellow-400 rounded-lg overflow-hidden shadow-2xl shadow-cyan-500/20"
+        style={
+          isMobile
+            ? {
+                width: '100vw',
+                height: '100dvh',
+                borderRadius: 0,
+                maxWidth: '100vw',
+                maxHeight: '100dvh',
+                margin: 0,
+                left: 0,
+                top: 0,
+              }
+            : {}
+        }
+      >
+        <div
+          className="w-full h-full"
+          style={isMobile ? { height: '100dvh' } : { height: 450 }}
+        >
           {gameState.screen === 'start' && (
             <StartScreen onStart={startGame} />
           )}
           {gameState.screen === 'playing' && (
             <>
-              <GameCanvas 
+              <GameCanvas
                 ref={canvasRef}
                 gameState={gameState}
                 onGameEnd={endGame}
@@ -111,23 +151,39 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
               />
               <GameUI gameState={gameState} />
               {isMobile && (
-                <MobileControls onControl={(
+                <MobileControls
+                  onControl={(
                     control,
                     state
                   ) =>
-                    // Вызывается на каждом таче — напрямую пробрасываем в канвас (и дальше в GameEngine)
-                    (canvasRef.current &&
-                      ((window as any).__molaMobileHandle?.(control, state)))
+                    canvasRef.current &&
+                    ((window as any).__molaMobileHandle?.(control, state))
                   }
                 />
               )}
             </>
           )}
           {gameState.screen === 'gameOver' && (
-            <GameOverScreen 
-              gameState={gameState}
-              onRestart={restartGame}
-            />
+            <div
+              className="fixed inset-0 z-40"
+              style={{
+                width: '100vw',
+                height: '100dvh',
+                minHeight: '100dvh',
+                minWidth: '100vw',
+                left: 0,
+                top: 0,
+                background: 'linear-gradient(to bottom, #0a2147, #000000)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <GameOverScreen
+                gameState={gameState}
+                onRestart={restartGame}
+              />
+            </div>
           )}
         </div>
       </div>
