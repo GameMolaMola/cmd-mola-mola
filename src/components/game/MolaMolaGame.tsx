@@ -18,7 +18,8 @@ export interface GameState {
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 800 || window.innerHeight > window.innerWidth);
+    // ios viewport bug fix: используем innerHeight именно из window ориентира
+    const check = () => setIsMobile(window.innerWidth < 900 || window.innerHeight > window.innerWidth);
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);

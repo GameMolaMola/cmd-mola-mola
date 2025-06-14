@@ -4,22 +4,25 @@ import React from "react";
 interface MobileControlsProps {
   onControl: (control: "left" | "right" | "jump" | "fire", state: boolean) => void;
 }
-const BUTTONS = [
-  { control: "left", label: "◀️" },
-  { control: "jump", label: "⬆️" },
-  { control: "right", label: "▶️" },
-  { control: "fire", label: "🔥" },
-];
 
 export default function MobileControls({ onControl }: MobileControlsProps) {
   return (
-    <div className="absolute z-20 left-0 right-0 bottom-0 flex justify-between px-2 pb-2 pointer-events-none">
+    <div
+      className="absolute z-30 left-0 right-0 bottom-0 flex justify-between px-4 pb-3 pointer-events-none select-none"
+      style={{
+        // Безопасные отступы для тапа
+        maxWidth: 580,
+        margin: "0 auto",
+        width: "100%",
+      }}
+    >
       {/* Левая панель */}
-      <div className="flex gap-2 pointer-events-auto">
+      <div className="flex gap-3 pointer-events-auto">
         {/* Кнопки влево/вправо */}
         <button
-          className="rounded-full bg-black/70 text-white w-14 h-14 text-3xl flex items-center justify-center border-2 border-cyan-400 active:bg-cyan-700 transition-all touch-manipulation"
-          style={{ touchAction: "none" }}
+          className="rounded-full bg-black/80 text-white w-16 h-16 text-4xl flex items-center justify-center border-2 border-cyan-400 active:bg-cyan-800 touch-manipulation"
+          style={{ touchAction: "none", marginLeft: 4 }}
+          tabIndex={-1}
           onTouchStart={e => { e.preventDefault(); onControl("left", true); }}
           onTouchEnd={e => { e.preventDefault(); onControl("left", false); }}
           onMouseDown={() => onControl("left", true)}
@@ -28,8 +31,9 @@ export default function MobileControls({ onControl }: MobileControlsProps) {
           ◀️
         </button>
         <button
-          className="rounded-full bg-black/70 text-white w-14 h-14 text-3xl flex items-center justify-center border-2 border-yellow-400 active:bg-yellow-700 transition-all touch-manipulation"
+          className="rounded-full bg-black/80 text-white w-16 h-16 text-4xl flex items-center justify-center border-2 border-yellow-400 active:bg-yellow-800 touch-manipulation"
           style={{ touchAction: "none" }}
+          tabIndex={-1}
           onTouchStart={e => { e.preventDefault(); onControl("right", true); }}
           onTouchEnd={e => { e.preventDefault(); onControl("right", false); }}
           onMouseDown={() => onControl("right", true)}
@@ -39,11 +43,12 @@ export default function MobileControls({ onControl }: MobileControlsProps) {
         </button>
       </div>
       {/* Правая панель */}
-      <div className="flex gap-2 pointer-events-auto">
+      <div className="flex gap-3 pointer-events-auto">
         {/* Прыжок */}
         <button 
-          className="rounded-full bg-black/70 text-yellow-200 w-14 h-14 text-3xl flex items-center justify-center border-2 border-yellow-400 active:bg-cyan-700 transition-all touch-manipulation"
+          className="rounded-full bg-black/80 text-yellow-200 w-16 h-16 text-4xl flex items-center justify-center border-2 border-yellow-400 active:bg-cyan-800 touch-manipulation"
           style={{ touchAction: "none" }}
+          tabIndex={-1}
           onTouchStart={e => { e.preventDefault(); onControl("jump", true); }}
           onTouchEnd={e => { e.preventDefault(); onControl("jump", false); }}
           onMouseDown={() => onControl("jump", true)}
@@ -53,8 +58,9 @@ export default function MobileControls({ onControl }: MobileControlsProps) {
         </button>
         {/* Огонь */}
         <button
-          className="rounded-full bg-black/70 text-red-400 w-14 h-14 text-3xl flex items-center justify-center border-2 border-red-400 active:bg-yellow-700 transition-all touch-manipulation"
-          style={{ touchAction: "none" }}
+          className="rounded-full bg-black/80 text-red-400 w-16 h-16 text-4xl flex items-center justify-center border-2 border-red-400 active:bg-yellow-800 touch-manipulation"
+          style={{ touchAction: "none", marginRight: 4 }}
+          tabIndex={-1}
           onTouchStart={e => { e.preventDefault(); onControl("fire", true); }}
           onTouchEnd={e => { e.preventDefault(); onControl("fire", false); }}
           onMouseDown={() => onControl("fire", true)}

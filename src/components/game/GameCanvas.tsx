@@ -17,35 +17,60 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
 
     useImperativeHandle(ref, () => canvasRef.current as HTMLCanvasElement);
 
+    // Мобильное: resize canvas всегда при изменении размеров окна
+    useEffect(() => {
+      if (!canvasRef.current) return;
+
+      function resizeCanvas() {
+        const canvas = canvasRef.current!;
+        // Для мобилки: fit 9:16 в всю видимую область минус контролы (но не больше 100%)
+        if (isMobile) {
+          // 80px под контролы (двойной запас, чтобы не было налегания)
+          let width = window.innerWidth;
+          // minHeight на iOS может быть чуть больше, делаем запас
+          let height = Math.max(window.innerHeight, document.documentElement.clientHeight) - 90;
+          const targetRatio = 9 / 16;
+          if (width / height > targetRatio) {
+            width = height * targetRatio;
+          } else {
+            height = width / targetRatio;
+          }
+          canvas.width = Math.round(width);
+          canvas.height = Math.round(height);
+          canvas.style.width = `${width}px`;
+          canvas.style.height = `${height}px`;
+          // латентный tap highlight убираем
+          canvas.style.touchAction = 'none';
+          canvas.style.userSelect = 'none';
+          // Округлённый угол лишь на мобилках
+          canvas.style.borderRadius = '16px';
+          // Центрирование
+          canvas.style.display = 'block';
+          canvas.style.margin = '0 auto';
+          canvas.style.background = 'linear-gradient(to bottom, #2563eb, #1e3a8a)';
+        } else {
+          canvas.width = 800;
+          canvas.height = 450;
+          canvas.style.width = '100%';
+          canvas.style.height = '100%';
+          canvas.style.borderRadius = '';
+          canvas.style.background = '';
+        }
+      }
+
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+      return () => {
+        window.removeEventListener('resize', resizeCanvas);
+      };
+    }, [isMobile]);
+
     useEffect(() => {
       if (!canvasRef.current) return;
 
       const canvas = canvasRef.current;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
-
-      // Мобильный адаптив — стараемся подогнать под 9:16 если isMobile
-      if (isMobile) {
-        // fit 9:16 в 100vw-80px по высоте
-        let width = window.innerWidth;
-        let height = window.innerHeight - 80; // под контролы
-        const targetRatio = 9 / 16;
-        // Fit canvas to 9:16, центр на экране
-        if (width / height > targetRatio) {
-          width = height * targetRatio;
-        } else {
-          height = width / targetRatio;
-        }
-        canvas.width = Math.round(width);
-        canvas.height = Math.round(height);
-        canvas.style.width = `${width}px`;
-        canvas.style.height = `${height}px`;
-      } else {
-        canvas.width = 800;
-        canvas.height = 450;
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
-      }
 
       if (!gameEngineRef.current) {
         gameEngineRef.current = new GameEngine(canvas, ctx, {
@@ -93,7 +118,13 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
       <canvas
         ref={canvasRef}
         className="w-full h-full bg-gradient-to-b from-blue-600 to-blue-800 touch-none select-none"
-        style={{ imageRendering: 'pixelated', borderRadius: isMobile ? 12 : undefined }}
+        style={{
+          imageRendering: 'pixelated',
+          borderRadius: isMobile ? 16 : undefined,
+          background: isMobile
+            ? 'linear-gradient(to bottom, #2563eb, #1e3a8a)'
+            : undefined,
+        }}
       />
     );
   }
