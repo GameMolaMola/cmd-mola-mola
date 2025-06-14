@@ -31,14 +31,14 @@ function makeInitialGameState() {
       speedBoost: false,
       speedBoostTime: 0,
     },
-    score: 0,
+    score: 110,
     isVictory: false,
   };
 }
 
 const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   // Состояния для HUD
-  const [hud, setHud] = useState({ health: 100, ammo: 10, coins: 0, level: 1 });
+  const [hud, setHud] = useState({ health: 100, ammo: 10, coins: 0, level: 1, score: 110 });
   const [gameEnded, setGameEnded] = useState(false);
   const [victory, setVictory] = useState(false);
   const [finalStats, setFinalStats] = useState<any>(null);
@@ -89,15 +89,19 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     if (!gameEnded) setIsPaused((p) => !p);
   };
 
-  // Callback из движка/canvas
+  // --- KEY: Добавим score при обновлении!
   const onStateUpdate = (updates: any) => {
-    setHud((prev) => ({ ...prev, ...updates }));
+    setHud((prev) => {
+      // score гарантированно обновляется, даже если не пришел из движка
+      let score = updates.score ?? (updates.coins ?? prev.coins) * 10 + (updates.level ?? prev.level) * 100;
+      return { ...prev, ...updates, score };
+    });
   };
 
   // Исправлено: при рестарте используем новое состояние
   const handleRestart = () => {
     const newState = makeInitialGameState();
-    setHud({ health: 100, ammo: 10, coins: 0, level: 1 });
+    setHud({ health: 100, ammo: 10, coins: 0, level: 1, score: 110 });
     setGameEnded(false);
     setVictory(false);
     setFinalStats(null);
@@ -116,6 +120,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         ammo={hud.ammo}
         coins={hud.coins}
         level={hud.level}
+        score={hud.score}
         onPause={onPause}
         isMobile={showMobileControls}
       />
@@ -143,7 +148,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         stats={{
           level: hud.level,
           coins: hud.coins,
-          score: hud.coins * 10 + (hud.level * 100),
+          score: hud.score // score теперь всегда точно есть!
         }}
         onRestart={handleRestart}
       />
