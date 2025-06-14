@@ -84,6 +84,8 @@ export class GameEngine {
 
   private staticSandLayer: HTMLCanvasElement | null = null;
 
+  private godmode: boolean = false;
+
   constructor(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
@@ -100,6 +102,9 @@ export class GameEngine {
 
     // Apply initial state
     Object.assign(this.player, options.initialState);
+    // NEW: Сохраняем godmode флаг если он есть в initialState
+    // Используем this.godmode свойства для быстрой проверки
+    this.godmode = !!(options.initialState && options.initialState.godmode);
 
     this.images = {
       playerFrames: [new Image(), new Image()],
@@ -465,16 +470,20 @@ export class GameEngine {
     // Check enemy collisions
     for (const enemy of this.enemies) {
       if (this.checkCollision(this.player, enemy)) {
-        this.player.health -= 2;
-        this.updateGameState();
-        if (this.player.health <= 0) {
-          this.callbacks.onGameEnd(false, { 
-            level: this.player.level, 
-            coins: this.player.coins, 
-            score: this.player.coins * 10 
-          });
-          return;
+        // Если godmode, не уменьшаем здоровье и не убиваем игрока
+        if (!this.godmode) {
+          this.player.health -= 2;
+          this.updateGameState();
+          if (this.player.health <= 0) {
+            this.callbacks.onGameEnd(false, { 
+              level: this.player.level, 
+              coins: this.player.coins, 
+              score: this.player.coins * 10 
+            });
+            return;
+          }
         }
+        // Если godmode — ничего не делаем, здоровье сохраняется и не умираем
       }
     }
 
