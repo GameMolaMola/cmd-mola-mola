@@ -88,6 +88,9 @@ export class GameEngine {
 
   private godmode: boolean = false;
 
+  private freeBrasilenaTimeout: number | null = null;
+  private freeBrasilenaActive: boolean = false;
+
   constructor(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
@@ -107,8 +110,8 @@ export class GameEngine {
     // -- SPECIAL JUMP LOGIC --
     // Передаём ли данный флаг из initialState?
     if (options.initialState?.markJump) {
-      // усиленный прыжок: ~150% от обычного (значительно выше)
-      this.player.jumpPower = -37.5; // стандарт = -15, было -27
+      // ЕЩЁ выше (для Mark): супер-прыжок ~2.9x стандартного, чтобы 100% достать любого врага
+      this.player.jumpPower = -44; // стандарт = -15
     } else {
       this.player.jumpPower = -15;
     }
@@ -461,11 +464,42 @@ export class GameEngine {
       }
     }
 
+    // --- FREE BRASILENA SPAWN CHECK --- (check если ammo <= 0)
+    if (
+      this.player.ammo <= 0 &&
+      !this.freeBrasilenaActive &&
+      this.freeBrasilenaTimeout === null
+    ) {
+      // Не было бесплатной brasilena, ставим таймер на 5 сек
+      this.freeBrasilenaTimeout = window.setTimeout(() => {
+        // Выбираем случайную платформу, не самую нижнюю (нельзя на песок!)
+        const candidatePlatforms = this.platforms.filter(
+          (p) => p.y < this.canvas.height - 41
+        );
+        const platform = candidatePlatforms.length > 0
+          ? candidatePlatforms[Math.floor(Math.random() * candidatePlatforms.length)]
+          : this.platforms[0];
+        // Спауним brasilena чуть выше платформы, по центру
+        this.brasilenas.push({
+          x: platform.x + platform.width / 2 - 16 + Math.random() * 12,
+          y: platform.y - 18,
+          width: 32,
+          height: 32,
+        });
+        this.freeBrasilenaActive = true;
+        this.freeBrasilenaTimeout = null;
+      }, 5000);
+    }
+
     for (let i = this.brasilenas.length - 1; i >= 0; i--) {
       const brasilena = this.brasilenas[i];
       if (this.checkCollision(this.player, brasilena)) {
         this.player.ammo += 10;
         this.brasilenas.splice(i, 1);
+        // Если это "free" brasilena — даём снова шанс появиться при 0 патронах
+        if (this.freeBrasilenaActive) {
+          this.freeBrasilenaActive = false;
+        }
         this.updateGameState();
       }
     }
@@ -705,6 +739,11 @@ export class GameEngine {
   }
 
   public stop() {
+    // Очистим pending timeout если движок останавливается (например, рестарт или выход)
+    if (this.freeBrasilenaTimeout) {
+      window.clearTimeout(this.freeBrasilenaTimeout);
+      this.freeBrasilenaTimeout = null;
+    }
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
