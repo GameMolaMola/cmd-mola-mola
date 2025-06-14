@@ -1,9 +1,11 @@
 
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Heart, Coins } from "lucide-react";
-import { useTranslations } from "@/hooks/useTranslations";
 import { useGame, Language } from "@/contexts/GameContext";
+import HealthDisplay from "./HealthDisplay";
+import CoinsDisplay from "./CoinsDisplay";
+import AmmoDisplay from "./AmmoDisplay";
+import ScoreDisplay from "./ScoreDisplay";
+import PauseButton from "./PauseButton";
 
 interface GameHUDProps {
   health: number;
@@ -17,40 +19,22 @@ interface GameHUDProps {
 }
 
 const GameHUD: React.FC<GameHUDProps> = ({
-  health, ammo, coins, level, score, onPause, isMobile, language
+  health, ammo, coins, level, score, onPause, isMobile, language,
 }) => {
   const context = useGame();
   const lang: Language = language ?? context.language;
-  const t = useTranslations(lang);
+  const finalScore = score ?? (coins * 10 + level * 100);
 
   return (
     <div className="w-full flex items-center justify-between p-2 md:p-4">
       <div className="flex items-center gap-4 flex-wrap">
-        <span className="flex items-center font-semibold text-white whitespace-nowrap">
-          <Heart size={18} className="mr-1 text-red-400" />
-          {t.health}: {health}
-        </span>
-        <span className="flex items-center font-semibold text-yellow-300 whitespace-nowrap">
-          <Coins size={18} className="mr-1" />
-          {t.coins}: {coins}
-        </span>
-        <span className="flex items-center font-semibold text-pink-100 whitespace-nowrap">
-          <span role="img" aria-label="ammo" className="mr-1">🔫</span>
-          {t.ammo}: {ammo}
-        </span>
-        <span className="flex items-center font-semibold text-cyan-400 whitespace-nowrap">
-          {t.score}: {score ?? (coins * 10 + level * 100)}
-        </span>
+        <HealthDisplay health={health} language={lang} />
+        <CoinsDisplay coins={coins} language={lang} />
+        <AmmoDisplay ammo={ammo} language={lang} />
+        <ScoreDisplay score={finalScore} language={lang} />
       </div>
       {isMobile && onPause && (
-        <Button
-          variant="secondary"
-          size="sm"
-          className="ml-2"
-          onClick={onPause}
-        >
-          {t && t.pause ? t.pause : "Пауза"}
-        </Button>
+        <PauseButton onPause={onPause} language={lang} />
       )}
     </div>
   );
