@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { useGame } from '@/contexts/GameContext';
+import { useTranslations, Language } from '@/hooks/useTranslations';
+import PlayerRegistrationForm from './PlayerRegistrationForm';
 import {
   Select,
   SelectContent,
@@ -9,67 +10,53 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-const translations = {
-  en: {
-    title: "🐟 COMMANDER MOLA MOLA 🐟",
-    subtitle: "Adventure in the seas of Calabria awaits you!",
-    description: "Dive into an epic underwater pixel adventure where you control Commander Mola Mola through the dangerous waters of Calabria. Collect coins, defeat enemies, and survive the depths!",
-    playButton: "PLAY NOW",
-    aboutTitle: "About the Game",
-    aboutText: "Commander Mola Mola is a retro-style underwater adventure game featuring classic pixel art graphics and exciting gameplay mechanics.",
-    addressTitle: "Contact Us",
-    address: "Via Roma 123, Cosenza, Calabria, Italy",
-    email: "commandermolamola@gmail.com",
-    features: [
-      "🎮 Classic pixel art graphics",
-      "🌊 Underwater adventure",
-      "🪙 Collect Mola Mola coins",
-      "🍕 Italian food power-ups",
-      "🚀 Epic boss battles"
-    ]
-  },
-  it: {
-    title: "🐟 COMMANDER MOLA MOLA 🐟",
-    subtitle: "L'avventura nei mari della Calabria ti aspetta!",
-    description: "Immergiti in un'epica avventura subacquea pixel dove controlli Commander Mola Mola attraverso le acque pericolose della Calabria. Raccogli monete, sconfiggi nemici e sopravvivi agli abissi!",
-    playButton: "GIOCA ORA",
-    aboutTitle: "Sul Gioco",
-    aboutText: "Commander Mola Mola è un gioco d'avventura subacquea in stile retrò con grafica pixel art classica e meccaniche di gioco emozionanti.",
-    addressTitle: "Contattaci",
-    address: "Via Roma 123, Cosenza, Calabria, Italia",
-    email: "commandermolamola@gmail.com",
-    features: [
-      "🎮 Grafica pixel art classica",
-      "🌊 Avventura subacquea",
-      "🪙 Raccogli monete Mola Mola",
-      "🍕 Power-up di cibo italiano",
-      "🚀 Battaglie epiche con boss"
-    ]
-  },
-  ru: {
-    title: "🐟 COMMANDER MOLA MOLA 🐟",
-    subtitle: "Приключение в морях Калабрии ждет тебя!",
-    description: "Погрузись в эпическое подводное пиксельное приключение, где ты управляешь Командиром Мола Мола через опасные воды Калабрии. Собирай монеты, побеждай врагов и выживай в глубинах!",
-    playButton: "ИГРАТЬ СЕЙЧАС",
-    aboutTitle: "О Игре",
-    aboutText: "Commander Mola Mola - это подводная приключенческая игра в ретро стиле с классической пиксельной графикой и захватывающими игровыми механиками.",
-    addressTitle: "Свяжитесь с нами",
-    address: "Via Roma 123, Козенца, Калабрия, Италия",
-    email: "commandermolamola@gmail.com",
-    features: [
-      "🎮 Классическая пиксельная графика",
-      "🌊 Подводное приключение",
-      "🪙 Собирай монеты Мола Мола",
-      "🍕 Усиления итальянской еды",
-      "🚀 Эпические битвы с боссами"
-    ]
-  }
-};
+import { useNavigate } from 'react-router-dom';
 
 const LandingPage = () => {
-  const [language, setLanguage] = useState('ru');
-  const t = (translations as any)[language];
+  const { language, setLanguage, isRegistered } = useGame();
+  const t = useTranslations(language);
+  const navigate = useNavigate();
+  const [showRegistration, setShowRegistration] = useState(false);
+
+  const handleLanguageChange = (value: Language) => {
+    setLanguage(value);
+  };
+
+  const handlePlayClick = () => {
+    if (isRegistered) {
+      navigate('/game');
+    } else {
+      setShowRegistration(true);
+    }
+  };
+
+  const handleRegistrationComplete = () => {
+    navigate('/game');
+  };
+
+  if (showRegistration) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-900 via-blue-800 to-blue-700 flex items-center justify-center p-4">
+        <div className="w-full max-w-4xl">
+          {/* Language selector */}
+          <div className="flex justify-center mb-8">
+            <Select onValueChange={handleLanguageChange} defaultValue={language}>
+              <SelectTrigger className="w-[180px] bg-blue-800 border-blue-400 text-white">
+                <SelectValue placeholder="Select Language" />
+              </SelectTrigger>
+              <SelectContent className="bg-blue-800 text-white border-blue-400">
+                <SelectItem value="ru">🇷🇺 Русский</SelectItem>
+                <SelectItem value="en">🇬🇧 English</SelectItem>
+                <SelectItem value="it">🇮🇹 Italiano</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <PlayerRegistrationForm onRegister={handleRegistrationComplete} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-900 via-blue-800 to-blue-700">
@@ -82,7 +69,7 @@ const LandingPage = () => {
             </h1>
           </div>
           <div className="flex items-center space-x-4">
-            <Select onValueChange={(value) => setLanguage(value)} defaultValue={language}>
+            <Select onValueChange={handleLanguageChange} defaultValue={language}>
               <SelectTrigger className="w-[180px] bg-blue-800 border-blue-400 text-white">
                 <SelectValue placeholder="Select Language" />
               </SelectTrigger>
@@ -109,11 +96,12 @@ const LandingPage = () => {
             {t.description}
           </p>
           
-          <Link to="/game">
-            <Button className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-12 py-6 text-xl animate-bounce">
-              {t.playButton}
-            </Button>
-          </Link>
+          <button
+            onClick={handlePlayClick}
+            className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-12 py-6 text-xl animate-bounce rounded-md transition-colors"
+          >
+            {t.playButton}
+          </button>
         </div>
       </section>
 
