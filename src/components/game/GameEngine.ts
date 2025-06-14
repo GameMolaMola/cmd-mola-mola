@@ -75,7 +75,6 @@ export class GameEngine {
     onStateUpdate: (updates: any) => void;
   };
 
-  private mobileControlCallback: ((control: string, state: boolean) => void) | null = null;
   private mobileControlState: Record<string, boolean> = {};
 
   constructor(
@@ -138,8 +137,8 @@ export class GameEngine {
     });
   }
 
-  public setMobileControlCallback(fn: ((control: string, state: boolean) => void) | null) {
-    this.mobileControlCallback = fn;
+  public setMobileControlState(control: string, state: boolean) {
+    this.mobileControlState[control] = state;
   }
 
   private setupEventListeners() {
@@ -158,11 +157,6 @@ export class GameEngine {
 
     document.addEventListener('keydown', handleKeyDown);
     document.addEventListener('keyup', handleKeyUp);
-
-    // Доп. слушатель для мобильных: сохраняет состояние нажатий и имитирует нажатия в keys
-    this.setMobileControlCallback((control, state) => {
-      this.mobileControlState[control] = state;
-    });
   }
 
   private generatePlatforms() {

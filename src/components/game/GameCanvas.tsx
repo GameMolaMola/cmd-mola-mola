@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { GameState } from './MolaMolaGame';
 import { GameEngine } from './GameEngine';
@@ -65,11 +64,30 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Мобильное управление — пробрасываем управление в GameEngine
+    // Новый обработчик!
     useEffect(() => {
-      if (!gameEngineRef.current || !onMobileControl) return;
-      gameEngineRef.current.setMobileControlCallback(onMobileControl);
+      // перехватываем мобильные события и пробрасываем в движок напрямую
+      if (!gameEngineRef.current) return;
+      if (!onMobileControl) return;
+
+      // Подписываем наружный callback
+      const handleMobileControl = (control: string, state: boolean) => {
+        gameEngineRef.current?.setMobileControlState(control, state);
+        // Можно пробрасывать наружу, если это нужно (для внешней логики)
+        onMobileControl(control, state);
+      };
+
+      // Для совместимости: сохраняем в рефу, чтобы на каждом рендере не пересоздавалось
+      (window as any).__molaMobileHandle = handleMobileControl;
     }, [onMobileControl]);
+
+    // Функция для проброса событий MobileControls
+    const handleMobileControl = (control: string, state: boolean) => {
+      if (gameEngineRef.current) {
+        gameEngineRef.current.setMobileControlState(control, state);
+      }
+      if (onMobileControl) onMobileControl(control, state);
+    };
 
     return (
       <canvas

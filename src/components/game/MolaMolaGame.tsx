@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import GameCanvas from './GameCanvas';
 import StartScreen from './StartScreen';
@@ -85,13 +84,11 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
     setGameState(prev => ({ ...prev, ...updates }));
   };
 
-  // обработка управления с мобильных кнопок
+  // Отлично: onMobileControl нужен только для внешней логики, в сам рисунок теперь событие отправляется кусочком выше
+
+  // Передаём handleMobileControl без изменений, для совместимости
   const handleMobileControl = (control: string, state: boolean) => {
-    setMobileControl({ control, state });
-    // Еще можно прокинуть прямо на canvas/gameEngine если нужно
-    if (canvasRef.current && "dispatchEvent" in canvasRef.current) {
-      // Можно использовать, если потребуется рефлектить на сам canvas
-    }
+    // Возможно тут какая-то внешняя аналитика, пусть останется вызовом пустышки
   };
 
   return (
@@ -113,7 +110,15 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
               />
               <GameUI gameState={gameState} />
               {isMobile && (
-                <MobileControls onControl={handleMobileControl} />
+                <MobileControls onControl={(
+                    control,
+                    state
+                  ) =>
+                    // Вызывается на каждом таче — напрямую пробрасываем в канвас (и дальше в GameEngine)
+                    (canvasRef.current &&
+                      ((window as any).__molaMobileHandle?.(control, state)))
+                  }
+                />
               )}
             </>
           )}
