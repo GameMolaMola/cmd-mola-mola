@@ -40,6 +40,7 @@ export class GameEngine {
       speedBoostTime: 0,
     },
     username: '', // login игрока, теперь есть всегда!
+    direction: 1, // <--- добавим по умолчанию вправо
   };
 
   private bullets: Array<{
@@ -48,6 +49,7 @@ export class GameEngine {
     width: number;
     height: number;
     speed: number;
+    direction?: number;
   }> = [];
 
   private enemies: Array<{
@@ -448,13 +450,15 @@ export class GameEngine {
     if (this.player.ammo <= 0 || currentTime - this.lastShotTime < this.SHOT_COOLDOWN) {
       return;
     }
+    const direction = typeof this.player.direction === "number" ? this.player.direction : 1;
 
     this.bullets.push({
-      x: this.player.x + this.player.width,
+      x: direction === 1 ? this.player.x + this.player.width : this.player.x - 20,
       y: this.player.y + this.player.height / 2 - 5,
       width: 20,
       height: 10,
-      speed: 10
+      speed: 10 * direction,
+      direction
     });
 
     this.player.ammo--;

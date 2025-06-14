@@ -1,9 +1,11 @@
+
 export function updateBullets({ bullets, enemies, bossLucia, player, callbacks, checkCollision, canvas }: any) {
   for (let i = bullets.length - 1; i >= 0; i--) {
     const bullet = bullets[i];
-    bullet.x += bullet.speed;
+    bullet.x += bullet.speed; // speed теперь может быть отрицательным (влево)
 
-    if (bullet.x > canvas.width) {
+    // Проверяем, не ушла ли пуля за пределы (влево И/ИЛИ вправо)
+    if (bullet.x > canvas.width || bullet.x + bullet.width < 0) {
       bullets.splice(i, 1);
       continue;
     }
