@@ -97,12 +97,19 @@ const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
             href="https://buymeacoffee.com/com.molamola"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block mt-3 px-5 py-2 rounded-full font-semibold text-white shadow-md text-base bg-pink-600 hover:bg-pink-700 border border-yellow-300 transition"
+            className="inline-flex items-center gap-2 mt-3 px-5 py-2 rounded-full font-semibold text-white shadow-md text-base bg-pink-600 hover:bg-pink-700 border border-yellow-300 transition animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite] select-none"
             style={{
-              minWidth: "100px"
+              minWidth: "100px",
+              animation: 'pulse 2.2s cubic-bezier(0.4,0,0.6,1) infinite'
             }}
           >
-            {t.donateButton}
+            <span>{t.donateButton}</span>
+            <img
+              src="/lovable-uploads/63f3c1bb-af9c-4c63-86ae-a15bc687d8a8.png"
+              alt="Donate Cup"
+              className="w-[20px] h-[20px] object-contain"
+              style={{ marginLeft: "4px" }}
+            />
           </a>
         </div>
         {view === 'register' && (
