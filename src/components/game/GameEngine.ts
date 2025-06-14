@@ -167,8 +167,9 @@ export class GameEngine {
       brasilena: '/lovable-uploads/cc5bbfd2-9663-470b-8edf-b5314b29b3f0.png',
       wine: '/lovable-uploads/989f5507-8b03-451b-b9c1-b0e2d1cc1aaa.png',
       pizza: '/lovable-uploads/204b20b0-06cb-45cd-b3e7-8a94e658a065.png',
-      enemy: '/lovable-uploads/b0b2972b-c98d-4f17-bf93-ac419c59bc60.png',
-      enemyLeft: '/lovable-uploads/e4515187-df60-4173-b316-3b20bc9db246.png', // <-- Новый спрайт!
+      // Заменяем спрайт движения вправо на ваш новый
+      enemy: '/lovable-uploads/080fcc27-fe7b-448a-9661-9e1a894abab7.png',
+      enemyLeft: '/lovable-uploads/e4515187-df60-4173-b316-3b20bc9db246.png',
       bossLucia: '/lovable-uploads/e2e9e94b-84f9-450f-a422-4f25b84dc5c0.png',
     };
 
