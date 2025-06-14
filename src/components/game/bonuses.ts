@@ -1,4 +1,3 @@
-
 export function handleBonuses({
   player,
   pizzas,
@@ -7,8 +6,8 @@ export function handleBonuses({
   freeBrasilena,
   callbacks,
   checkCollision,
-  spawnBrasilenaWidth = 42,
-  spawnBrasilenaHeight = 32
+  spawnBrasilenaWidth = 21,
+  spawnBrasilenaHeight = 64
 }: any) {
   for (let i = pizzas.length - 1; i >= 0; i--) {
     const pizza = pizzas[i];
