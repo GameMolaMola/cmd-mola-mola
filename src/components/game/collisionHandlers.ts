@@ -47,14 +47,17 @@ export function handleEnemyCollisions(
         if (now - lastDamageTime >= DAMAGE_COOLDOWN) {
           lastDamageTime = now;
           player.health -= 2;
+          // --- НЕ МОЖЕТ быть меньше 0! ---
+          if (player.health < 0) player.health = 0;
           callbacks.onStateUpdate?.({
             health: player.health,
           });
-          if (player.health <= 0) {
+          // Завершить в момент перехода в 0, а не раньше!
+          if (player.health === 0) {
             callbacks.onGameEnd(false, { 
               level: player.level, 
               coins: player.coins, 
-              score: player.coins * 10 
+              score: player.coins * 10 + player.level * 100 
             });
             return true; // game ended
           }
@@ -65,3 +68,4 @@ export function handleEnemyCollisions(
   }
   return false;
 }
+

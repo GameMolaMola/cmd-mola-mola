@@ -180,6 +180,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
           score: hud.score
         }}
         onRestart={handleRestart}
+        language={language}
       />
     </div>
   );
