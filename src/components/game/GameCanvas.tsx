@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { GameState } from './MolaMolaGame';
 import { GameEngine } from './GameEngine';
@@ -10,6 +11,17 @@ interface GameCanvasProps {
   isMobile?: boolean;
 }
 
+const getSafeMobileScreenSize = () => {
+  // Берём самое большое из всех возможных значений высоты — актуально для iOS/Safari
+  const width = window.innerWidth;
+  const height = Math.max(
+    window.innerHeight,
+    document.documentElement.clientHeight || 0,
+    window.screen.height || 0
+  );
+  return { width, height };
+};
+
 const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
   ({ gameState, onGameEnd, onStateUpdate, onMobileControl, isMobile }: GameCanvasProps, ref) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -17,34 +29,38 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
 
     useImperativeHandle(ref, () => canvasRef.current as HTMLCanvasElement);
 
-    // Мобильное: resize canvas всегда при изменении размеров окна
     useEffect(() => {
       if (!canvasRef.current) return;
 
+      let resizeTimeout: NodeJS.Timeout | undefined;
+
       function resizeCanvas() {
         const canvas = canvasRef.current!;
-        // Для мобилки: fit 9:16 в всю видимую область минус контролы (но не больше 100%)
         if (isMobile) {
-          // 80px под контролы (двойной запас, чтобы не было налегания)
-          let width = window.innerWidth;
-          // minHeight на iOS может быть чуть больше, делаем запас
-          let height = Math.max(window.innerHeight, document.documentElement.clientHeight) - 90;
+          // 90px — запас под контролы, но гарантируем полное перекрытие
+          const { width, height } = getSafeMobileScreenSize();
+          let croppedHeight = height - 90;
           const targetRatio = 9 / 16;
-          if (width / height > targetRatio) {
-            width = height * targetRatio;
+          let finalWidth = width;
+          let finalHeight = croppedHeight;
+
+          // Fit в 9:16
+          if (finalWidth / finalHeight > targetRatio) {
+            finalWidth = finalHeight * targetRatio;
           } else {
-            height = width / targetRatio;
+            finalHeight = finalWidth / targetRatio;
           }
-          canvas.width = Math.round(width);
-          canvas.height = Math.round(height);
-          canvas.style.width = `${width}px`;
-          canvas.style.height = `${height}px`;
-          // латентный tap highlight убираем
+          // Ограничение, чтобы холст не был выше/шире экрана
+          finalWidth = Math.min(finalWidth, width);
+          finalHeight = Math.min(finalHeight, croppedHeight);
+
+          canvas.width = Math.round(finalWidth);
+          canvas.height = Math.round(finalHeight);
+          canvas.style.width = `${finalWidth}px`;
+          canvas.style.height = `${finalHeight}px`;
           canvas.style.touchAction = 'none';
           canvas.style.userSelect = 'none';
-          // Округлённый угол лишь на мобилках
           canvas.style.borderRadius = '16px';
-          // Центрирование
           canvas.style.display = 'block';
           canvas.style.margin = '0 auto';
           canvas.style.background = 'linear-gradient(to bottom, #2563eb, #1e3a8a)';
@@ -59,9 +75,18 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
       }
 
       resizeCanvas();
-      window.addEventListener('resize', resizeCanvas);
+      const debouncedResize = () => {
+        if (resizeTimeout) clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => resizeCanvas(), 180);
+      };
+
+      window.addEventListener('resize', debouncedResize);
+      window.addEventListener('orientationchange', debouncedResize);
+
       return () => {
-        window.removeEventListener('resize', resizeCanvas);
+        window.removeEventListener('resize', debouncedResize);
+        window.removeEventListener('orientationchange', debouncedResize);
+        if (resizeTimeout) clearTimeout(resizeTimeout);
       };
     }, [isMobile]);
 
@@ -91,22 +116,17 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
 
     // Новый обработчик!
     useEffect(() => {
-      // перехватываем мобильные события и пробрасываем в движок напрямую
       if (!gameEngineRef.current) return;
       if (!onMobileControl) return;
 
-      // Подписываем наружный callback
       const handleMobileControl = (control: string, state: boolean) => {
         gameEngineRef.current?.setMobileControlState(control, state);
-        // Можно пробрасывать наружу, если это нужно (для внешней логики)
         onMobileControl(control, state);
       };
 
-      // Для совместимости: сохраняем в рефу, чтобы на каждом рендере не пересоздавалось
       (window as any).__molaMobileHandle = handleMobileControl;
     }, [onMobileControl]);
 
-    // Функция для проброса событий MobileControls
     const handleMobileControl = (control: string, state: boolean) => {
       if (gameEngineRef.current) {
         gameEngineRef.current.setMobileControlState(control, state);
@@ -131,3 +151,4 @@ const GameCanvas = forwardRef<HTMLCanvasElement, GameCanvasProps>(
 );
 
 export default GameCanvas;
+

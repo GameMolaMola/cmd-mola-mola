@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import GameCanvas from './GameCanvas';
 import StartScreen from './StartScreen';
@@ -18,14 +19,28 @@ export interface GameState {
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    // ios viewport bug fix: используем innerHeight именно из window ориентира
     const check = () => setIsMobile(window.innerWidth < 900 || window.innerHeight > window.innerWidth);
     check();
     window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+    window.addEventListener('orientationchange', check);
+    return () => {
+      window.removeEventListener('resize', check);
+      window.removeEventListener('orientationchange', check);
+    };
   }, []);
   return isMobile;
 }
+
+// Получаем реальную высоту и ширину для мобильного блока (для адаптации после смены ориентации)
+const getMobileContainerSize = () => {
+  const width = window.innerWidth;
+  const height = Math.max(
+    window.innerHeight,
+    document.documentElement.clientHeight || 0,
+    window.screen.height || 0
+  );
+  return { width, height };
+};
 
 const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
   const [gameState, setGameState] = useState<GameState>({
@@ -37,9 +52,22 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
     coins: 0,
     isVictory: false
   });
-  const [mobileControl, setMobileControl] = useState<{control: string; state: boolean}>();
+  const [mobileContainerSize, setMobileContainerSize] = useState<{width: number, height: number}>({width: 0, height: 0});
   const isMobile = useIsMobile();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Следим за изменением размеров для мобильных
+  useEffect(() => {
+    if (!isMobile) return;
+    const update = () => setMobileContainerSize(getMobileContainerSize());
+    update();
+    window.addEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
+    };
+  }, [isMobile]);
 
   useEffect(() => {
     if (autoStart && gameState.screen === 'start') {
@@ -85,35 +113,27 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
     setGameState(prev => ({ ...prev, ...updates }));
   };
 
-  // Отлично: onMobileControl нужен только для внешней логики, в сам рисунок теперь событие отправляется кусочком выше
+  const handleMobileControl = (control: string, state: boolean) => {};
 
-  // Передаём handleMobileControl без изменений, для совместимости
-  const handleMobileControl = (control: string, state: boolean) => {
-    // Возможно тут какая-то внешняя аналитика, пусть останется вызовом пустышки
-  };
+  // Styles for mobile container (ensure real full-screen cover, even after orientation changes)
+  const mobileContainerStyles = isMobile 
+    ? {
+        minHeight: mobileContainerSize.height || '100dvh',
+        height: mobileContainerSize.height || '100dvh',
+        minWidth: mobileContainerSize.width || '100vw',
+        width: mobileContainerSize.width || '100vw',
+        maxWidth: '100vw',
+        maxHeight: '100dvh',
+        background: 'linear-gradient(to bottom, #2563eb, #1e3a8a)',
+        zIndex: 0,
+        overflow: 'hidden',
+      }
+    : { minHeight: 450, height: 450 };
 
   return (
     <div
       className={`relative w-full h-full ${isMobile ? "fixed inset-0 left-0 top-0" : "max-w-4xl"} mx-auto`}
-      style={
-        isMobile
-          ? {
-              minHeight: '100dvh',
-              height: '100dvh',
-              minWidth: '100vw',
-              width: '100vw',
-              maxWidth: '100vw',
-              maxHeight: '100dvh',
-              background: 'linear-gradient(to bottom, #2563eb, #1e3a8a)',
-              zIndex: 0,
-              overflow: 'hidden',
-              // prevent scrolling at all
-            }
-          : {
-              minHeight: 450,
-              height: 450,
-            }
-      }
+      style={mobileContainerStyles}
     >
       <div
         className="relative w-full h-full bg-black border-4 border-yellow-400 rounded-lg overflow-hidden shadow-2xl shadow-cyan-500/20"
@@ -121,7 +141,7 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
           isMobile
             ? {
                 width: '100vw',
-                height: '100dvh',
+                height: mobileContainerSize.height || '100dvh',
                 borderRadius: 0,
                 maxWidth: '100vw',
                 maxHeight: '100dvh',
@@ -134,7 +154,7 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
       >
         <div
           className="w-full h-full"
-          style={isMobile ? { height: '100dvh' } : { height: 450 }}
+          style={isMobile ? { height: mobileContainerSize.height || '100dvh' } : { height: 450 }}
         >
           {gameState.screen === 'start' && (
             <StartScreen onStart={startGame} />
@@ -168,9 +188,9 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
               className="fixed inset-0 z-40"
               style={{
                 width: '100vw',
-                height: '100dvh',
-                minHeight: '100dvh',
-                minWidth: '100vw',
+                height: mobileContainerSize.height || '100dvh',
+                minHeight: mobileContainerSize.height || '100dvh',
+                minWidth: mobileContainerSize.width || '100vw',
                 left: 0,
                 top: 0,
                 background: 'linear-gradient(to bottom, #0a2147, #000000)',
@@ -192,3 +212,4 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
 };
 
 export default MolaMolaGame;
+
