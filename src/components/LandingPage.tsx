@@ -94,17 +94,24 @@ const LandingPage = ({
           marginLeft: '-20px', // 5mm left ≈ -20px
         }}
       >
-        {/* Новая строка: маленький блок с версией и заголовком внутри рамки */}
-        <div className="w-full flex flex-col items-center mb-2" style={{minHeight: 48}}>
-          <div className="flex w-full items-center" style={{marginBottom: '2px'}}>
+        {/* ver.1.0 полностью внутри рамки */}
+        <div className="w-full flex flex-col items-center mb-2" style={{ minHeight: 48 }}>
+          <div className="flex w-full items-center justify-start" style={{ marginBottom: '2px' }}>
             <span
-              className="text-cyan-400 font-bold text-[11px] md:text-xs py-0.5 px-2 rounded bg-cyan-900 border border-cyan-500"
+              className="font-bold bg-cyan-900 border border-cyan-500 text-cyan-400 text-[11px] md:text-xs py-1 px-3 rounded-lg overflow-hidden"
               style={{
                 letterSpacing: "0.01em",
-                minWidth: 44,
-                maxWidth: 58,
-                lineHeight: "1",
-                textAlign: "center"
+                minWidth: 70,
+                maxWidth: 90,
+                lineHeight: 1.2,
+                textAlign: "center",
+                fontFamily: "inherit",
+                whiteSpace: "nowrap",
+                boxSizing: "border-box",
+                fontWeight: 700,
+                display: "inline-block",
+                marginLeft: 0,
+                marginRight: 0,
               }}
             >
               ver.1.0
@@ -112,7 +119,7 @@ const LandingPage = ({
           </div>
           <h1
             className="text-2xl md:text-4xl text-yellow-400 font-bold text-center m-0 p-0 leading-tight overflow-hidden text-ellipsis whitespace-nowrap w-auto max-w-full"
-            style={{ marginTop: "56px" }} // 28+28px = 56px
+            style={{ marginTop: "84px" }} // 56px + 28px = 84px (ровно вниз как просили)
           >
             {t.title}
           </h1>
