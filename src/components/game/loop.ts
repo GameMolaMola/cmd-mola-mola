@@ -1,7 +1,10 @@
 
+import { updatePlayer } from './player';
+import { updateEnemies } from './enemies';
+
 export function gameTick(engine: any) {
-  // Это то же самое, что gameLoop из GameEngine, но без requestAnimationFrame.
-  engine.updatePlayer({
+  // Use standalone functions instead of engine methods.
+  updatePlayer({
     player: engine.player,
     platforms: engine.platforms,
     coins: engine.coins,
@@ -13,17 +16,17 @@ export function gameTick(engine: any) {
     mobileControlState: engine.mobileControlState,
     keys: engine.keys,
     callbacks: engine.callbacks,
-    godmode: engine.godmode
+    godmode: engine.godmode,
   });
 
-  engine.updateEnemies({
+  updateEnemies({
     bossLucia: engine.bossLucia,
     enemies: engine.enemies,
     player: engine.player,
     canvas: engine.canvas,
     callbacks: engine.callbacks,
     checkCollision: engine.checkCollision,
-    godmode: engine.godmode
+    godmode: engine.godmode,
   });
 
   if (!engine.bossLucia) {
