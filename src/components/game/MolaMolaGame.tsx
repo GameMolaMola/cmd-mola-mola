@@ -72,13 +72,15 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     setHud((prev) => ({ ...prev, ...updates }));
   };
 
+  // Исправлено: при рестарте используем новое состояние
   const handleRestart = () => {
+    const newState = makeInitialGameState();
     setHud({ health: 100, ammo: 10, coins: 0, level: 1 });
     setGameEnded(false);
     setVictory(false);
     setFinalStats(null);
-    setInitialGameState(makeInitialGameState());
-    // GameCanvas автоматически сбросится, потому что key initialGameState обновлён
+    setInitialGameState(newState);
+    // После обновления initialGameState компонент GameCanvas пересоздастся
   };
 
   const handleControl = (control: string, state: boolean) => {
@@ -124,4 +126,3 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
 };
 
 export default MolaMolaGame;
-
