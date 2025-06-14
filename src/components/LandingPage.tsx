@@ -79,6 +79,29 @@ const RaccoonBlock = ({ language }: { language: string }) => (
   </div>
 );
 
+const GUIDO_MESSAGES = {
+  en: "Guido Shrimp greets you!",
+  ru: "Гвидо Креветка приветствует тебя!",
+  it: "Guido Shrimp ti saluta!"
+};
+
+const GuidoShrimpBlock = ({ language }: { language: string }) => (
+  <div className="w-full flex flex-col items-center my-3">
+    <div className="bg-blue-950/80 border-2 border-yellow-300 rounded-xl p-3 flex items-center gap-3 shadow-md max-w-xs mx-auto select-none">
+      <img
+        src="/lovable-uploads/f3db5ddc-4774-4a77-a73a-b87832b655a1.png"
+        alt="Guido Shrimp"
+        className="w-12 h-12 md:w-14 md:h-14 rounded-full object-cover border-2 border-yellow-300 bg-black"
+        style={{ flexShrink: 0, aspectRatio: "1/1", objectFit: "cover" }}
+        loading="lazy"
+      />
+      <span className="text-base md:text-lg font-semibold text-yellow-200 px-2">
+        {GUIDO_MESSAGES[language as keyof typeof GUIDO_MESSAGES] || "Guido Shrimp!"}
+      </span>
+    </div>
+  </div>
+);
+
 const LandingPage = ({
   onPlay
 }: {
@@ -166,8 +189,8 @@ const LandingPage = ({
         </div>
         {/* End language selector */}
 
-        {/* Raccoon block */}
-        <RaccoonBlock language={language} />
+        {/* Guido Shrimp block */}
+        <GuidoShrimpBlock language={language} />
 
         {view === 'language' && <Button onClick={handleStart} className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-8 py-3 text-lg mb-2">
             {t.playButton}
