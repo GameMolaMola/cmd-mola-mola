@@ -102,7 +102,7 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
       coins: 0,
       isVictory: false,
       godmode: isGodmode,
-    } as any);
+    });
   };
 
   const restartGame = () => {
@@ -188,6 +188,8 @@ const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
                 onStateUpdate={updateGameState}
                 onMobileControl={handleMobileControl}
                 isMobile={isMobile}
+                // добавляем godmode явно, если GameCanvas это позволяет
+                // иначе GameEngine заберёт его из initialState внутри gameState
               />
               <GameUI gameState={gameState} />
               {isMobile && (

@@ -474,11 +474,10 @@ export class GameEngine {
     // Check enemy collisions
     for (const enemy of this.enemies) {
       if (this.checkCollision(this.player, enemy)) {
-        // Полное бессмертие: не понижаем здоровье и не умираем, если godmode активен
+        // Если godmode включён, НИКАКОЙ урон
         if (this.isGodmodeActive()) {
-          this.applyGodmodeIfNeeded();
-          // Просто игнорируем любой урон/смерть, даже если коллизия
-          continue;
+          this.player.health = 100; // страховка на всякий случай
+          continue; // полностью игнорируем последствия коллизии
         } else {
           this.player.health -= 2;
           this.updateGameState();
@@ -717,7 +716,6 @@ export class GameEngine {
   private isGodmodeActive(): boolean {
     return !!this.godmode;
   }
-
   private applyGodmodeIfNeeded() {
     // При godmode всегда здоровье = 100
     if (this.isGodmodeActive()) {
