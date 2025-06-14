@@ -56,7 +56,17 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
       ? playerData.email
       : undefined;
 
+  // --- Управляемость с мобильных телефонов ---
   const showMobileControls = isMobileDevice() || isTelegramBrowser();
+
+  React.useEffect(() => {
+    if (showMobileControls) {
+      // Здесь можно заменить на toast если захотите
+      console.log("Mobile controls are enabled: управление осуществляется с мобильного устройства или Telegram браузера.");
+    } else {
+      console.log("Desktop controls: управление осуществляется с ПК/ноутбука.");
+    }
+  }, [showMobileControls]);
 
   const [initialGameState, setInitialGameState] = useState<GameState>(() =>
     makeInitialGameState()
