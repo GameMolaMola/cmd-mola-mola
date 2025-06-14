@@ -114,17 +114,25 @@ const LandingPage = ({
           <h2 className="text-cyan-200 font-semibold mb-2">{t.aboutTitle}</h2>
           <p className="text-white/90 text-sm">{t.aboutText}</p>
           <ul className="list-disc ml-5 mt-2 text-cyan-100 text-sm">
-            {t.features?.map?.((f: string, idx: number) =>
-              // Показываем свою иконку если строка - монеты Mola Mola
-              typeof f === 'string' && (
-                (f.includes('монеты Mola Mola') || f.includes('monete Mola Mola') || f.includes('Mola Mola coins'))
-                ? <li key={idx} className="flex items-center gap-2">
-                    <img src="/lovable-uploads/00354654-8e2c-4993-8167-a9e91aef0d44.png" alt="Mola Mola Coin" className="inline w-5 h-5 object-contain mr-1" />
-                    <span>{f.replace(/[🪙]/g, '').trim()}</span>
+            {t.features?.map?.((f: any, idx: number) => {
+              if (typeof f === "object" && f.type === "molamola_coin") {
+                return (
+                  <li key={idx} className="flex items-center gap-2">
+                    <img
+                      src="/lovable-uploads/84eff824-67c6-4d5d-a334-63ed4014cc36.png"
+                      alt="Mola Mola Coin"
+                      className="inline w-5 h-5 object-contain mr-1"
+                    />
+                    <span>{f.label}</span>
                   </li>
-                : <li key={idx}>{f}</li>
-              )
-            )}
+                );
+              }
+              return (
+                <li key={idx}>
+                  {typeof f === "object" && f.label ? f.label : f}
+                </li>
+              );
+            })}
           </ul>
         </div>
         <div className="bg-blue-800/70 border border-yellow-400 p-4 rounded-lg w-full mb-4">
