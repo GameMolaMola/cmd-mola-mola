@@ -34,7 +34,7 @@ const PlayerRegistrationForm = () => {
           markJump: true,
         } as any);
         setSubmitError('');
-      }, 1700);
+      }, 3000); // было 1700, стало 3000 мс (~3 секунды)
       return () => clearTimeout(timer);
     }
   }, [showMarkModal, setPlayerData, language]);
