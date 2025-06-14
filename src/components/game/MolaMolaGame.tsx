@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import GameCanvas from './GameCanvas';
 import StartScreen from './StartScreen';
 import GameUI from './GameUI';
@@ -15,9 +15,9 @@ export interface GameState {
   isVictory: boolean;
 }
 
-const MolaMolaGame = () => {
+const MolaMolaGame = ({ autoStart }: { autoStart?: boolean }) => {
   const [gameState, setGameState] = useState<GameState>({
-    screen: 'start',
+    screen: autoStart ? 'playing' : 'start',
     level: 1,
     score: 0,
     health: 100,
@@ -25,6 +25,22 @@ const MolaMolaGame = () => {
     coins: 0,
     isVictory: false
   });
+
+  // Если autoStart меняется с false на true (и только при монтировании)
+  useEffect(() => {
+    if (autoStart && gameState.screen === 'start') {
+      setGameState({
+        screen: 'playing',
+        level: 1,
+        score: 0,
+        health: 100,
+        ammo: 20,
+        coins: 0,
+        isVictory: false
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoStart]);
 
   const startGame = () => {
     setGameState({
