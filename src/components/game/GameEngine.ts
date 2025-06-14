@@ -73,6 +73,7 @@ export class GameEngine {
   private images: {
     playerFrames: HTMLImageElement[];
     enemy: HTMLImageElement;
+    enemyLeft: HTMLImageElement;     // <-- Добавили второй спрайт для врага
     pizza: HTMLImageElement;
     brasilena: HTMLImageElement;
     wine: HTMLImageElement;
@@ -143,6 +144,7 @@ export class GameEngine {
     this.images = {
       playerFrames: [new Image(), new Image()],
       enemy: new Image(),
+      enemyLeft: new Image(),     // <-- Добавили второй спрайт для врага
       pizza: new Image(),
       brasilena: new Image(),
       wine: new Image(),
@@ -164,14 +166,17 @@ export class GameEngine {
       coin: '/lovable-uploads/8cb50a4f-d767-4a5d-bdf6-751db3255aec.png',
       brasilena: '/lovable-uploads/cc5bbfd2-9663-470b-8edf-b5314b29b3f0.png',
       wine: '/lovable-uploads/989f5507-8b03-451b-b9c1-b0e2d1cc1aaa.png',
-      pizza: '/lovable-uploads/204b20b0-06cb-45cd-b3e7-8a94e658a065.png', // <-- обновленный спрайт пиццы!
+      pizza: '/lovable-uploads/204b20b0-06cb-45cd-b3e7-8a94e658a065.png',
       enemy: '/lovable-uploads/b0b2972b-c98d-4f17-bf93-ac419c59bc60.png',
+      enemyLeft: '/lovable-uploads/e4515187-df60-4173-b316-3b20bc9db246.png', // <-- Новый спрайт!
       bossLucia: '/lovable-uploads/e2e9e94b-84f9-450f-a422-4f25b84dc5c0.png',
     };
 
     this.images.playerFrames[0].src = imageUrls.player1;
     this.images.playerFrames[1].src = imageUrls.player2;
     this.images.enemy.src = imageUrls.enemy;
+    this.images.enemyLeft = new Image();
+    this.images.enemyLeft.src = imageUrls.enemyLeft;
     this.images.pizza.src = imageUrls.pizza;
     this.images.brasilena.src = imageUrls.brasilena;
     this.images.wine.src = imageUrls.wine;
@@ -528,8 +533,18 @@ export class GameEngine {
       this.ctx.restore();
     } else {
       this.enemies.forEach(enemy => {
-        const image = this.images.enemy;
-        if (image && image.complete) {
+        // Если враг движется влево, используем enemyLeft, иначе обычный enemy
+        let image;
+        if (enemy.x > this.player.x) {
+          image = this.images.enemyLeft && this.images.enemyLeft.complete
+            ? this.images.enemyLeft
+            : null;
+        } else {
+          image = this.images.enemy && this.images.enemy.complete
+            ? this.images.enemy
+            : null;
+        }
+        if (image) {
           this.ctx.drawImage(image, enemy.x, enemy.y, enemy.width, enemy.height);
         } else {
           this.ctx.fillStyle = '#e74c3c';

@@ -1,4 +1,3 @@
-
 import { useRef } from "react";
 
 export interface FreeBrasilenaController {
@@ -37,7 +36,7 @@ export function useFreeBrasilena(): FreeBrasilenaController {
       });
       activeRef.current = true;
       timeoutRef.current = null;
-    }, 5000);
+    }, 3000); // <-- теперь всегда 3 секунды!
   };
 
   // Call when player picks up a free Brasilena
