@@ -2,16 +2,17 @@
 import React from "react";
 import { Heart } from "lucide-react";
 import { useTranslations } from "@/hooks/useTranslations";
-import { Language } from "@/contexts/GameContext";
+import { useGame } from "@/contexts/GameContext";
 
 interface HealthDisplayProps {
   health: number;
-  language: Language;
+  // language?: Language;
 }
 
-const HealthDisplay: React.FC<HealthDisplayProps> = ({ health, language }) => {
+const HealthDisplay: React.FC<HealthDisplayProps> = ({ health }) => {
+  const { language } = useGame();
   const t = useTranslations(language);
-  console.log('HUD HealthDisplay язык:', language);
+  console.log('HUD HealthDisplay реальный язык:', language);
 
   return (
     <span className="flex items-center font-semibold text-white whitespace-nowrap">

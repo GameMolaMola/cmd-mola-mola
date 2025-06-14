@@ -19,11 +19,9 @@ interface GameHUDProps {
   language: Language;
 }
 
-// Не кэшируем язык
 const GameHUD: React.FC<GameHUDProps> = ({
   health, ammo, coins, level, score, onPause, isMobile, language,
 }) => {
-  // Для проверки, что доходит нужный язык
   console.log('HUD GameHUD язык:', language);
 
   const finalScore = typeof score === "number" ? score : coins * 10 + level * 100;
@@ -31,11 +29,11 @@ const GameHUD: React.FC<GameHUDProps> = ({
   return (
     <div className="w-full flex items-center justify-between p-2 md:p-4">
       <div className="flex items-center gap-4 flex-wrap">
-        <HealthDisplay health={health} language={language} />
-        <CoinsDisplay coins={coins} language={language} />
-        <AmmoDisplay ammo={ammo} language={language} />
-        <LevelDisplay level={level} language={language} />
-        <ScoreDisplay score={finalScore} language={language} />
+        <HealthDisplay health={health} />
+        <CoinsDisplay coins={coins} />
+        <AmmoDisplay ammo={ammo} />
+        <LevelDisplay level={level} />
+        <ScoreDisplay score={finalScore} />
       </div>
       {isMobile && onPause && (
         <PauseButton onPause={onPause} language={language} />

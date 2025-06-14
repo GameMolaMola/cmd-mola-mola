@@ -1,27 +1,26 @@
 
 import React from "react";
 import GameOverDialog from "./hud/GameOverDialog";
-import { Language } from "@/contexts/GameContext";
+// import { Language } from "@/contexts/GameContext";
 
 interface Props {
   open: boolean;
   victory: boolean;
   stats: { level: number; coins: number; score: number };
   onRestart: () => void;
-  language: Language;
+  // language: Language;
 }
 
 const MolaMolaGameEndDialog: React.FC<Props> = ({
-  open, victory, stats, onRestart, language
+  open, victory, stats, onRestart
 }) => (
   <GameOverDialog
     open={open}
     victory={victory}
     stats={stats}
     onRestart={onRestart}
-    language={language}
+    // language={language}
   />
 );
 
 export default MolaMolaGameEndDialog;
-

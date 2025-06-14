@@ -2,16 +2,17 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/hooks/useTranslations";
-import { Language } from "@/contexts/GameContext";
+import { useGame } from "@/contexts/GameContext";
 
 interface PauseButtonProps {
   onPause: () => void;
-  language: Language;
+  // language?: Language;
 }
 
-const PauseButton: React.FC<PauseButtonProps> = ({ onPause, language }) => {
+const PauseButton: React.FC<PauseButtonProps> = ({ onPause }) => {
+  const { language } = useGame();
   const t = useTranslations(language);
-  console.log('HUD PauseButton язык:', language);
+  console.log('HUD PauseButton реальный язык:', language);
 
   return (
     <Button

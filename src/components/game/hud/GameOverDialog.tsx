@@ -3,14 +3,14 @@ import React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/hooks/useTranslations";
-import { Language } from "@/contexts/GameContext";
+import { useGame } from "@/contexts/GameContext";
 
 interface GameOverDialogProps {
   open: boolean;
   victory: boolean;
   stats: { level: number; coins: number; score: number };
   onRestart: () => void;
-  language: Language;
+  // language: Language;
 }
 
 const GameOverDialog: React.FC<GameOverDialogProps> = ({
@@ -18,8 +18,9 @@ const GameOverDialog: React.FC<GameOverDialogProps> = ({
   victory,
   stats,
   onRestart,
-  language,
+  // language,
 }) => {
+  const { language } = useGame();
   const t = useTranslations(language);
   return (
     <Dialog open={open}>
@@ -52,4 +53,3 @@ const GameOverDialog: React.FC<GameOverDialogProps> = ({
 };
 
 export default GameOverDialog;
-

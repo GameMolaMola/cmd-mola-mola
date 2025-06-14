@@ -2,16 +2,17 @@
 import React from "react";
 import { Coins } from "lucide-react";
 import { useTranslations } from "@/hooks/useTranslations";
-import { Language } from "@/contexts/GameContext";
+import { useGame } from "@/contexts/GameContext";
 
 interface CoinsDisplayProps {
   coins: number;
-  language: Language;
+  // language?: Language;
 }
 
-const CoinsDisplay: React.FC<CoinsDisplayProps> = ({ coins, language }) => {
+const CoinsDisplay: React.FC<CoinsDisplayProps> = ({ coins }) => {
+  const { language } = useGame();
   const t = useTranslations(language);
-  console.log('HUD CoinsDisplay язык:', language);
+  console.log('HUD CoinsDisplay реальный язык:', language);
 
   return (
     <span className="flex items-center font-semibold text-yellow-300 whitespace-nowrap">

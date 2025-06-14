@@ -1,16 +1,17 @@
 
 import React from "react";
 import { useTranslations } from "@/hooks/useTranslations";
-import { Language } from "@/contexts/GameContext";
+import { useGame } from "@/contexts/GameContext";
 
 interface LevelDisplayProps {
   level: number;
-  language: Language;
+  // language?: Language;
 }
 
-const LevelDisplay: React.FC<LevelDisplayProps> = ({ level, language }) => {
+const LevelDisplay: React.FC<LevelDisplayProps> = ({ level }) => {
+  const { language } = useGame();
   const t = useTranslations(language);
-  console.log('HUD LevelDisplay язык:', language);
+  console.log('HUD LevelDisplay реальный язык:', language);
 
   return (
     <span className="flex items-center font-semibold text-cyan-300 whitespace-nowrap">

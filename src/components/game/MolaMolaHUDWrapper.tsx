@@ -1,19 +1,19 @@
+
 import React from "react";
 import GameHUD from "./hud/GameHUD";
 import PauseOverlay from "./PauseOverlay";
-import { Language } from "@/contexts/GameContext";
+// import { Language } from "@/contexts/GameContext";
 
 interface Props {
   hud: { health: number; ammo: number; coins: number; level: number; score: number };
   isMobile: boolean;
   isPaused: boolean;
   onPause: () => void;
-  language: Language;
+  // language: Language;
 }
 
-const MolaMolaHUDWrapper: React.FC<Props> = ({ hud, isMobile, isPaused, onPause, language }) => {
-  // Для проверки, что доходит нужный язык
-  console.log('HUD MolaMolaHUDWrapper язык:', language);
+const MolaMolaHUDWrapper: React.FC<Props> = ({ hud, isMobile, isPaused, onPause }) => {
+  // HUD language controlled by context
   return (
     <>
       <GameHUD
@@ -24,7 +24,7 @@ const MolaMolaHUDWrapper: React.FC<Props> = ({ hud, isMobile, isPaused, onPause,
         score={hud.score}
         onPause={onPause}
         isMobile={isMobile}
-        language={language}
+        language={undefined as any}
       />
       <PauseOverlay visible={isPaused} />
     </>
