@@ -60,7 +60,8 @@ export const translations = {
     donateButton: "Support the Project",
     sendingEmail: "Sending notification...",
     emailSentSuccess: "Notification to admin sent!",
-    emailSentError: "Failed to send admin notification."
+    emailSentError: "Failed to send admin notification.",
+    pause: "Pause"
   },
   it: {
     // Landing page
@@ -121,7 +122,8 @@ export const translations = {
     donateButton: "Sostieni il progetto",
     sendingEmail: "Invio notifica...",
     emailSentSuccess: "Notifica inviata all’amministratore!",
-    emailSentError: "Errore invio notifica all’amministratore."
+    emailSentError: "Errore invio notifica all’amministratore.",
+    pause: "Pausa"
   },
   ru: {
     // Landing page
@@ -182,7 +184,8 @@ export const translations = {
     donateButton: "Поддержать проект",
     sendingEmail: "Отправка оповещения...",
     emailSentSuccess: "Оповещение администратору отправлено!",
-    emailSentError: "Ошибка отправки оповещения админу."
+    emailSentError: "Ошибка отправки оповещения админу.",
+    pause: "Пауза"
   }
 };
 
