@@ -674,7 +674,8 @@ export class GameEngine {
       canvas: this.canvas,
       mobileControlState: this.mobileControlState,
       keys: this.keys,
-      callbacks: this.callbacks
+      callbacks: this.callbacks,
+      godmode: this.godmode
     });
     updateEnemies({
       bossLucia: this.bossLucia,
@@ -693,8 +694,8 @@ export class GameEngine {
       freeBrasilena: this.freeBrasilena,
       callbacks: this.callbacks,
       checkCollision,
-      spawnBrasilenaWidth: 21, // 21px ширина!
-      spawnBrasilenaHeight: 64, // 64px высота!
+      spawnBrasilenaWidth: 21,
+      spawnBrasilenaHeight: 64,
       platforms: this.platforms,
       canvasHeight: this.canvas.height
     });
