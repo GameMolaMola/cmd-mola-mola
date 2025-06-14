@@ -84,17 +84,21 @@ const LandingPage = ({ onPlay }: { onPlay: () => void }) => {
         href={DONATE_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-5 left-1/2 -translate-x-1/2 z-40 px-7 py-3 rounded-full font-semibold
-                   text-white shadow-lg text-lg bg-pink-600 hover:bg-pink-700
-                   animate-pulse border-2 border-yellow-300 transition
-                   select-none"
+        className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 px-4 py-1.5 rounded-full font-semibold
+                   text-white shadow-lg text-base bg-pink-600 hover:bg-pink-700
+                   animate-pulse border border-yellow-300 transition
+                   select-none flex items-center"
         style={{
           animation: 'pulse 1s infinite'
         }}
       >
-        {t.donateButton}
-        {/* heart icon SVG or emoji */}
-        <span className="ml-2" role="img" aria-label="coffee">☕</span>
+        <span>{t.donateButton}</span>
+        <img
+          src="/lovable-uploads/9b1300ba-7697-468a-991e-4c29d0a221a0.png"
+          alt="Donate Cup"
+          className="ml-2"
+          style={{ height: "24px", width: "24px", objectFit: "contain" }}
+        />
       </a>
     </div>
   );
