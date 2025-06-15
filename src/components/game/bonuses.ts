@@ -11,7 +11,12 @@ function getMaxWineCount(isBoss: boolean) {
 const WINE_WIDTH = 21;
 const WINE_HEIGHT = 64;
 
-import { activateWineJumpBoost } from './playerEffects';
+import {
+  activateWineJumpBoost,
+  heal,
+  addAmmo,
+  addCoin
+} from './playerEffects';
 
 export function resetWineOnLevelStart(isBoss: boolean) {
   wineCollectedTotal = 0;
@@ -32,15 +37,11 @@ export function handleBonuses({
   canvasHeight,
   bossLucia // для лимита вина
 }: any) {
-  // Пиццы и бразилену не трогаем — оставляем прежнюю логику
+  // --- Пиццы ---
   for (let i = pizzas.length - 1; i >= 0; i--) {
     const pizza = pizzas[i];
     if (checkCollision(player, pizza)) {
-      if (typeof player.heal === "function") {
-        player.heal(20);
-      } else {
-        player.health = Math.min(player.health + 20, 100);
-      }
+      heal(player, 20);
       pizzas.splice(i, 1);
       callbacks.onStateUpdate();
     }
@@ -65,7 +66,7 @@ export function handleBonuses({
   for (let i = brasilenas.length - 1; i >= 0; i--) {
     const brasilena = brasilenas[i];
     if (checkCollision(player, brasilena)) {
-      player.ammo += 10;
+      addAmmo(player, 10);
       brasilenas.splice(i, 1);
       if (freeBrasilena) freeBrasilena.onPickup();
       callbacks.onStateUpdate();
@@ -81,7 +82,6 @@ export function handleBonuses({
     const wine = wines[i];
     if (checkCollision(player, wine)) {
       wines.splice(i, 1);
-      // Все управление эффектом через централизованную функцию:
       activateWineJumpBoost(player);
       wineCollectedTotal += 1;
       lastWineSpawnTime = now;

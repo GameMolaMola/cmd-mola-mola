@@ -1,5 +1,5 @@
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
-import { updatePlayer } from './player';
+import { takeDamage } from './playerEffects';
 
 // Добавим таймер чтобы не наносить урон слишком быстро
 let lastDamageTime: number = 0;
@@ -47,7 +47,7 @@ export function handleEnemyCollisions(
       } else {
         if (now - lastDamageTime >= DAMAGE_COOLDOWN) {
           lastDamageTime = now;
-          updatePlayer.takeDamage ? updatePlayer.takeDamage(player, 2) : player.health -= 2;
+          takeDamage(player, 2);
           if (player.health < 0) player.health = 0;
           callbacks.onStateUpdate?.({
             health: player.health,

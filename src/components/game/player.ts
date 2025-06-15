@@ -1,6 +1,12 @@
 import { checkCollision } from './utils/collision';
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
-import { activateWineJumpBoost } from './playerEffects';
+import {
+  heal,
+  takeDamage,
+  addAmmo,
+  addCoin,
+  activateWineJumpBoost,
+} from './playerEffects';
 
 function takeDamage(player: any, amount: number) {
   const prev = player.health;
@@ -138,7 +144,7 @@ export function updatePlayer({
   for (let i = coins.length - 1; i >= 0; i--) {
     const coin = coins[i];
     if (checkCollision(player, coin)) {
-      player.coins++;
+      addCoin(player, 1);
       coins.splice(i, 1);
       callbacks.onStateUpdate({
         health: player.health,
@@ -177,7 +183,7 @@ export function updatePlayer({
   for (let i = brasilenas.length - 1; i >= 0; i--) {
     const brasilena = brasilenas[i];
     if (checkCollision(player, brasilena)) {
-      player.ammo += 10;
+      addAmmo(player, 10);
       brasilenas.splice(i, 1);
       if (freeBrasilena) freeBrasilena.onPickup();
       callbacks.onStateUpdate({
