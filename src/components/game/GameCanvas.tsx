@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from "react";
 import { GameEngine } from "./GameEngine";
 import { useGame } from "@/contexts/GameContext";
@@ -34,8 +35,16 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     const resizeCanvas = () => {
       if (!canvas.parentElement) return;
       const { width, height } = canvas.parentElement.getBoundingClientRect();
-      canvas.width = width;
-      canvas.height = height;
+      
+      // Для мобильной версии увеличиваем размер canvas в 3 раза
+      // чтобы при scale(0.33) получить нужный размер
+      if (isMobile) {
+        canvas.width = width * 3;
+        canvas.height = height * 3;
+      } else {
+        canvas.width = width;
+        canvas.height = height;
+      }
     };
     
     const resizeObserver = new ResizeObserver(resizeCanvas);
@@ -49,7 +58,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         resizeObserver.unobserve(canvas.parentElement);
       }
     };
-  }, []);
+  }, [isMobile]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -97,7 +106,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       tabIndex={0}
       className="absolute inset-0 w-full h-full bg-[#011b2e] outline-none"
       style={{
-        touchAction: "pinch-zoom"
+        touchAction: "pinch-zoom",
+        transform: isMobile ? "scale(0.33)" : "scale(1)",
+        transformOrigin: "top left"
       }}
     />
   );
