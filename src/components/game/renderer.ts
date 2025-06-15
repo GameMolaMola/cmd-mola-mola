@@ -1,3 +1,4 @@
+
 import { drawPixelCoral } from './drawPixelCoral';
 import { drawPixelSand } from './drawPixelSand';
 
@@ -127,10 +128,36 @@ export function renderScene(
     });
   });
 
-  // --- Пули ---
-  ctx.fillStyle = '#f39c12';
+  // --- ПУЛИ (ИСПРАВЛЕНО для лучшей видимости на мобильных) ---
   bullets.forEach((bullet: any) => {
-    ctx.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+    ctx.save();
+    
+    // Увеличиваем размер пуль на мобильных устройствах
+    const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+    const bulletScale = isMobile ? 1.5 : 1;
+    const scaledWidth = bullet.width * bulletScale;
+    const scaledHeight = bullet.height * bulletScale;
+    
+    // Яркий цвет с обводкой для лучшей видимости
+    ctx.fillStyle = '#ff6b35';
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    
+    // Рисуем пулю с увеличенным размером
+    ctx.fillRect(
+      bullet.x - (scaledWidth - bullet.width) / 2, 
+      bullet.y - (scaledHeight - bullet.height) / 2, 
+      scaledWidth, 
+      scaledHeight
+    );
+    ctx.strokeRect(
+      bullet.x - (scaledWidth - bullet.width) / 2, 
+      bullet.y - (scaledHeight - bullet.height) / 2, 
+      scaledWidth, 
+      scaledHeight
+    );
+    
+    ctx.restore();
   });
 
   // --- Босс и враги ---

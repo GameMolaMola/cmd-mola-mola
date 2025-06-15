@@ -282,31 +282,41 @@ export class GameEngine {
   }
 
   private async initializeAudio() {
+    console.log('[GameEngine] Initializing audio system...');
+    
     // Активируем аудио при первом взаимодействии
-    const activateOnInteraction = async () => {
+    const activateOnInteraction = async (event: Event) => {
+      console.log('[GameEngine] User interaction detected:', event.type);
       if (!this.audioActivated) {
-        await activateAudio();
-        this.audioActivated = true;
-        console.log('[GameEngine] Audio activated on user interaction');
-        
-        // Запускаем музыку уровня после активации
-        if (this.soundEnabled && !audioManager.isMutedState()) {
-          console.log('[GameEngine] Starting level music after audio activation');
-          audioManager.playLevelMusic(this.player.level || 1);
+        try {
+          await activateAudio();
+          this.audioActivated = true;
+          console.log('[GameEngine] Audio activated successfully on user interaction');
+          
+          // Запускаем музыку уровня после активации
+          if (this.soundEnabled && !audioManager.isMutedState()) {
+            console.log('[GameEngine] Starting level music after audio activation');
+            audioManager.playLevelMusic(this.player.level || 1);
+          }
+        } catch (error) {
+          console.warn('[GameEngine] Failed to activate audio:', error);
         }
       }
     };
 
-    // Слушаем первое взаимодействие пользователя
-    const events = ['click', 'keydown', 'touchstart'];
+    // Расширенный список событий для мобильных устройств
+    const events = ['click', 'keydown', 'touchstart', 'touchend', 'pointerdown', 'mousedown'];
     events.forEach(event => {
-      document.addEventListener(event, activateOnInteraction, { once: true });
+      document.addEventListener(event, activateOnInteraction, { once: true, passive: true });
+      // Также слушаем события на canvas
+      this.canvas.addEventListener(event, activateOnInteraction, { once: true, passive: true });
     });
 
     // Пытаемся сразу активировать, если контекст уже разрешен
     try {
       await activateAudio();
       this.audioActivated = true;
+      console.log('[GameEngine] Audio activated immediately');
       if (this.soundEnabled && !audioManager.isMutedState()) {
         console.log('[GameEngine] Starting level music immediately');
         audioManager.playLevelMusic(this.player.level || 1);
@@ -589,11 +599,16 @@ export class GameEngine {
     }
     const direction = typeof this.player.direction === "number" ? this.player.direction : 1;
 
+    // Увеличиваем размер пуль для мобильных устройств
+    const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+    const bulletWidth = isMobile ? 25 : 20;
+    const bulletHeight = isMobile ? 12 : 10;
+
     this.bullets.push({
-      x: direction === 1 ? this.player.x + this.player.width : this.player.x - 20,
-      y: this.player.y + this.player.height / 2 - 5,
-      width: 20,
-      height: 10,
+      x: direction === 1 ? this.player.x + this.player.width : this.player.x - bulletWidth,
+      y: this.player.y + this.player.height / 2 - bulletHeight / 2,
+      width: bulletWidth,
+      height: bulletHeight,
       speed: 10 * direction,
       direction
     });
@@ -601,8 +616,8 @@ export class GameEngine {
     this.player.ammo--;
     this.lastShotTime = currentTime;
     
-    // Звук выстрела
-    if (this.soundEnabled) {
+    // Звук выстрела с дополнительной проверкой для мобильных
+    if (this.soundEnabled && this.audioActivated) {
       audioManager.playShootSound();
     }
     

@@ -1,4 +1,3 @@
-
 // Менеджер звуков для ретро-игры с интеграцией генератора фоновой музыки уровней (чиптюн)
 class AudioManager {
   private audioContext: AudioContext | null = null;
@@ -23,6 +22,7 @@ class AudioManager {
       this.masterGain = this.audioContext.createGain();
       this.masterGain.connect(this.audioContext.destination);
       this.masterGain.gain.value = 0.3; // Начальная громкость
+      console.log('[AudioManager] AudioContext initialized successfully');
     } catch (error) {
       console.warn('Web Audio API не поддерживается:', error);
       this.isEnabled = false;
@@ -30,7 +30,11 @@ class AudioManager {
   }
 
   private async ensureAudioContext() {
-    if (!this.audioContext || !this.isEnabled) return false;
+    if (!this.audioContext || !this.isEnabled) {
+      console.log('[AudioManager] AudioContext not available or disabled');
+      return false;
+    }
+    
     if (this.audioContext.state === 'suspended') {
       try {
         await this.audioContext.resume();
@@ -40,16 +44,51 @@ class AudioManager {
         return false;
       }
     }
+    
+    // Дополнительная проверка для мобильных устройств
+    if (this.audioContext.state !== 'running') {
+      console.warn('[AudioManager] AudioContext not in running state:', this.audioContext.state);
+      return false;
+    }
+    
     return true;
   }
 
-  // --- MUSIC SYSTEM START ---
+  // Активация звука по клику пользователя (улучшено для мобильных)
+  async activateAudio() {
+    console.log('[AudioManager] Attempting to activate audio...');
+    
+    if (!this.audioContext) {
+      console.warn('[AudioManager] No audio context available');
+      return;
+    }
+    
+    if (this.audioContext.state === 'suspended') {
+      try {
+        await this.audioContext.resume();
+        console.log('[AudioManager] Audio activated by user interaction, state:', this.audioContext.state);
+        
+        // Дополнительная проверка после активации
+        if (this.audioContext.state === 'running') {
+          console.log('[AudioManager] AudioContext is now running successfully');
+        } else {
+          console.warn('[AudioManager] AudioContext state after resume:', this.audioContext.state);
+        }
+      } catch (error) {
+        console.error('[AudioManager] Failed to resume audio context:', error);
+      }
+    } else {
+      console.log('[AudioManager] AudioContext already active, state:', this.audioContext.state);
+    }
+  }
+
+  // --- MUSIC SYSTEM START (improved mobile support) ---
   // Основная функция для генерации зацикленной музыки для конкретного уровня
   public async playLevelMusic(level: number) {
-    console.log(`[AudioManager] Attempting to play level ${level} music, muted: ${this.isMuted}`);
+    console.log(`[AudioManager] Attempting to play level ${level} music, muted: ${this.isMuted}, context state: ${this.audioContext?.state}`);
     
     if (!await this.ensureAudioContext() || this.isMuted) {
-      console.log('[AudioManager] AudioContext not available or muted');
+      console.log('[AudioManager] AudioContext not available, muted, or not running');
       return;
     }
     
@@ -64,7 +103,7 @@ class AudioManager {
     const startAt = ctx.currentTime + 0.08; // чуть позже
     this.musicStartedAt = ctx.currentTime;
 
-    console.log(`[AudioManager] Starting level ${level} music with tempo ${tempo}`);
+    console.log(`[AudioManager] Starting level ${level} music with tempo ${tempo}, context time: ${ctx.currentTime}`);
 
     // Вспомогатель: нота
     const note = (freq: number, t: number, dur: number, type: OscillatorType, vol: number=0.14) => {
@@ -177,6 +216,7 @@ class AudioManager {
     // Повтор после всей длины
     const loopTimer = window.setTimeout(() => {
       if(this.musicCurrentLevel===level && !this.isMuted) {
+        console.log(`[AudioManager] Restarting level ${level} music loop`);
         this.playLevelMusic(level);
       }
     }, loopLen*1000);
@@ -345,14 +385,6 @@ class AudioManager {
     
     oscillator.start(this.audioContext!.currentTime);
     oscillator.stop(this.audioContext!.currentTime + 1.5);
-  }
-
-  // Активация звука по клику пользователя (обязательно для браузеров)
-  async activateAudio() {
-    if (this.audioContext && this.audioContext.state === 'suspended') {
-      await this.audioContext.resume();
-      console.log('[AudioManager] Audio activated by user interaction');
-    }
   }
 
   // Заглушка: playAmbientLoop больше не нужна, используем только playLevelMusic
