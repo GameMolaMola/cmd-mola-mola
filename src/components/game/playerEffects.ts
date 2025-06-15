@@ -35,11 +35,14 @@ export function addAmmo(player: Player, amount: number) {
   console.log(`[playerEffects] ammo from ${prev} to ${player.ammo} (+${amount})`);
 }
 
-/** Добавляет монеты. */
+/** Добавляет монеты с учетом максимального лимита 1000. */
 export function addCoin(player: Player, amount = 1) {
   const prev = player.coins;
-  player.coins += amount;
-  console.log(`[playerEffects] coins from ${prev} to ${player.coins} (+${amount})`);
+  const maxToAdd = Math.max(0, 1000 - player.coins);
+  const actualAmount = Math.min(amount, maxToAdd);
+  player.coins += actualAmount;
+  if (player.coins > 1000) player.coins = 1000;
+  console.log(`[playerEffects] coins from ${prev} to ${player.coins} (+${actualAmount}, req=${amount})`);
 }
 
 /** Wine Jump Boost: увеличивает jumpPower в 2 раза на 10 секунд, не стакается, только обновляет время. */

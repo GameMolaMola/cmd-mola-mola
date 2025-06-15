@@ -131,6 +131,10 @@ export class GameEngine {
   private lastResourceSpawnTime: number = 0;
   private lastPlatformSpawnTime: number = 0;
 
+  private bossCoinTimer: number | null = null;
+  private bossCoinsEndTime: number | null = null;
+  private bossRewardActive: boolean = false;
+
   constructor(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
@@ -404,14 +408,15 @@ export class GameEngine {
           height: 32
         });
       }
-      for (let i = 0; i < 4; i++) {
-        this.coins.push({
-          x: 200 + Math.random() * 400,
-          y: 100 + Math.random() * 200,
-          width: 32,
-          height: 32
-        });
-      }
+      // Обновляем: обычные монеты не спавним на босс-уровне!
+      // for (let i = 0; i < 4; i++) {
+      //   this.coins.push({
+      //     x: 200 + Math.random() * 400,
+      //     y: 100 + Math.random() * 200,
+      //     width: 32,
+      //     height: 32
+      //   });
+      // }
       return;
     } else {
       this.bossLucia = null;
@@ -538,8 +543,7 @@ export class GameEngine {
 
     // --- динамика: генерация бонусов и платформ ---
     if (now - this.lastResourceSpawnTime > 2650) {
-      // шанс 60-80% появления бонуса
-      if (Math.random() < 0.77) {
+      if (!this.bossRewardActive) { // В режиме награды за босса не спавним обычные ресурсы!
         // Тип выбирается с весами (монеты чаще, вино и амму — реже)
         const types: Array<'health' | 'ammo' | 'coin' | 'pizza' | 'brasilena' | 'wine'> = [
           'coin', 'coin', 'coin', 'coin', // х4
@@ -553,8 +557,16 @@ export class GameEngine {
       this.lastResourceSpawnTime = now;
     }
 
+    if (this.bossRewardActive && this.bossCoinsEndTime && now >= this.bossCoinsEndTime) {
+      // 10 секунд прошли, убираем все босс-монеты
+      this.coins = this.coins.filter(coin => !coin._bossCoin);
+      this.bossRewardActive = false;
+      this.bossCoinsEndTime = null;
+      this.updateGameState();
+    }
+
     if (now - this.lastPlatformSpawnTime > 4200) {
-      if (Math.random() < 0.68 && this.dynamicPlatforms.length < 7) {
+      if (!this.bossRewardActive) { // не спавним платформы во время фазы сбора босс-монет
         // минимальная плотность плат
         const typeRand = Math.random();
         let type: 'static' | 'disappearing' | 'moving' = 'static';
@@ -584,13 +596,11 @@ export class GameEngine {
     this.animationId = requestAnimationFrame(this.gameLoop);
   };
 
-  // ---- ДОБАВЛЯЕМ ПУБЛИЧНЫЙ МЕТОД --- //
+  // --- Переход на следующий уровень: теперь монеты не сбрасываются ---
   public setNextLevel = () => {
-    // Сохраняем текущие показатели
     this.player.level = (this.player.level ?? 1) + 1;
-    // Параметры оставляем как есть (health, coins, ammo и пр.)
+    // Не сбрасываем монеты, просто генерим новый уровень!
     this.generateLevel();
-    // Перезапуск кадров (если был stop по какой-то причине)
     this.updateGameState();
   }
 
@@ -613,6 +623,29 @@ export class GameEngine {
   getAllPlatforms() {
     // ВСЕГДА объединять платформы
     return [...this.platforms, ...this.dynamicPlatforms];
+  }
+
+  // --- Когда босс побежден: спавним 300 монет на 10 секунд ---
+  public spawnBossCoins() {
+    this.bossRewardActive = true;
+    this.bossCoinsEndTime = Date.now() + 10000;
+    // Очищаем все обычные монеты (если остались)
+    this.coins = [];
+    // Размер монеты фиксирован: width 32, height 32
+    const TOTAL = 300;
+    const bossCoinList = [];
+    for (let i = 0; i < TOTAL; i++) {
+      // Рандомно рассыпаем по bосс-арене!
+      bossCoinList.push({
+        x: 200 + Math.random() * 400,
+        y: 100 + Math.random() * 200,
+        width: 32,
+        height: 32,
+        _bossCoin: true,
+      });
+    }
+    this.coins = bossCoinList;
+    // Через 10 секунд уберём их (gameLoop их удалит)
   }
 }
 
