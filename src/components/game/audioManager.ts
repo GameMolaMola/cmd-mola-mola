@@ -1,3 +1,4 @@
+
 // Менеджер звуков для ретро-игры с интеграцией генератора фоновой музыки уровней (чиптюн)
 class AudioManager {
   private audioContext: AudioContext | null = null;
@@ -33,6 +34,7 @@ class AudioManager {
     if (this.audioContext.state === 'suspended') {
       try {
         await this.audioContext.resume();
+        console.log('[AudioManager] AudioContext resumed successfully');
       } catch (error) {
         console.warn('Не удалось возобновить AudioContext:', error);
         return false;
@@ -44,7 +46,13 @@ class AudioManager {
   // --- MUSIC SYSTEM START ---
   // Основная функция для генерации зацикленной музыки для конкретного уровня
   public async playLevelMusic(level: number) {
-    if (!await this.ensureAudioContext() || this.isMuted) return;
+    console.log(`[AudioManager] Attempting to play level ${level} music, muted: ${this.isMuted}`);
+    
+    if (!await this.ensureAudioContext() || this.isMuted) {
+      console.log('[AudioManager] AudioContext not available or muted');
+      return;
+    }
+    
     this.stopLevelMusic(); // отменить текущее
     this.musicCurrentLevel = level;
 
@@ -55,6 +63,8 @@ class AudioManager {
 
     const startAt = ctx.currentTime + 0.08; // чуть позже
     this.musicStartedAt = ctx.currentTime;
+
+    console.log(`[AudioManager] Starting level ${level} music with tempo ${tempo}`);
 
     // Вспомогатель: нота
     const note = (freq: number, t: number, dur: number, type: OscillatorType, vol: number=0.14) => {
@@ -337,6 +347,14 @@ class AudioManager {
     oscillator.stop(this.audioContext!.currentTime + 1.5);
   }
 
+  // Активация звука по клику пользователя (обязательно для браузеров)
+  async activateAudio() {
+    if (this.audioContext && this.audioContext.state === 'suspended') {
+      await this.audioContext.resume();
+      console.log('[AudioManager] Audio activated by user interaction');
+    }
+  }
+
   // Заглушка: playAmbientLoop больше не нужна, используем только playLevelMusic
   async playAmbientLoop() { /* no-op for now */ }
   stopAmbientLoop() { /* no-op for now */ }
@@ -370,3 +388,4 @@ export const audioManager = new AudioManager();
 // Внешний API:
 export const playLevelMusic = (level: number) => audioManager.playLevelMusic(level);
 export const stopLevelMusic = () => audioManager.stopLevelMusic();
+export const activateAudio = () => audioManager.activateAudio();

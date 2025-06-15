@@ -21,7 +21,7 @@ import { spawnDynamicPlatform, updateDynamicPlatforms } from './dynamicPlatforms
 import { drawPixelCoral } from './drawPixelCoral';
 import { drawPixelSand } from './drawPixelSand';
 import { createStaticSandLayer } from './staticSandLayer';
-import { audioManager } from './audioManager';
+import { audioManager, activateAudio } from './audioManager';
 
 // --- ВНИМАНИЕ: Декларация для поддержки window.gameEngineInstance ---
 declare global {
@@ -148,6 +148,7 @@ export class GameEngine {
   private bossRewardActive: boolean = false;
 
   private soundEnabled: boolean = true;
+  private audioActivated: boolean = false;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -280,19 +281,39 @@ export class GameEngine {
     }
   }
 
-  private initializeAudio() {
-    // Запускаем фоновую амбиентную музыку через несколько секунд после старта
-    setTimeout(() => {
-      if (this.soundEnabled) {
-        audioManager.playAmbientLoop();
-        // Повторяем каждые 8 секунд
-        setInterval(() => {
-          if (this.soundEnabled && !audioManager.isMutedState()) {
-            audioManager.playAmbientLoop();
-          }
-        }, 8000);
+  private async initializeAudio() {
+    // Активируем аудио при первом взаимодействии
+    const activateOnInteraction = async () => {
+      if (!this.audioActivated) {
+        await activateAudio();
+        this.audioActivated = true;
+        console.log('[GameEngine] Audio activated on user interaction');
+        
+        // Запускаем музыку уровня после активации
+        if (this.soundEnabled && !audioManager.isMutedState()) {
+          console.log('[GameEngine] Starting level music after audio activation');
+          audioManager.playLevelMusic(this.player.level || 1);
+        }
       }
-    }, 2000);
+    };
+
+    // Слушаем первое взаимодействие пользователя
+    const events = ['click', 'keydown', 'touchstart'];
+    events.forEach(event => {
+      document.addEventListener(event, activateOnInteraction, { once: true });
+    });
+
+    // Пытаемся сразу активировать, если контекст уже разрешен
+    try {
+      await activateAudio();
+      this.audioActivated = true;
+      if (this.soundEnabled && !audioManager.isMutedState()) {
+        console.log('[GameEngine] Starting level music immediately');
+        audioManager.playLevelMusic(this.player.level || 1);
+      }
+    } catch (error) {
+      console.log('[GameEngine] Audio activation will wait for user interaction');
+    }
   }
 
   public toggleSound() {
@@ -436,18 +457,10 @@ export class GameEngine {
     this.brasilenas = [];
     this.wines = [];
 
-    // --- Новый вызов: музыка для этого уровня ---
-    if (typeof window !== "undefined") {
-      // взятие аудио-метода из audioManager
-      try {
-        // Импорт делаем динамический, чтобы избежать лишних ошибок в тестах
-        require("./audioManager").playLevelMusic(this.player.level ?? 1);
-      } catch (e) {
-        // fallback если что
-        if (window && (window as any).audioManager?.playLevelMusic) {
-          (window as any).audioManager.playLevelMusic(this.player.level ?? 1);
-        }
-      }
+    // --- Запускаем музыку для этого уровня ---
+    if (this.audioActivated && this.soundEnabled && !audioManager.isMutedState()) {
+      console.log(`[GameEngine] Starting music for level ${this.player.level}`);
+      audioManager.playLevelMusic(this.player.level ?? 1);
     }
 
     // Исправлено: теперь босс появляется при уровне >= 10 (раньше было > 10)
