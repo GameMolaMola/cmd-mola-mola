@@ -251,12 +251,26 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
 
   // --- Полный сброс состояния и HUD для корректной работы рестарта ---
   const handleRestart = () => {
+    // Принудительно останавливаем старый GameEngine
+    if (lastGameEngine.current) {
+      try {
+        lastGameEngine.current.stop();
+      } catch (e) {
+        console.warn('[handleRestart] Не удалось остановить старый движок:', e);
+      }
+      lastGameEngine.current = null;
+      console.log('[handleRestart] GameEngine ref полностью сброшен!');
+    }
+    // Затем сбрасываем состояния игры
     resetGame();
     justResetGameRef.current = true;
-    // Сброс HUD на начальное значение гарантированно
+    // Гарантированно сбрасываем HUD и initialGameState явно
     setHud(makeInitialGameState());
-    // Доп.логирование для отладки
-    console.log("[handleRestart] Reset game state through hook & HUD");
+    setInitialGameState(makeInitialGameState());
+    // Устанавливаем новый gameSessionId (в resetGame вызывается, но дадим явно для надёжности)
+    setGameSessionId(Date.now());
+    // Лог
+    console.log("[handleRestart] Произведён полный сброс игры и движка!");
   };
 
   // Engine ref и мобильные контролы
