@@ -1,0 +1,11 @@
+
+{
+  "appId": "app.lovable.804fa8507a8a4f41934800fecc6f9455",
+  "appName": "mola-mola-pixel",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "https://804fa850-7a8a-4f41-9348-00fecc6f9455.lovableproject.com?forceHideBadge=true",
+    "cleartext": true
+  }
+}

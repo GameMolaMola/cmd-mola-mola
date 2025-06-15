@@ -71,3 +71,39 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Как собрать приложение для iOS (App Store Publish)
+
+1. Установите Capacitor:
+   ```
+   npm install @capacitor/core @capacitor/cli @capacitor/ios
+   ```
+
+2. Инициализируйте проект:
+   ```
+   npx cap init
+   ```
+   - App ID: app.lovable.804fa8507a8a4f41934800fecc6f9455
+   - App Name: mola-mola-pixel
+
+   В конфиге уже прописан автоматический hot-reload на ваш Lovable-сервер для удобства отладки.
+
+3. Добавьте платформу iOS:
+   ```
+   npx cap add ios
+   ```
+
+4. Соберите проект и синхронизируйте веб-ресурсы:
+   ```
+   npm run build
+   npx cap sync
+   ```
+
+5. Откройте проект в Xcode:
+   ```
+   npx cap open ios
+   ```
+
+6. Сборка, настройка и публикация — стандартные для App Store приложения шаги.
+
+Полное руководство — [Блог Lovable: публикация мобильных приложений](https://lovable.dev/blogs/TODO)
