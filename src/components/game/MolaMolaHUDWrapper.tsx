@@ -2,27 +2,44 @@
 import React, { useState, useEffect } from 'react';
 import GameHUD from './hud/GameHUD';
 import { GameState } from './types';
+import { audioManager } from './audioManager';
 
 interface MolaMolaHUDWrapperProps {
-  hud: GameState;
+  gameState: GameState;
   isMobile: boolean;
   onPause: () => void;
 }
 
-const MolaMolaHUDWrapper: React.FC<MolaMolaHUDWrapperProps> = ({ hud, isMobile, onPause }) => {
+const MolaMolaHUDWrapper: React.FC<MolaMolaHUDWrapperProps> = ({ gameState, isMobile, onPause }) => {
+  const [soundMuted, setSoundMuted] = useState(audioManager.isMutedState());
+
+  const handleSoundToggle = () => {
+    audioManager.toggleMute();
+    setSoundMuted(audioManager.isMutedState());
+    
+    // Если звук включен, запускаем фоновую музыку
+    if (!audioManager.isMutedState()) {
+      audioManager.playAmbientLoop();
+    }
+  };
+
+  // Запускаем фоновую музыку при загрузке, если звук не отключен
+  useEffect(() => {
+    if (!audioManager.isMutedState()) {
+      audioManager.playAmbientLoop();
+    }
+  }, []);
+
   return (
     <>
       <GameHUD
-        health={hud.health}
-        ammo={hud.ammo}
-        coins={hud.coins}
-        level={hud.level}
-        soundMuted={hud.soundMuted}
+        health={gameState.health}
+        ammo={gameState.ammo}
+        coins={gameState.coins}
+        level={gameState.level}
+        soundMuted={soundMuted}
         onPause={onPause}
-        onSoundToggle={() => {
-          // Sound toggle functionality will be handled by the audio manager
-          console.log('Sound toggle clicked');
-        }}
+        onSoundToggle={handleSoundToggle}
       />
     </>
   );

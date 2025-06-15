@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useGame } from "@/contexts/GameContext";
 import { useTranslations } from "@/hooks/useTranslations";
@@ -68,7 +67,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
         <MolaMolaHUDWrapper
-          hud={hud}
+          gameState={hud}
           isMobile={showMobileControls}
           onPause={onPause}
         />
