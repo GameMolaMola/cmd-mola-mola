@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from "react";
 import { useGame } from "@/contexts/GameContext";
 import { Button } from "@/components/ui/button";
@@ -13,6 +12,9 @@ import { useTranslations } from "@/hooks/useTranslations";
 import MolaMolaHUDWrapper from "./MolaMolaHUDWrapper";
 import MolaMolaGameEndDialog from "./MolaMolaGameEndDialog";
 import MolaMolaMobileControlsWrapper from "./MolaMolaMobileControlsWrapper";
+import { makeInitialGameState } from "./makeInitialGameState";
+import { useMobileControls } from "./useMobileControls";
+import { useGameReset } from "./useGameReset";
 
 function isMobileDevice() {
   if (typeof navigator === "undefined") return false;
@@ -25,29 +27,7 @@ function isTelegramBrowser() {
   return ua.toLowerCase().includes("telegram");
 }
 
-function makeInitialGameState(playerLevel = 1) {
-  return {
-    health: 100,
-    ammo: 10,
-    coins: 0,
-    level: playerLevel,
-    powerUps: {
-      speedBoost: false,
-      speedBoostTime: 0,
-    },
-    score: 110,
-    isVictory: false,
-  };
-}
-
 const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
-  const [hud, setHud] = useState({ health: 100, ammo: 10, coins: 0, level: 1, score: 110 });
-  const [gameEnded, setGameEnded] = useState(false);
-  const [victory, setVictory] = useState(false);
-  const [finalStats, setFinalStats] = useState<any>(null);
-  const [isPaused, setIsPaused] = useState(false);
-  const [gameSessionId, setGameSessionId] = useState<number>(() => Date.now());
-
   const { playerData, language } = useGame();
   const freeBrasilena = useFreeBrasilena();
   const t = useTranslations(language);
@@ -59,8 +39,20 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
       ? playerData.email
       : undefined;
 
-  // --- Управляемость с мобильных телефонов ---
-  const showMobileControls = (isMobileDevice() || isTelegramBrowser()) && !gameEnded;
+  // Хук сброса и состояния игры
+  const {
+    hud, setHud,
+    initialGameState, setInitialGameState,
+    gameSessionId, setGameSessionId,
+    gameEnded, setGameEnded,
+    victory, setVictory,
+    finalStats, setFinalStats,
+    isPaused, setIsPaused,
+    resetGame,
+  } = useGameReset(playerData);
+
+  // Показываем мобильные контролы
+  const showMobileControls = useMobileControls(gameEnded);
 
   React.useEffect(() => {
     if (showMobileControls) {
@@ -70,41 +62,37 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     }
   }, [showMobileControls]);
 
-  const [initialGameState, setInitialGameState] = useState<GameState>(() =>
-    makeInitialGameState()
-  );
-
-  useEffect(() => {
+  // Сброс по изменению user/playerData
+  React.useEffect(() => {
     setInitialGameState(makeInitialGameState());
     setGameSessionId(Date.now());
-    // Сбросить флаги, если вдруг что-то зависло (safety)
     setGameEnded(false);
     setVictory(false);
     setFinalStats(null);
     setIsPaused(false);
-  }, [playerData]);
+  }, [playerData, setInitialGameState, setGameSessionId, setGameEnded, setVictory, setFinalStats, setIsPaused]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.code === "KeyP" && !gameEnded) {
-        setIsPaused((v) => !v);
+        setIsPaused((v: boolean) => !v);
       }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [gameEnded]);
+  }, [gameEnded, setIsPaused]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!gameEnded) setIsPaused(false);
-  }, [gameEnded]);
+  }, [gameEnded, setIsPaused]);
 
   const onPause = () => {
-    if (!gameEnded) setIsPaused((p) => !p);
+    if (!gameEnded) setIsPaused((p: boolean) => !p);
   };
 
-  // --- обновляем HUD и score на лету ---
+  // обновляем HUD и score на лету
   const onStateUpdate = (updates: any) => {
-    setHud((prev) => {
+    setHud((prev: any) => {
       const safeUpdates = updates ?? {};
       const coins = typeof safeUpdates.coins === "number" ? safeUpdates.coins : prev.coins;
       const level = typeof safeUpdates.level === "number" ? safeUpdates.level : prev.level;
@@ -115,54 +103,28 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     });
   };
 
-  // --- КРИТИЧНО: остановить движение и UI при gameEnded, гарантировать stop движка ---
-  // handleGameEnd вызывается только движком
+  // КРИТИЧНО: остановить движение и UI при gameEnded
   const handleGameEnd = (isVictory: boolean, stats: any) => {
     setGameEnded(true);
     setVictory(isVictory);
     setFinalStats(stats);
     setIsPaused(false);
-    setGameSessionId(Date.now()); // Обновим любую логику gameEngine (он перезапишется новым)
-    // Лог для диагностики
+    setGameSessionId(Date.now());
     console.log("[GameEnd] Triggered: victory=", isVictory, "stats=", stats, "gameSessionId=", gameSessionId);
   };
 
-  // --- Сброс игры: флаг gameEnded сбрасывается до перезапуска канваса ---
+  // Сброс игры через хук
   const handleRestart = () => {
-    // ШАГ 1: Сбросить флаги в строгом порядке
-    setGameEnded(false);
-    setVictory(false);
-    setFinalStats(null);
-    setIsPaused(false);
-    // ШАГ 2: Сначала сбрасываем HUD и начальное состояние одним махом
-    const initial = makeInitialGameState();
-    setHud({ ...initial });
-    setInitialGameState(initial);
-    // ШАГ 3: Новое gameSessionId — именно ПОСЛЕ сброса состояния!
-    const newSessionId = Date.now();
-    setGameSessionId(newSessionId);
-
-    // Логирование для отладки
-    console.log("[handleRestart] Reset game state", {
-      newSessionId,
-      initial,
-      flags: {
-        gameEnded: false,
-        victory: false,
-        finalStats: null,
-        isPaused: false,
-      }
-    });
+    resetGame();
+    // Доп.логирование для отладки
+    console.log("[handleRestart] Reset game state through hook");
   };
 
-  // --- Engine ref и мобильные контролы всегда сбрасываются при gameEnded ---
+  // Engine ref и мобильные контролы
   const lastGameEngine = useRef<any>(null);
-
   const collectEngineRef = (engineInstance: any) => {
     lastGameEngine.current = engineInstance;
   };
-
-  // React UI-обработка мобильных контролов: НЕ активны в gameEnded!
   const handleControl = (control: string, state: boolean) => {
     if (!lastGameEngine.current || gameEnded) return;
     if (typeof lastGameEngine.current.setMobileControlState === "function") {
@@ -188,7 +150,6 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
           onPause={onPause}
         />
       </div>
-      
       <div className="relative flex-1">
         <GameCanvas
           key={gameSessionId}
@@ -197,20 +158,17 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
           onStateUpdate={onStateUpdate}
           isMobile={showMobileControls}
           username={username}
-          isPaused={isPaused || gameEnded}  // <--- ВАЖНО: всегда пауза если gameEnded
+          isPaused={isPaused || gameEnded}
           gameSessionId={gameSessionId}
           collectEngineRef={collectEngineRef}
         />
       </div>
-
       <div 
         className="z-10 shrink-0"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <MolaMolaMobileControlsWrapper show={showMobileControls} onControl={handleControl} />
       </div>
-
-      {/* Game End Dialog всегда настолько выше, что UI не мешает! */}
       <MolaMolaGameEndDialog
         open={gameEnded}
         victory={victory}
@@ -227,4 +185,3 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
 };
 
 export default MolaMolaGame;
-
