@@ -36,13 +36,21 @@ export function handleEnemyCollisions(
   for (const enemy of enemies) {
     if (checkCollision(player, enemy)) {
       collided = true;
-      // ВАЖНО: урон только если КОНКРЕТНО это соприкосновение!
-      if (player?.username === '@MolaMolaCoin') {
+      
+      // Проверяем godmode двумя способами: через флаг godmode ИЛИ через username
+      const isGodmodeUser = player?.username === '@MolaMolaCoin' || isGodmodeActive(godmode) || player.godmode;
+      
+      console.log('[collisionHandlers] Collision detected:', {
+        username: player?.username,
+        godmode: godmode,
+        playerGodmode: player.godmode,
+        isGodmodeUser: isGodmodeUser
+      });
+      
+      if (isGodmodeUser) {
+        // Принудительно устанавливаем здоровье в 100 для godmode пользователей
         player.health = 100;
-        continue;
-      }
-      if (isGodmodeActive(godmode)) {
-        applyGodmodeIfNeeded(player, godmode);
+        console.log('[collisionHandlers] Godmode active - health set to 100');
         continue;
       } else {
         if (now - player._lastDamageTime >= DAMAGE_COOLDOWN) {
@@ -61,9 +69,7 @@ export function handleEnemyCollisions(
           }
         }
       }
-      // ЕСЛИ столкновения нет – вообще не трогать здоровье!
     }
   }
-  // Если было столкновение — всё уже обработано. Если не было, ничего не меняем.
   return false;
 }

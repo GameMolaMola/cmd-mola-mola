@@ -1,4 +1,3 @@
-
 import { updatePlayer } from './player';
 import { updateEnemies } from './enemies';
 import { handleEnemyCollisions } from './collisionHandlers';
@@ -20,7 +19,7 @@ export function gameTick(engine: any) {
     mobileControlState: engine.mobileControlState,
     keys: engine.keys,
     callbacks: engine.callbacks,
-    godmode: engine.godmode,
+    godmode: engine.player.godmode, // передаём godmode из игрока
     bullets: engine.bullets   // передаём общий массив!
   });
 
@@ -31,7 +30,7 @@ export function gameTick(engine: any) {
     canvas: engine.canvas,
     callbacks: engine.callbacks,
     checkCollision,
-    godmode: engine.godmode,
+    godmode: engine.player.godmode, // передаём godmode из игрока
   });
 
   if (!engine.bossLucia && engine.enemies.length === 0) {
@@ -43,7 +42,7 @@ export function gameTick(engine: any) {
     handleEnemyCollisions(
       engine.player,
       engine.enemies,
-      engine.godmode,
+      engine.player.godmode, // передаём godmode из игрока
       checkCollision,
       engine.callbacks
     );
@@ -77,4 +76,3 @@ export function gameTick(engine: any) {
   updateBubbles(engine.bubbles, engine.canvas);
   engine.renderer(engine.ctx, engine);
 }
-
