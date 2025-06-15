@@ -15,23 +15,33 @@ function heal(player: any, amount: number) {
   console.log(`[heal] from=${prev} to=${player.health}, amount=${amount}`);
 }
 
-// Централизованное управление jumpBoost
+// Централизованное управление WINE BOOST — новый вариант!
 function activateJumpBoost(player: any) {
-  if (!player._baseJumpPower) player._baseJumpPower = player.jumpPower ?? -15;
-  if (player._jumpBoostTimeout) clearTimeout(player._jumpBoostTimeout);
-  player.jumpPower = player._baseJumpPower * 4;
-  player.powerUps.speedBoost = true;
-  player.powerUps.speedBoostTime = 10 * 60;
-  player._hasJumpBoost = true;
-  player._jumpBoostTimeout = setTimeout(() => {
-    player.jumpPower = player._baseJumpPower;
-    player.powerUps.speedBoost = false;
-    player.powerUps.speedBoostTime = 0;
-    player._hasJumpBoost = false;
-    player._jumpBoostTimeout = null;
-    console.log("[wine] jump boost deactivated, jumpPower restored:", player.jumpPower);
-  }, 10000);
-  console.log("[wine] jump boost activated, jumpPower x4:", player.jumpPower);
+  // Эффект вина: всегда на 10 сек, строго ×4 от текущего jumpPower
+  if (!player._wineBoostTimeout) {
+    player._originalJumpPower = typeof player.jumpPower === "number"
+      ? player.jumpPower
+      : -15;
+    player.jumpPower = player._originalJumpPower * 4;
+    player._hasWineJumpBoost = true;
+    player._wineBoostTimeout = setTimeout(() => {
+      player.jumpPower = player._originalJumpPower;
+      player._hasWineJumpBoost = false;
+      player._wineBoostTimeout = null;
+      console.log("[wine] jump boost deactivated, jumpPower restored:", player.jumpPower);
+    }, 10000);
+    console.log("[wine] jump boost activated, jumpPower x4:", player.jumpPower);
+  } else {
+    // если повторный сбор — сбрасываем таймер, эффекта не стакаем!
+    clearTimeout(player._wineBoostTimeout);
+    player._wineBoostTimeout = setTimeout(() => {
+      player.jumpPower = player._originalJumpPower;
+      player._hasWineJumpBoost = false;
+      player._wineBoostTimeout = null;
+      console.log("[wine] jump boost deactivated by repeated pickup:", player.jumpPower);
+    }, 10000);
+    console.log("[wine] jump boost timer extended to 10s (no stack)");
+  }
 }
 
 export function updatePlayer({

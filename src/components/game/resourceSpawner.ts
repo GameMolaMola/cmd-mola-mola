@@ -1,5 +1,5 @@
 export type ResourceType = 'health' | 'ammo' | 'coin' | 'pizza' | 'brasilena' | 'wine';
-
+// Строго зафиксированные размеры!
 const RESOURCE_SIZES: Record<ResourceType, { width: number; height: number }> = {
   health: { width: 32, height: 32 },
   pizza: { width: 32, height: 32 },
@@ -102,7 +102,7 @@ export function spawnResourceForType({
   resourceWidth?: number;
   resourceHeight?: number;
 }) {
-  // применяем только константы!
+  // используем константы ресурсов только!
   const { width, height } = RESOURCE_SIZES[type];
 
   let attempt = 0, maxAttempts = 12;

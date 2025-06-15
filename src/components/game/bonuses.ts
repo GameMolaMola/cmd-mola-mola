@@ -1,6 +1,7 @@
 let lastWineSpawnTime = 0;
 let winePowerUpTimeout: NodeJS.Timeout | null = null;
-let wineCollectedTotal = 0; // счётчик для всех раундов
+let wineCollectedTotal = 0; // Счётчик вин на уровень
+let perLevelWineLimitLast = 0; // Для сброса между уровнями
 
 // Максимум 10 — обычные уровни, 15 — при боссе
 function getMaxWineCount(isBoss: boolean) {
@@ -10,6 +11,11 @@ function getMaxWineCount(isBoss: boolean) {
 const WINE_WIDTH = 21;
 const WINE_HEIGHT = 64;
 
+export function resetWineOnLevelStart(isBoss: boolean) {
+  wineCollectedTotal = 0;
+  perLevelWineLimitLast = getMaxWineCount(isBoss);
+  lastWineSpawnTime = 0;
+}
 export function handleBonuses({
   player,
   pizzas,
@@ -22,10 +28,9 @@ export function handleBonuses({
   spawnBrasilenaHeight = 64,
   platforms,
   canvasHeight,
-  bossLucia // добавлен для лимита вина
+  bossLucia // для лимита вина
 }: any) {
-  // ВСЕГДА использовать platforms из getAllPlatforms() для корректного расчета!
-  // --- Пиццы и бразильена: всё как было ---
+  // Пиццы и бразилену не трогаем — оставляем прежнюю логику
   for (let i = pizzas.length - 1; i >= 0; i--) {
     const pizza = pizzas[i];
     if (checkCollision(player, pizza)) {
@@ -65,7 +70,7 @@ export function handleBonuses({
     }
   }
 
-  // --- ВИНО: прыжок x4, максимум X раз, на 10 сек, респавн не чаще раз в 30 сек ---
+  // --- ВИНО: прыжок x4, максимум X раз за уровень, на 10 сек, респавн не чаще раз в 30 сек ---
   const now = Date.now();
   const isBoss = !!bossLucia;
   const maxWine = getMaxWineCount(isBoss);
@@ -74,37 +79,44 @@ export function handleBonuses({
     const wine = wines[i];
     if (checkCollision(player, wine)) {
       wines.splice(i, 1);
-      // строгая логика через player.ts
-      if (typeof player.activateJumpBoost === 'function') {
-        player.activateJumpBoost();
+      // Эффект вина: включаем только если нет активного таймера
+      if (!player._wineBoostTimeout) {
+        player._originalJumpPower = typeof player.jumpPower === "number"
+          ? player.jumpPower
+          : -15;
+        player.jumpPower = player._originalJumpPower * 4;
+        player._hasWineJumpBoost = true;
+        player._wineBoostTimeout = setTimeout(() => {
+          player.jumpPower = player._originalJumpPower;
+          player._hasWineJumpBoost = false;
+          player._wineBoostTimeout = null;
+        }, 10000);
       } else {
-        if (!player._baseJumpPower) player._baseJumpPower = player.jumpPower ?? -15;
-        if (player._jumpBoostTimeout) clearTimeout(player._jumpBoostTimeout);
-        player.jumpPower = player._baseJumpPower * 4;
-        player.powerUps.speedBoost = true;
-        player.powerUps.speedBoostTime = 10 * 60;
-        player._hasJumpBoost = true;
-        player._jumpBoostTimeout = setTimeout(() => {
-          player.jumpPower = player._baseJumpPower;
-          player.powerUps.speedBoost = false;
-          player.powerUps.speedBoostTime = 0;
-          player._hasJumpBoost = false;
-          player._jumpBoostTimeout = null;
+        // если собрали новое вино при активном бусте — только переустанавливаем таймер, не усиливаем jumpPower
+        clearTimeout(player._wineBoostTimeout);
+        player._wineBoostTimeout = setTimeout(() => {
+          player.jumpPower = player._originalJumpPower;
+          player._hasWineJumpBoost = false;
+          player._wineBoostTimeout = null;
         }, 10000);
       }
-      wineCollectedTotal += 1; // увеличиваем общий счётчик
+      wineCollectedTotal += 1;
       lastWineSpawnTime = now;
       callbacks.onStateUpdate();
     }
   }
 
-  // Спавним новый wine не чаще чем раз в 30 секунд, максимум maxWine на игру
+  // Ограниченный лимит появления вина на уровень
+  const shouldSpawnMoreWine =
+    wineCollectedTotal < maxWine &&
+    (perLevelWineLimitLast === 0 || perLevelWineLimitLast === maxWine);
+
   if (
     wines.length === 0 &&
     platforms &&
     platforms.length > 0 &&
-    wineCollectedTotal < maxWine &&
-    now - lastWineSpawnTime > 30000 // 30 сек
+    shouldSpawnMoreWine &&
+    now - lastWineSpawnTime > 30000 // 30 сек между появлениями
   ) {
     const availablePlatforms = platforms.filter(
       (p: any) => p.y < canvasHeight - 60
