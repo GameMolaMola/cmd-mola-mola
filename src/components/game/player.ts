@@ -8,20 +8,6 @@ import {
   activateWineJumpBoost,
 } from './playerEffects';
 
-function takeDamage(player: any, amount: number) {
-  const prev = player.health;
-  player.health -= amount;
-  if (player.health < 0) player.health = 0;
-  console.log(`[takeDamage] from=${prev} to=${player.health}, amount=${amount}`);
-}
-
-function heal(player: any, amount: number) {
-  const prev = player.health;
-  player.health += amount;
-  if (player.health > 100) player.health = 100;
-  console.log(`[heal] from=${prev} to=${player.health}, amount=${amount}`);
-}
-
 export function updatePlayer({
   player, platforms, coins, pizzas, brasilenas, wines, freeBrasilena, canvas, mobileControlState, keys, callbacks, godmode, bullets
 }: any) {

@@ -1,16 +1,11 @@
+
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
-import { takeDamage } from './playerEffects';
+import { takeDamage, Player } from './playerEffects'; // используем Player из playerEffects
 
 // Добавим таймер чтобы не наносить урон слишком быстро
 let lastDamageTime: number = 0;
 
-type Player = {
-  health: number;
-  coins: number;
-  level: number;
-  godmode?: boolean;
-  username?: string;
-};
+// type Player -- убираем, используем импортируемый
 
 type Enemy = {
   x: number;
@@ -66,3 +61,4 @@ export function handleEnemyCollisions(
   }
   return false;
 }
+
