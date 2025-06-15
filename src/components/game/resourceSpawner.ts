@@ -1,5 +1,14 @@
 export type ResourceType = 'health' | 'ammo' | 'coin' | 'pizza' | 'brasilena' | 'wine';
 
+const RESOURCE_SIZES: Record<ResourceType, { width: number; height: number }> = {
+  health: { width: 32, height: 32 },
+  pizza: { width: 32, height: 32 },
+  ammo: { width: 21, height: 64 },
+  brasilena: { width: 21, height: 64 },
+  coin: { width: 32, height: 32 },
+  wine: { width: 21, height: 64 },
+};
+
 /**
  * Генерирует случайную, доступную для игрока позицию для ресурса с учётом платформ,
  * положения игрока и ограничений по расстоянию.
@@ -74,8 +83,8 @@ export function spawnResourceForType({
   platforms,
   canvasWidth,
   canvasHeight,
-  resourceWidth = 32,
-  resourceHeight = 32,
+  resourceWidth,
+  resourceHeight,
 }: {
   type: ResourceType;
   arrays: {
@@ -93,6 +102,9 @@ export function spawnResourceForType({
   resourceWidth?: number;
   resourceHeight?: number;
 }) {
+  // применяем только константы!
+  const { width, height } = RESOURCE_SIZES[type];
+
   let attempt = 0, maxAttempts = 12;
   let obj: { x: number; y: number; width: number; height: number };
   let arrs = [
@@ -107,10 +119,10 @@ export function spawnResourceForType({
       platforms,
       canvasWidth,
       canvasHeight,
-      resourceWidth,
-      resourceHeight,
+      resourceWidth: width,
+      resourceHeight: height,
     });
-    obj = { x, y, width: resourceWidth, height: resourceHeight };
+    obj = { x, y, width, height };
     attempt++;
   } while (isOverlap(obj, arrs) && attempt < maxAttempts);
 

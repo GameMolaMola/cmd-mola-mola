@@ -1,6 +1,39 @@
 import { checkCollision } from './utils/collision';
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
 
+function takeDamage(player: any, amount: number) {
+  const prev = player.health;
+  player.health -= amount;
+  if (player.health < 0) player.health = 0;
+  console.log(`[takeDamage] from=${prev} to=${player.health}, amount=${amount}`);
+}
+
+function heal(player: any, amount: number) {
+  const prev = player.health;
+  player.health += amount;
+  if (player.health > 100) player.health = 100;
+  console.log(`[heal] from=${prev} to=${player.health}, amount=${amount}`);
+}
+
+// Централизованное управление jumpBoost
+function activateJumpBoost(player: any) {
+  if (!player._baseJumpPower) player._baseJumpPower = player.jumpPower ?? -15;
+  if (player._jumpBoostTimeout) clearTimeout(player._jumpBoostTimeout);
+  player.jumpPower = player._baseJumpPower * 4;
+  player.powerUps.speedBoost = true;
+  player.powerUps.speedBoostTime = 10 * 60;
+  player._hasJumpBoost = true;
+  player._jumpBoostTimeout = setTimeout(() => {
+    player.jumpPower = player._baseJumpPower;
+    player.powerUps.speedBoost = false;
+    player.powerUps.speedBoostTime = 0;
+    player._hasJumpBoost = false;
+    player._jumpBoostTimeout = null;
+    console.log("[wine] jump boost deactivated, jumpPower restored:", player.jumpPower);
+  }, 10000);
+  console.log("[wine] jump boost activated, jumpPower x4:", player.jumpPower);
+}
+
 export function updatePlayer({
   player, platforms, coins, pizzas, brasilenas, wines, freeBrasilena, canvas, mobileControlState, keys, callbacks, godmode, bullets
 }: any) {
@@ -11,14 +44,12 @@ export function updatePlayer({
   let right = keys['KeyD'] || keys['ArrowRight'] || !!mobileControlState['right'];
   let jump = (keys['KeyW'] || keys['ArrowUp'] || !!mobileControlState['jump']);
 
-  // Корректно переключаем направление (1 – вправо, -1 – влево)
+  // Централизованно определяем направление
   if (left && !right) {
     player.direction = -1;
   } else if (right && !left) {
     player.direction = 1;
-  } else if (typeof player.direction !== "number") {
-    player.direction = 1; // по умолчанию вправо
-  }
+  } // не меняем если оба нажаты или ни один
 
   player.velY += 0.8;
   player.velX = 0;
@@ -139,7 +170,7 @@ export function updatePlayer({
   for (let i = pizzas.length - 1; i >= 0; i--) {
     const pizza = pizzas[i];
     if (checkCollision(player, pizza)) {
-      player.health = Math.min(player.health + 20, 100);
+      heal(player, 20);
       pizzas.splice(i, 1);
       callbacks.onStateUpdate({
         health: player.health,
@@ -155,8 +186,8 @@ export function updatePlayer({
       brasilenas.push({
         x: pos.x,
         y: pos.y,
-        width: 32,
-        height: 32,
+        width: 21,
+        height: 64,
       });
     });
   }
@@ -179,10 +210,8 @@ export function updatePlayer({
   for (let i = wines.length - 1; i >= 0; i--) {
     const wine = wines[i];
     if (checkCollision(player, wine)) {
-      player.powerUps.speedBoost = true;
-      player.powerUps.speedBoostTime = 300;
-      player.speed = 8;
       wines.splice(i, 1);
+      activateJumpBoost(player);
       callbacks.onStateUpdate({
         health: player.health,
         ammo: player.ammo,
@@ -207,7 +236,7 @@ function shoot({
   }
   const direction = typeof player.direction === "number" ? player.direction : 1;
   bullets.push({
-    x: direction === 1 ? player.x + player.width : player.x - 20, // Влево/вправо
+    x: direction === 1 ? player.x + player.width : player.x - 20,
     y: player.y + player.height / 2 - 5,
     width: 20,
     height: 10,

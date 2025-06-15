@@ -1,4 +1,3 @@
-
 let lastWineSpawnTime = 0;
 let winePowerUpTimeout: NodeJS.Timeout | null = null;
 let wineCollectedTotal = 0; // счётчик для всех раундов
@@ -7,6 +6,9 @@ let wineCollectedTotal = 0; // счётчик для всех раундов
 function getMaxWineCount(isBoss: boolean) {
   return isBoss ? 15 : 10;
 }
+
+const WINE_WIDTH = 21;
+const WINE_HEIGHT = 64;
 
 export function handleBonuses({
   player,
@@ -27,7 +29,11 @@ export function handleBonuses({
   for (let i = pizzas.length - 1; i >= 0; i--) {
     const pizza = pizzas[i];
     if (checkCollision(player, pizza)) {
-      player.health = Math.min(player.health + 20, 100);
+      if (typeof player.heal === "function") {
+        player.heal(20);
+      } else {
+        player.health = Math.min(player.health + 20, 100);
+      }
       pizzas.splice(i, 1);
       callbacks.onStateUpdate();
     }
@@ -67,29 +73,26 @@ export function handleBonuses({
   for (let i = wines.length - 1; i >= 0; i--) {
     const wine = wines[i];
     if (checkCollision(player, wine)) {
-      if (!player._baseSpeed) player._baseSpeed = player.speed ?? 5;
-      if (!player._baseJump) player._baseJump = player.jumpPower ?? -15;
-
-      player.speed = player._baseSpeed; // скорость не увеличиваем
-      player.jumpPower = player._baseJump * 4; // прыгает в 4 раза выше!
-
       wines.splice(i, 1);
-      player.powerUps.speedBoost = true;
-      player.powerUps.speedBoostTime = 10 * 60; // 10 сек = 10*60 кадров
-      player._wineBoostActive = true;
-      player._wineBoostEndTime = now + 10000;
+      // строгая логика через player.ts
+      if (typeof player.activateJumpBoost === 'function') {
+        player.activateJumpBoost();
+      } else {
+        if (!player._baseJumpPower) player._baseJumpPower = player.jumpPower ?? -15;
+        if (player._jumpBoostTimeout) clearTimeout(player._jumpBoostTimeout);
+        player.jumpPower = player._baseJumpPower * 4;
+        player.powerUps.speedBoost = true;
+        player.powerUps.speedBoostTime = 10 * 60;
+        player._hasJumpBoost = true;
+        player._jumpBoostTimeout = setTimeout(() => {
+          player.jumpPower = player._baseJumpPower;
+          player.powerUps.speedBoost = false;
+          player.powerUps.speedBoostTime = 0;
+          player._hasJumpBoost = false;
+          player._jumpBoostTimeout = null;
+        }, 10000);
+      }
       wineCollectedTotal += 1; // увеличиваем общий счётчик
-
-      // Если уже был таймер сброса — отменяем
-      if (winePowerUpTimeout) clearTimeout(winePowerUpTimeout);
-      winePowerUpTimeout = setTimeout(() => {
-        player.jumpPower = player._baseJump ?? -15;
-        player.speed = player._baseSpeed ?? 5;
-        player.powerUps.speedBoost = false;
-        player.powerUps.speedBoostTime = 0;
-        player._wineBoostActive = false;
-      }, 10000);
-
       lastWineSpawnTime = now;
       callbacks.onStateUpdate();
     }
@@ -110,9 +113,9 @@ export function handleBonuses({
       const pf = availablePlatforms[Math.floor(Math.random() * availablePlatforms.length)];
       wines.push({
         x: pf.x + 10 + Math.random() * (pf.width - 40),
-        y: pf.y - 32,
-        width: spawnBrasilenaWidth,
-        height: spawnBrasilenaHeight,
+        y: pf.y - WINE_HEIGHT,
+        width: WINE_WIDTH,
+        height: WINE_HEIGHT,
       });
       lastWineSpawnTime = now;
     }

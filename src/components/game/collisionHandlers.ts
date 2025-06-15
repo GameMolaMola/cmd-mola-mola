@@ -1,5 +1,5 @@
-
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
+import { updatePlayer } from './player';
 
 // Добавим таймер чтобы не наносить урон слишком быстро
 let lastDamageTime: number = 0;
@@ -47,7 +47,7 @@ export function handleEnemyCollisions(
       } else {
         if (now - lastDamageTime >= DAMAGE_COOLDOWN) {
           lastDamageTime = now;
-          player.health -= 2;
+          updatePlayer.takeDamage ? updatePlayer.takeDamage(player, 2) : player.health -= 2;
           if (player.health < 0) player.health = 0;
           callbacks.onStateUpdate?.({
             health: player.health,
@@ -56,7 +56,6 @@ export function handleEnemyCollisions(
             callbacks.onGameEnd(false, { 
               level: player.level, 
               coins: player.coins
-              // score удалён!
             });
             return true; // game ended
           }
