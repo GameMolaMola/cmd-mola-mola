@@ -393,8 +393,8 @@ export class GameEngine {
     this.brasilenas = [];
     this.wines = [];
 
-    // Отдельно обрабатываем босса для 11+ уровней
-    if (this.player.level > 10) {
+    // Исправлено: теперь босс появляется при уровне >= 10 (раньше было > 10)
+    if (this.player.level >= 10) {
       this.bossLucia = {
         x: 300,
         y: 150,
@@ -421,7 +421,7 @@ export class GameEngine {
           height: 32
         });
       }
-      // Обновляем: обычные монеты не спавним на босс-уровне!
+      // Обычные монеты не спавним на босс-уровне!
       // for (let i = 0; i < 4; i++) {
       //   this.coins.push({
       //     x: 200 + Math.random() * 400,
