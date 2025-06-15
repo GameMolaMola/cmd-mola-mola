@@ -292,6 +292,9 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
       <div className="relative flex-1">
         <GameCanvas
           key={gameSessionId}
+          gameState={initialGameState}
+          onGameEnd={handleGameEnd}
+          onStateUpdate={onStateUpdate}
           isMobile={showMobileControls}
           username={username}
           isPaused={isPaused || gameEnded}

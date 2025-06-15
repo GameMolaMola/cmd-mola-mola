@@ -16,7 +16,7 @@ const LevelDisplay: React.FC<LevelDisplayProps> = ({ level }) => {
   return (
     <span className="flex items-center font-semibold text-cyan-300 whitespace-nowrap">
       <span role="img" aria-label="level" className="mr-1">🎯</span>
-      {t.levelText}: <span className="ml-1">{level}</span>
+      {t.level}: <span className="ml-1">{level}</span>
     </span>
   );
 };

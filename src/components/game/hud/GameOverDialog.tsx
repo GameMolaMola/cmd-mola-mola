@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -46,8 +47,8 @@ const GameOverDialog: React.FC<GameOverDialogProps> = ({
             )}
           </div>
           <div className="flex flex-col gap-1 text-yellow-200 text-xl font-semibold bg-black/40 rounded p-4 shadow-inner w-full max-w-xs">
-            <span>{t.levelText}: <span className="font-mono">{stats.level}</span></span>
-            <span>{t.coinsText}: <span className="font-mono">{stats.coins}</span></span>
+            <span>{t.level}: <span className="font-mono">{stats.level}</span></span>
+            <span>{t.coins}: <span className="font-mono">{stats.coins}</span></span>
           </div>
           <Button
             onClick={onRestart}

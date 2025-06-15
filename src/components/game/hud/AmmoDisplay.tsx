@@ -16,7 +16,7 @@ const AmmoDisplay: React.FC<AmmoDisplayProps> = ({ ammo }) => {
   return (
     <span className="flex items-center font-semibold text-pink-100 whitespace-nowrap">
       <span role="img" aria-label="ammo" className="mr-1">🔫</span>
-      {t.ammoText}: {ammo}
+      {t.ammo}: {ammo}
     </span>
   );
 };

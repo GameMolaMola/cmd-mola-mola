@@ -1,7 +1,5 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { GameState } from './types';
 import { useGame } from '@/contexts/GameContext';
 import { useTranslations } from '@/hooks/useTranslations';
 
@@ -9,22 +7,19 @@ interface GameOverScreenProps {
   score: number;
   onRestart: () => void;
   isWin: boolean;
-  gameState: GameState;
 }
 
-const GameOverScreen: React.FC<GameOverScreenProps> = ({ score, onRestart, isWin, gameState }) => {
+const GameOverScreen: React.FC<GameOverScreenProps> = ({ score, onRestart, isWin }) => {
   const { language, playerData } = useGame();
   const t = useTranslations(language);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [uniqueCode, setUniqueCode] = useState('');
   const [emailSent, setEmailSent] = useState<"pending" | "sent" | "error" | null>(null);
 
-  const title = isWin ? t.gameWinTitle : t.gameOverTitle;
-  const message = isWin ? t.winFinalScoreMessage(score) : t.finalScoreMessage(score);
-  const buttonText = isWin ? t.playAgainButton : t.restartButton;
-
   const handleSubmit = async () => {
     if (!playerData) return;
+    
+    // Генерируем уникальный код
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
     setUniqueCode(code);
     setIsSubmitted(true);
@@ -41,8 +36,8 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({ score, onRestart, isWin
             email: playerData.email,
             code,
             language: playerData.language,
-            level: gameState.level,
-            coins: gameState.coins
+            level: 1, // TODO: fix level
+            coins: 1 // TODO: fix coins
           }),
         }
       );
@@ -60,36 +55,89 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({ score, onRestart, isWin
       email: playerData.email, 
       code,
       language: playerData.language,
-      level: gameState.level,
-      coins: gameState.coins
+      level: 1, // TODO: fix level
+      coins: 1 // TODO: fix coins
     });
   };
 
-  return (
-    <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center text-white font-mono z-20">
-      <h1 className="text-5xl font-bold text-red-500 mb-6 animate-bounce">{title}</h1>
-      <p className="text-xl mb-8">{message}</p>
-      
-      {playerData && playerData.nickname && playerData.email && !isSubmitted && (
-        <Button onClick={handleSubmit} className="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full text-lg transition duration-300 transform hover:scale-105 shadow-xl">
-          Submit Score
-        </Button>
-      )}
-      {isSubmitted && (
-        <div className="mt-4 text-center">
-          <p className="text-lg">Your unique code: <span className="font-bold text-yellow-400">{uniqueCode}</span></p>
-          {emailSent === "pending" && <p className="text-sm mt-2">Sending email...</p>}
-          {emailSent === "sent" && <p className="text-sm mt-2 text-green-400">Email sent successfully!</p>}
-          {emailSent === "error" && <p className="text-sm mt-2 text-red-400">Failed to send email. Please try again later.</p>}
-        </div>
-      )}
+  const title = isWin ? t.victory : t.gameOver;
+  const message = isWin
+    ? t.winFinalScoreMessage?.(score) ?? `${t.victory}!`
+    : t.finalScoreMessage?.(score) ?? `${t.gameOver}!`;
 
-      <Button 
-        onClick={onRestart}
-        className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full text-lg transition duration-300 transform hover:scale-105 shadow-xl"
-      >
-        {buttonText}
-      </Button>
+  if (isSubmitted) {
+    return (
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-900 to-black flex flex-col items-center justify-center text-white font-mono p-8">
+        <div className="text-center space-y-6 max-w-md">
+          <h1 className="text-3xl font-bold text-yellow-400">
+            {t.victory}
+          </h1>
+          
+          <div className="bg-black/70 p-6 rounded-lg border-2 border-green-400">
+            <h2 className="text-xl text-green-400 mb-4">{t.registrationCompleted}</h2>
+            <div className="space-y-2 text-sm">
+              <p>{t.uniqueCode}</p>
+              <div className="text-2xl font-bold text-yellow-400 bg-black/50 p-3 rounded border">
+                {uniqueCode}
+              </div>
+              {emailSent === "pending" && (<div className="text-cyan-300 text-xs">{t.sendingEmail || "Отправка сообщения..."}</div>)}
+              {emailSent === "sent" && (<div className="text-green-300 text-xs">{t.emailSentSuccess || "Уведомление администратору отправлено!"}</div>)}
+              {emailSent === "error" && (<div className="text-red-400 text-xs">{t.emailSentError || "Ошибка отправки уведомления админу."}</div>)}
+              <p className="text-cyan-300 text-xs">
+                {t.saveCode}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-black/50 p-4 rounded-lg border border-cyan-400">
+            <div className="space-y-1 text-sm">
+              <p>{t.player}: {playerData?.nickname}</p>
+              <p>{t.level}: 1</p> {/* TODO: fix level */}
+              <p>{t.coins}: 1</p> {/* TODO: fix coins */}
+            </div>
+          </div>
+
+          <Button 
+            onClick={onRestart}
+            className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-8 py-3"
+          >
+            {t.playAgain}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="absolute inset-0 bg-gradient-to-b from-blue-900 to-black flex flex-col items-center justify-center text-white font-mono p-8">
+      <div className="text-center space-y-6 max-w-md">
+        <h1 className="text-3xl font-bold text-yellow-400">
+          {title}
+        </h1>
+        
+        <div className="bg-black/50 p-4 rounded-lg border border-cyan-400">
+          <div className="space-y-1 text-sm">
+            <p>{t.level}: 1</p> {/* TODO: fix level */}
+            <p>{t.coins}: 1</p> {/* TODO: fix coins */}
+          </div>
+        </div>
+
+        <div className="flex gap-4">
+          <Button 
+            onClick={handleSubmit}
+            className="bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-3"
+          >
+            {t.registerAndPlay}
+          </Button>
+          
+          <Button 
+            onClick={onRestart}
+            className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-6 py-3"
+          >
+            {t.playAgain}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
