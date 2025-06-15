@@ -1,4 +1,3 @@
-
 // Менеджер звуков для ретро-игры с использованием Web Audio API
 class AudioManager {
   private audioContext: AudioContext | null = null;
@@ -189,14 +188,32 @@ class AudioManager {
     oscillator.stop(this.audioContext!.currentTime + 1.5);
   }
 
-  // Фоновая амбиентная музыка (опционально)
+  // Фоновая радостная и динамичная музыка
   async playAmbientLoop() {
     if (!await this.ensureAudioContext() || this.isMuted) return;
     
-    // Простая амбиентная мелодия с океанскими звуками
-    const frequencies = [130.81, 146.83, 164.81, 174.61]; // C3, D3, E3, F3
-    
-    const playNote = (frequency: number, delay: number) => {
+    // Более радостная и динамичная мелодия в мажорной тональности
+    const melodyNotes = [
+      { freq: 261.63, time: 0 },    // C4
+      { freq: 329.63, time: 0.4 },  // E4
+      { freq: 392.00, time: 0.8 },  // G4
+      { freq: 523.25, time: 1.2 },  // C5
+      { freq: 440.00, time: 1.6 },  // A4
+      { freq: 392.00, time: 2.0 },  // G4
+      { freq: 329.63, time: 2.4 },  // E4
+      { freq: 261.63, time: 2.8 },  // C4
+    ];
+
+    // Басовая линия для ритма
+    const bassNotes = [
+      { freq: 130.81, time: 0 },    // C3
+      { freq: 146.83, time: 0.8 },  // D3
+      { freq: 164.81, time: 1.6 },  // E3
+      { freq: 130.81, time: 2.4 },  // C3
+    ];
+
+    // Проигрываем мелодию
+    melodyNotes.forEach(note => {
       setTimeout(async () => {
         if (!await this.ensureAudioContext() || this.isMuted) return;
         
@@ -207,20 +224,61 @@ class AudioManager {
         gainNode.connect(this.masterGain!);
         
         oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(frequency, this.audioContext!.currentTime);
+        oscillator.frequency.setValueAtTime(note.freq, this.audioContext!.currentTime);
         
         gainNode.gain.setValueAtTime(0, this.audioContext!.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.05, this.audioContext!.currentTime + 0.5);
-        gainNode.gain.linearRampToValueAtTime(0, this.audioContext!.currentTime + 2);
+        gainNode.gain.linearRampToValueAtTime(0.08, this.audioContext!.currentTime + 0.1);
+        gainNode.gain.linearRampToValueAtTime(0, this.audioContext!.currentTime + 0.35);
         
         oscillator.start(this.audioContext!.currentTime);
-        oscillator.stop(this.audioContext!.currentTime + 2);
-      }, delay);
-    };
+        oscillator.stop(this.audioContext!.currentTime + 0.35);
+      }, note.time * 1000);
+    });
 
-    // Проигрываем медленную мелодию
-    frequencies.forEach((freq, index) => {
-      playNote(freq, index * 2000);
+    // Проигрываем басовую линию
+    bassNotes.forEach(note => {
+      setTimeout(async () => {
+        if (!await this.ensureAudioContext() || this.isMuted) return;
+        
+        const oscillator = this.audioContext!.createOscillator();
+        const gainNode = this.audioContext!.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.masterGain!);
+        
+        oscillator.type = 'square';
+        oscillator.frequency.setValueAtTime(note.freq, this.audioContext!.currentTime);
+        
+        gainNode.gain.setValueAtTime(0, this.audioContext!.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.06, this.audioContext!.currentTime + 0.05);
+        gainNode.gain.linearRampToValueAtTime(0, this.audioContext!.currentTime + 0.7);
+        
+        oscillator.start(this.audioContext!.currentTime);
+        oscillator.stop(this.audioContext!.currentTime + 0.7);
+      }, note.time * 1000);
+    });
+
+    // Добавляем перкуссию для ритма
+    const beats = [0, 0.4, 0.8, 1.2, 1.6, 2.0, 2.4, 2.8];
+    beats.forEach(beatTime => {
+      setTimeout(async () => {
+        if (!await this.ensureAudioContext() || this.isMuted) return;
+        
+        const oscillator = this.audioContext!.createOscillator();
+        const gainNode = this.audioContext!.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(this.masterGain!);
+        
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(80, this.audioContext!.currentTime);
+        
+        gainNode.gain.setValueAtTime(0.04, this.audioContext!.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext!.currentTime + 0.1);
+        
+        oscillator.start(this.audioContext!.currentTime);
+        oscillator.stop(this.audioContext!.currentTime + 0.1);
+      }, beatTime * 1000);
     });
   }
 

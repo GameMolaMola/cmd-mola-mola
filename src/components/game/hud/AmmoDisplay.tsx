@@ -5,18 +5,17 @@ import { useGame } from "@/contexts/GameContext";
 
 interface AmmoDisplayProps {
   ammo: number;
-  // language?: Language;
 }
 
 const AmmoDisplay: React.FC<AmmoDisplayProps> = ({ ammo }) => {
   const { language } = useGame();
   const t = useTranslations(language);
-  console.log('HUD AmmoDisplay реальный язык:', language);
 
   return (
-    <span className="flex items-center font-semibold text-pink-100 whitespace-nowrap">
+    <span className="flex items-center font-semibold text-pink-100 whitespace-nowrap text-sm">
       <span role="img" aria-label="ammo" className="mr-1">🔫</span>
-      {t.ammo}: {ammo}
+      <span className="hidden sm:inline">{t.ammo}:</span>
+      <span className="ml-1">{ammo}</span>
     </span>
   );
 };

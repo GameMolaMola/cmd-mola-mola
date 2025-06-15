@@ -6,18 +6,17 @@ import { useGame } from "@/contexts/GameContext";
 
 interface CoinsDisplayProps {
   coins: number;
-  // language?: Language;
 }
 
 const CoinsDisplay: React.FC<CoinsDisplayProps> = ({ coins }) => {
   const { language } = useGame();
   const t = useTranslations(language);
-  console.log('HUD CoinsDisplay реальный язык:', language);
 
   return (
-    <span className="flex items-center font-semibold text-yellow-300 whitespace-nowrap">
-      <Coins size={18} className="mr-1" />
-      {t.coins}: {coins}
+    <span className="flex items-center font-semibold text-yellow-300 whitespace-nowrap text-sm">
+      <Coins size={16} className="mr-1" />
+      <span className="hidden sm:inline">{t.coins}:</span>
+      <span className="ml-1">{coins}</span>
     </span>
   );
 };

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import HealthDisplay from './HealthDisplay';
 import AmmoDisplay from './AmmoDisplay';
@@ -26,9 +27,9 @@ const GameHUD: React.FC<GameHUDProps> = ({
   onSoundToggle
 }) => {
   return (
-    <div className="absolute top-0 left-0 right-0 z-50 p-4">
-      <div className="flex justify-between items-start">
-        <div className="flex flex-col space-y-2">
+    <div className="absolute top-0 left-0 right-0 z-50 p-2">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center space-x-4 bg-black/70 px-3 py-2 rounded-lg border border-cyan-400">
           <HealthDisplay health={health} />
           <AmmoDisplay ammo={ammo} />
           <CoinsDisplay coins={coins} />

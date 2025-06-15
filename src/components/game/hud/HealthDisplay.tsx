@@ -6,18 +6,17 @@ import { useGame } from "@/contexts/GameContext";
 
 interface HealthDisplayProps {
   health: number;
-  // language?: Language;
 }
 
 const HealthDisplay: React.FC<HealthDisplayProps> = ({ health }) => {
   const { language } = useGame();
   const t = useTranslations(language);
-  console.log('HUD HealthDisplay реальный язык:', language);
 
   return (
-    <span className="flex items-center font-semibold text-white whitespace-nowrap">
-      <Heart size={18} className="mr-1 text-red-400" />
-      {t.health}: {health}
+    <span className="flex items-center font-semibold text-white whitespace-nowrap text-sm">
+      <Heart size={16} className="mr-1 text-red-400" />
+      <span className="hidden sm:inline">{t.health}:</span>
+      <span className="ml-1">{health}</span>
     </span>
   );
 };
