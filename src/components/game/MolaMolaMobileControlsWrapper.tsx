@@ -10,11 +10,14 @@ interface Props {
 const MolaMolaMobileControlsWrapper: React.FC<Props> = ({ show, onControl }) => {
   if (!show) return null;
   return (
-    <div className="w-full"
+    <div
+      className="w-full"
       style={{
         maxWidth: 900,
         margin: "0 auto",
-      }}>
+        marginBottom: "20vh", // поднять панель управления на 20% экрана вверх
+      }}
+    >
       <MobileControls onControl={onControl} />
     </div>
   );
