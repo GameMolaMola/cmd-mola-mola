@@ -2,7 +2,7 @@ import { checkCollision } from './utils/collision';
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
 
 export function updatePlayer({
-  player, platforms, coins, pizzas, brasilenas, wines, freeBrasilena, canvas, mobileControlState, keys, callbacks, godmode
+  player, platforms, coins, pizzas, brasilenas, wines, freeBrasilena, canvas, mobileControlState, keys, callbacks, godmode, bullets
 }: any) {
   // Добавим сохранение направления (left/right)
   let left = keys['KeyA'] || keys['ArrowLeft'] || !!mobileControlState['left'];
@@ -40,15 +40,19 @@ export function updatePlayer({
   }
 
   if (mobileControlState['fire']) {
-    shoot({
-      player,
-      bullets: [],
-      canvas,
-      updateGameState: callbacks.onStateUpdate,
-      lastShotTime: 0,
-      SHOT_COOLDOWN: 200,
-      godmode
-    });
+    // Стрельба должна идти в общий bullets!
+    if (bullets) {
+      shoot({
+        player,
+        bullets,
+        canvas,
+        updateGameState: callbacks.onStateUpdate,
+        lastShotTime: player._lastShotTime ?? 0,
+        SHOT_COOLDOWN: 200,
+        godmode
+      });
+      player._lastShotTime = Date.now();
+    }
     mobileControlState['fire'] = false;
   }
 
@@ -160,19 +164,15 @@ function shoot({
   if (player.ammo <= 0 || currentTime - lastShotTime < SHOT_COOLDOWN) {
     return;
   }
-
-  // Направление пули зависит от player.direction
   const direction = typeof player.direction === "number" ? player.direction : 1;
-
   bullets.push({
     x: direction === 1 ? player.x + player.width : player.x - 20,
     y: player.y + player.height / 2 - 5,
     width: 20,
     height: 10,
-    speed: 10 * direction, // +10 (вправо) или -10 (влево)
+    speed: 10 * direction,
     direction
   });
-
   player.ammo--;
   lastShotTime = currentTime;
 

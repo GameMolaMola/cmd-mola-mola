@@ -1,4 +1,3 @@
-
 import { updatePlayer } from './player';
 import { updateEnemies } from './enemies';
 import { handleEnemyCollisions } from './collisionHandlers';
@@ -10,7 +9,7 @@ import { updateBubbles } from './environment';
 export function gameTick(engine: any) {
   updatePlayer({
     player: engine.player,
-    platforms: engine.platforms,
+    platforms: engine.getAllPlatforms(),
     coins: engine.coins,
     pizzas: engine.pizzas,
     brasilenas: engine.brasilenas,
@@ -21,6 +20,7 @@ export function gameTick(engine: any) {
     keys: engine.keys,
     callbacks: engine.callbacks,
     godmode: engine.godmode,
+    bullets: engine.bullets   // передаём общий массив!
   });
 
   updateEnemies({
@@ -33,9 +33,7 @@ export function gameTick(engine: any) {
     godmode: engine.godmode,
   });
 
-  // --- если нет босса и все враги убиты — ПЕРЕХОД НА СЛЕДУЮЩИЙ УРОВЕНЬ
   if (!engine.bossLucia && engine.enemies.length === 0) {
-    // увеличиваем уровень, запускаем новый, жизни/монеты/амму сохраняются
     engine.setNextLevel?.();
     return;
   }
@@ -60,7 +58,7 @@ export function gameTick(engine: any) {
     checkCollision,
     spawnBrasilenaWidth: 21,
     spawnBrasilenaHeight: 64,
-    platforms: engine.platforms,
+    platforms: engine.getAllPlatforms(),
     canvasHeight: engine.canvas.height
   });
 
@@ -73,6 +71,7 @@ export function gameTick(engine: any) {
     checkCollision,
     canvas: engine.canvas
   });
+
   updateBubbles(engine.bubbles, engine.canvas);
   engine.renderer(engine.ctx, engine);
 }

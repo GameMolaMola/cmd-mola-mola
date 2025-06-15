@@ -1,4 +1,3 @@
-
 export type ResourceType = 'health' | 'ammo' | 'coin' | 'pizza' | 'brasilena' | 'wine';
 
 /**
@@ -22,8 +21,7 @@ export function getRandomResourcePosition({
   resourceWidth?: number;
   resourceHeight?: number;
 }) {
-  // Выбирать платформу, на которой есть место для предмета,
-  // которая НЕ слишком близко к игроку
+  // ФИЛЬТР — все подходящие платформы, включая динамические!
   const suitablePlatforms = platforms.filter(p => {
     const centerX = p.x + p.width / 2;
     const centerY = p.y;
@@ -36,14 +34,13 @@ export function getRandomResourcePosition({
   });
 
   if (suitablePlatforms.length === 0) {
-    // fallback: любой участок платформы
+    // fallback: почти вся область поля
     return {
-      x: Math.random() * (canvasWidth - resourceWidth),
-      y: canvasHeight * 0.3 + Math.random() * (canvasHeight * 0.5),
+      x: 40 + Math.random() * (canvasWidth - resourceWidth - 60),
+      y: canvasHeight * 0.18 + Math.random() * (canvasHeight * 0.62),
     };
   }
 
-  // Выбираем случайную платформу и место на ней
   const pf = suitablePlatforms[Math.floor(Math.random()*suitablePlatforms.length)];
   const minX = pf.x + 8;
   const maxX = pf.x + pf.width - resourceWidth - 8;

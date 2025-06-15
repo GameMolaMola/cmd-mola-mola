@@ -558,6 +558,7 @@ export class GameEngine {
 
   // --- исп-вать динамические платформы в расчетах игрока ---
   getAllPlatforms() {
+    // ВСЕГДА объединять платформы
     return [...this.platforms, ...this.dynamicPlatforms];
   }
 }
