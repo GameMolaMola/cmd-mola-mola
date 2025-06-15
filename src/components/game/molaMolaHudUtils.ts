@@ -18,7 +18,7 @@ export function isEqualHud(a: any, b: any) {
  */
 export function onStateUpdateFactory({ setHud, justResetGameRef }: {
   setHud: (cb: (prev: any) => any) => void,
-  justResetGameRef: React.RefObject<boolean>
+  justResetGameRef: React.MutableRefObject<boolean>
 }) {
   return (updates: any) => {
     setHud((prev: any) => {
