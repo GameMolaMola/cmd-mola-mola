@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useRef, useEffect } from "react";
 import { makeInitialGameState } from "./makeInitialGameState";
@@ -33,10 +34,11 @@ export function useMolaMolaGameCore({
   React.useEffect(() => {
     console.log("[useMolaMolaGameCore] INIT/RESET", {
       playerData,
+      username,
       hud,
       initialGameState,
     });
-  }, [hud, initialGameState, playerData]);
+  }, [hud, initialGameState, playerData, username]);
 
   // Показываем мобильные контролы (оставляем юзерский хук)
   // В компоненте!
@@ -54,15 +56,23 @@ export function useMolaMolaGameCore({
     const startLevel = playerData?.level ?? 1;
     const godmode = playerData?.godmode ?? false;
     const markJump = playerData?.markJump ?? false;
-    setInitialGameState(makeInitialGameState(startLevel, godmode, markJump));
+    
+    // ВАЖНО: передаем username в initialState!
+    const newInitialState = makeInitialGameState(startLevel, godmode, markJump);
+    newInitialState.username = username;
+    
+    setInitialGameState(newInitialState);
     setGameSessionId(Date.now());
     setGameEnded(false);
     setVictory(false);
     setFinalStats(null);
     setIsPaused(false);
     justResetGameRef.current = true;
-    setHud(makeInitialGameState(startLevel, godmode, markJump));
-  }, [playerData, setInitialGameState, setGameSessionId, setGameEnded, setVictory, setFinalStats, setIsPaused, setHud]);
+    
+    const newHudState = makeInitialGameState(startLevel, godmode, markJump);
+    newHudState.username = username;
+    setHud(newHudState);
+  }, [playerData, username, setInitialGameState, setGameSessionId, setGameEnded, setVictory, setFinalStats, setIsPaused, setHud]);
 
   // сброс isPaused если конец игры
   useEffect(() => {
@@ -117,8 +127,10 @@ export function useMolaMolaGameCore({
     const startLevel = playerData?.level ?? 1;
     const godmode = playerData?.godmode ?? false;
     const markJump = playerData?.markJump ?? false;
-    setHud(makeInitialGameState(startLevel, godmode, markJump));
-    setInitialGameState(makeInitialGameState(startLevel, godmode, markJump));
+    const newState = makeInitialGameState(startLevel, godmode, markJump);
+    newState.username = username;
+    setHud(newState);
+    setInitialGameState(newState);
     setGameSessionId(Date.now());
   };
 

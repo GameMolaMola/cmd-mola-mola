@@ -1,3 +1,4 @@
+
 import { GameState } from './types';
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
 import { handleEnemyCollisions } from './collisionHandlers';
@@ -167,19 +168,26 @@ export class GameEngine {
 
     // [ИСПРАВЛЕНО] Прокидываем ВСЕ параметры начального состояния игрока БЕЗ потери значений!
     // Теперь гарантируем, что godmode, markJump, level попадут в this.player.
-    const { godmode, markJump, level, ...rest } = options.initialState || {};
+    const { godmode, markJump, level, username, ...rest } = options.initialState || {};
     Object.assign(this.player, rest);
 
     this.player.godmode = !!godmode;
     this.player.markJump = !!markJump;
     if (typeof level === 'number') this.player.level = level;
+    
+    // КРИТИЧЕСКИ ВАЖНО: устанавливаем username для @MolaMolaCoin
+    if (typeof username === 'string') {
+      this.player.username = username;
+    }
 
     // jumpPower для markJump (по умолчанию -15, на будущее)
     this.player.jumpPower = -15;
 
-    applyGodmodeIfNeeded(this.player, this.player.godmode);
+    // ВАЖНО: Применяем godmode ПОСЛЕ установки всех параметров
     if (this.player.godmode) {
+      console.log("[GameEngine] GODMODE ACTIVATED for user:", this.player.username);
       this.player.health = 100;
+      applyGodmodeIfNeeded(this.player, this.player.godmode);
     }
 
     this.images = {
@@ -228,6 +236,9 @@ export class GameEngine {
         height: this.player.height,
         velY: this.player.velY,
         grounded: this.player.grounded,
+        username: this.player.username,
+        godmode: this.player.godmode,
+        level: this.player.level,
       });
 
       // Ещё раз убеждаемся что по Y всё сходится:
@@ -251,7 +262,7 @@ export class GameEngine {
     // runtime check (help debug): после инициализации координаты игрока
     setTimeout(() => {
       console.log(
-        `[GameEngine:debug] After 1 tick: player at x=${this.player.x}, y=${this.player.y}, grounded=${this.player.grounded}`
+        `[GameEngine:debug] After 1 tick: player at x=${this.player.x}, y=${this.player.y}, grounded=${this.player.grounded}, username=${this.player.username}, godmode=${this.player.godmode}`
       );
     }, 500);
 
