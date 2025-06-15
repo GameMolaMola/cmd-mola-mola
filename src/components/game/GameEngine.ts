@@ -544,10 +544,9 @@ export class GameEngine {
 
     // --- динамика: генерация бонусов и платформ ---
     if (now - this.lastResourceSpawnTime > 2650) {
-      if (!this.bossRewardActive) { // В режиме награды за босса не спавним обычные ресурсы!
-        // Тип выбирается с весами (монеты чаще, вино и амму — реже)
+      if (!this.bossRewardActive) { 
         const types: Array<'health' | 'ammo' | 'coin' | 'pizza' | 'brasilena' | 'wine'> = [
-          'coin', 'coin', 'coin', 'coin', // х4
+          'coin', 'coin', 'coin', 'coin',
           'pizza', 'health',
           'ammo', 'brasilena',
           'wine'
@@ -558,8 +557,8 @@ export class GameEngine {
       this.lastResourceSpawnTime = now;
     }
 
+    // КОГДА срок босс-монет закончился — удаляем только их
     if (this.bossRewardActive && this.bossCoinsEndTime && now >= this.bossCoinsEndTime) {
-      // 10 секунд прошли, убираем все босс-монеты
       this.coins = this.coins.filter(coin => !coin._bossCoin);
       this.bossRewardActive = false;
       this.bossCoinsEndTime = null;
@@ -600,7 +599,7 @@ export class GameEngine {
   // --- Переход на следующий уровень: теперь монеты не сбрасываются ---
   public setNextLevel = () => {
     this.player.level = (this.player.level ?? 1) + 1;
-    // Не сбрасываем монеты, просто генерим новый уровень!
+    // Монеты НЕ сбрасываем! Просто генерим новый уровень, сохраняется накопленное количество.
     this.generateLevel();
     this.updateGameState();
   }
@@ -630,8 +629,8 @@ export class GameEngine {
   public spawnBossCoins() {
     this.bossRewardActive = true;
     this.bossCoinsEndTime = Date.now() + 10000;
-    // Очищаем все обычные монеты (если остались)
-    this.coins = [];
+    // Удаляем только босс-монеты (если остались)
+    this.coins = this.coins.filter(coin => !coin._bossCoin);
     // Размер монеты фиксирован: width 32, height 32
     const TOTAL = 300;
     const bossCoinList = [];
@@ -645,8 +644,8 @@ export class GameEngine {
         _bossCoin: true,
       });
     }
-    this.coins = bossCoinList;
-    // Через 10 секунд уберём их (gameLoop их удалит)
+    this.coins = [...this.coins, ...bossCoinList];
+    // Через 10 секунд босс-монеты удалятся (gameLoop их удалит)
   }
 }
 

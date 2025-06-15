@@ -130,7 +130,12 @@ export function updatePlayer({
   for (let i = coins.length - 1; i >= 0; i--) {
     const coin = coins[i];
     if (checkCollision(player, coin)) {
-      addCoin(player, 1);
+      // Если это босс-монета или обычная
+      if (coin._bossCoin) {
+        addCoin(player, 1); // 300 босс-монет суммируются с лимитом
+      } else {
+        addCoin(player, 1);
+      }
       coins.splice(i, 1);
       callbacks.onStateUpdate({
         health: player.health,

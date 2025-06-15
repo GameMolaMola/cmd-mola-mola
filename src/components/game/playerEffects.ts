@@ -42,6 +42,7 @@ export function addCoin(player: Player, amount = 1) {
   const actualAmount = Math.min(amount, maxToAdd);
   player.coins += actualAmount;
   if (player.coins > 1000) player.coins = 1000;
+  // Если попытка добавить 0 монет (достигли лимита) — ничего не меняем
   console.log(`[playerEffects] coins from ${prev} to ${player.coins} (+${actualAmount}, req=${amount})`);
 }
 
