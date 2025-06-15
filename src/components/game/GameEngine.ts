@@ -139,7 +139,7 @@ export class GameEngine {
       onStateUpdate: (updates: any) => void;
       initialState: any;
       freeBrasilena?: ReturnType<typeof useFreeBrasilena>;
-      scaleFactor?: number; // <-- add this line!
+      scaleFactor?: number;
     }
   ) {
     this.canvas = canvas;
@@ -190,22 +190,50 @@ export class GameEngine {
     this.platforms = createDefaultPlatforms(this.canvas.width, this.canvas.height);
     setTimeout(() => this.generateStaticSandLayer(), 0);
 
-    // --- NEW: Гарантируем появление игрока над полом
+    // Поправленная логика стартовых координат:
+    // Находим пол (floor), гарантируем корректную установку позиции игрока строго по верху пола
     const floor = this.platforms.find(
-      (p) => p.y >= this.canvas.height - 40 - 1
+      (p) => Math.abs(p.y + p.height - this.canvas.height) <= 1
     );
     if (floor) {
       this.player.y = floor.y - this.player.height;
-      // Дополнительно переместим игрока чуть правее центра пола (для наглядности)
-      this.player.x = Math.max(20, Math.min(floor.x + floor.width / 2 - this.player.width / 2, this.canvas.width - this.player.width - 20));
-      console.log(
-        `[GameEngine] Player start adjusted to: x=${this.player.x}, y=${this.player.y}. Floor at y=${floor.y}, height=${floor.height}`,
+      this.player.x = Math.max(
+        20,
+        Math.min(
+          floor.x + floor.width / 2 - this.player.width / 2,
+          this.canvas.width - this.player.width - 20
+        )
       );
+      // ВЫВОДИМ в консоль координаты до запуска gameTick
+      console.log(
+        `[GameEngine:spawn] Player start floor adjust: x=${this.player.x}, y=${this.player.y}, floor.y=${floor.y}, floor.h=${floor.height}, floor.x=${floor.x}, cH=${this.canvas.height}`
+      );
+      // ДОЛЖЕН стоять строго на полу:
+      if (this.player.y + this.player.height !== floor.y) {
+        console.warn(
+          `[GameEngine:spawn] fix: player.y (${this.player.y}) + player.height (${this.player.height}) != floor.y (${floor.y}). Correcting...`
+        );
+        this.player.y = floor.y - this.player.height;
+      }
+      this.player.grounded = true;
+      this.player.velY = 0;
     } else {
-      // Если пола нет, fallback-координаты
+      // Если пол не найден — fallback
       this.player.y = Math.max(0, this.canvas.height - this.player.height - 40);
-      console.log('[GameEngine] No floor platform found during spawn. Fallback position used.');
+      this.player.x = 100;
+      this.player.grounded = true;
+      this.player.velY = 0;
+      console.log(
+        "[GameEngine:spawn] Floor not found! Using fallback: x=100, y=",
+        this.player.y
+      );
     }
+    // runtime check (help debug): после инициализации координаты игрока
+    setTimeout(() => {
+      console.log(
+        `[GameEngine:debug] After 1 tick: player at x=${this.player.x}, y=${this.player.y}, grounded=${this.player.grounded}`
+      );
+    }, 500);
   }
 
   // --- Используем только bubblesManager ---
@@ -587,3 +615,5 @@ import { createStaticSandLayer } from './staticSandLayer';
 // ВАЖНО: Удалили лишние старые приватные методы generateBubbles, updateBubbles, drawBubbles (оставили только три свежие выше!)
 
 // --- FIX: убираем жизненный конфликт с environment, используем только bubblesManager ---
+
+// --- FIX: убираем жизненный конфликт с environment, используем только bubblesManager --
