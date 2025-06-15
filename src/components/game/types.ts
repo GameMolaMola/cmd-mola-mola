@@ -9,4 +9,6 @@ export interface GameState {
     speedBoostTime: number;
   };
   isVictory: boolean;
+  godmode?: boolean;    // теперь поддерживает godmode (опционально)
+  markJump?: boolean;   // спец-флаг для отдельного пользователя (опционально)
 }

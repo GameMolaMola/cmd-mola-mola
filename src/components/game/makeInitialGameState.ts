@@ -12,8 +12,8 @@ export function makeInitialGameState(
     ammo: 10,
     coins: 0,
     level: playerLevel,
-    godmode,     // <- теперь флаг godmode строго фиксируется в state
-    markJump,    // <- спец-режим для Mark
+    godmode,    // теперь это валидное поле типа GameState!
+    markJump,   // теперь это валидное поле типа GameState!
     powerUps: {
       speedBoost: false,
       speedBoostTime: 0,

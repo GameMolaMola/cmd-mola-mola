@@ -44,14 +44,16 @@ export function useMolaMolaGameCore({
   // side-effect сброса при смене playerData
   React.useEffect(() => {
     const startLevel = playerData?.level ?? 1;
-    setInitialGameState(makeInitialGameState(startLevel));
+    const godmode = playerData?.godmode ?? false;
+    const markJump = playerData?.markJump ?? false;
+    setInitialGameState(makeInitialGameState(startLevel, godmode, markJump));
     setGameSessionId(Date.now());
     setGameEnded(false);
     setVictory(false);
     setFinalStats(null);
     setIsPaused(false);
     justResetGameRef.current = true;
-    setHud(makeInitialGameState(startLevel));
+    setHud(makeInitialGameState(startLevel, godmode, markJump));
   }, [playerData, setInitialGameState, setGameSessionId, setGameEnded, setVictory, setFinalStats, setIsPaused, setHud]);
 
   // сброс isPaused если конец игры
@@ -103,8 +105,12 @@ export function useMolaMolaGameCore({
     }
     resetGame();
     justResetGameRef.current = true;
-    setHud(makeInitialGameState());
-    setInitialGameState(makeInitialGameState());
+    // Прокидываем правильные опции
+    const startLevel = playerData?.level ?? 1;
+    const godmode = playerData?.godmode ?? false;
+    const markJump = playerData?.markJump ?? false;
+    setHud(makeInitialGameState(startLevel, godmode, markJump));
+    setInitialGameState(makeInitialGameState(startLevel, godmode, markJump));
     setGameSessionId(Date.now());
   };
 
