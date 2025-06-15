@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useState } from "react";
 import { GameEngine } from "./GameEngine";
 import { useGame } from "@/contexts/GameContext";
 import { useGameCanvasResize } from "./useGameCanvasResize";
-import { GameState } from './types'; // Only keep this import once
 import { Toaster } from '@/components/ui/toaster'; // Assuming these are from shadcn/ui
 import { useToast } from '@/components/ui/use-toast'; // Assuming these are from shadcn/ui
 import StartScreen from './StartScreen'; // Import StartScreen
@@ -62,8 +61,6 @@ interface GameCanvasProps {
   gameSessionId?: number;
   collectEngineRef?: (engine: import("./GameEngine").GameEngine | null) => void;
 }
-
-import { GameState } from './types';
 
 const GameCanvas: React.FC<GameCanvasProps> = ({
   isMobile,
