@@ -5,6 +5,8 @@ declare global {
   }
 }
 
+import { audioManager } from './audioManager';
+
 export function updateBullets({ bullets, enemies, bossLucia, player, callbacks, checkCollision, canvas }: any) {
   for (let i = bullets.length - 1; i >= 0; i--) {
     const bullet = bullets[i];
@@ -27,6 +29,10 @@ export function updateBullets({ bullets, enemies, bossLucia, player, callbacks, 
 
         bossLucia.health -= 20;
         bullets.splice(i, 1);
+        
+        // Звук попадания
+        audioManager.playDamageSound();
+        
         if (bossLucia.health <= 0) {
           // Финальный массовый дроп монет
           if (player.level > 10 && typeof window !== "undefined" && window.gameEngineInstance) {
@@ -49,6 +55,10 @@ export function updateBullets({ bullets, enemies, bossLucia, player, callbacks, 
           enemies.splice(j, 1);
           bullets.splice(i, 1);
           player.coins += 2;
+          
+          // Звук получения монет
+          audioManager.playCoinSound();
+          
           callbacks.onStateUpdate();
           break;
         }

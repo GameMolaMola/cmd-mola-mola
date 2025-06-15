@@ -1,6 +1,6 @@
-
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
 import { takeDamage, Player } from './playerEffects'; // используем Player из playerEffects
+import { audioManager } from './audioManager';
 
 // type Player -- убираем, используем импортируемый
 
@@ -57,10 +57,17 @@ export function handleEnemyCollisions(
           player._lastDamageTime = now;
           takeDamage(player, 2);
           if (player.health < 0) player.health = 0;
+          
+          // Звук получения урона
+          audioManager.playDamageSound();
+          
           callbacks.onStateUpdate?.({
             health: player.health,
           });
           if (player.health === 0) {
+            // Звук поражения
+            audioManager.playGameOverSound();
+            
             callbacks.onGameEnd(false, { 
               level: player.level, 
               coins: player.coins

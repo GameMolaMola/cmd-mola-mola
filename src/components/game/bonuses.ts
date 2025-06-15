@@ -17,6 +17,7 @@ import {
   addAmmo,
   addCoin
 } from './playerEffects';
+import { audioManager } from './audioManager';
 
 export function resetWineOnLevelStart(isBoss: boolean) {
   wineCollectedTotal = 0;
@@ -43,6 +44,8 @@ export function handleBonuses({
     if (checkCollision(player, pizza)) {
       heal(player, 20);
       pizzas.splice(i, 1);
+      // Звук сбора предмета
+      audioManager.playItemSound();
       callbacks.onStateUpdate();
     }
   }
@@ -69,6 +72,8 @@ export function handleBonuses({
       addAmmo(player, 10);
       brasilenas.splice(i, 1);
       if (freeBrasilena) freeBrasilena.onPickup();
+      // Звук сбора предмета
+      audioManager.playItemSound();
       callbacks.onStateUpdate();
     }
   }
@@ -85,6 +90,8 @@ export function handleBonuses({
       activateWineJumpBoost(player);
       wineCollectedTotal += 1;
       lastWineSpawnTime = now;
+      // Звук сбора предмета
+      audioManager.playItemSound();
       callbacks.onStateUpdate();
     }
   }

@@ -18,6 +18,10 @@ import { loadImages } from './imageLoader';
 
 import { spawnResourceForType, ResourceType } from './resourceSpawner';
 import { spawnDynamicPlatform, updateDynamicPlatforms } from './dynamicPlatforms';
+import { drawPixelCoral } from './drawPixelCoral';
+import { drawPixelSand } from './drawPixelSand';
+import { createStaticSandLayer } from './staticSandLayer';
+import { audioManager } from './audioManager';
 
 // --- ВНИМАНИЕ: Декларация для поддержки window.gameEngineInstance ---
 declare global {
@@ -143,6 +147,8 @@ export class GameEngine {
   private bossCoinsEndTime: number | null = null;
   private bossRewardActive: boolean = false;
 
+  private soundEnabled: boolean = true;
+
   constructor(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
@@ -265,10 +271,38 @@ export class GameEngine {
       );
     }, 500);
 
+    // Инициализируем звуки
+    this.initializeAudio();
+
     // После всех инициализаций:
     if (typeof window !== "undefined") {
       window.gameEngineInstance = this;
     }
+  }
+
+  private initializeAudio() {
+    // Запускаем фоновую амбиентную музыку через несколько секунд после старта
+    setTimeout(() => {
+      if (this.soundEnabled) {
+        audioManager.playAmbientLoop();
+        // Повторяем каждые 8 секунд
+        setInterval(() => {
+          if (this.soundEnabled && !audioManager.isMutedState()) {
+            audioManager.playAmbientLoop();
+          }
+        }, 8000);
+      }
+    }, 2000);
+  }
+
+  public toggleSound() {
+    audioManager.toggleMute();
+    this.soundEnabled = !audioManager.isMutedState();
+    this.updateGameState();
+  }
+
+  public isSoundMuted() {
+    return audioManager.isMutedState();
   }
 
   // --- Используем только bubblesManager ---
@@ -539,6 +573,12 @@ export class GameEngine {
 
     this.player.ammo--;
     this.lastShotTime = currentTime;
+    
+    // Звук выстрела
+    if (this.soundEnabled) {
+      audioManager.playShootSound();
+    }
+    
     this.updateGameState();
   }
 
@@ -552,8 +592,8 @@ export class GameEngine {
       health: this.player.health,
       ammo: this.player.ammo,
       coins: this.player.coins,
-      level: this.player.level
-      // без score!
+      level: this.player.level,
+      soundMuted: this.isSoundMuted() // добавляем состояние звука
     });
   }
 
@@ -627,6 +667,12 @@ export class GameEngine {
     }
     this.player.level = (this.player.level ?? 1) + 1;
     // Монеты НЕ сбрасываем! Просто генерим новый уровень, сохраняется накопленное количество.
+    
+    // Звук победы на уровне
+    if (this.soundEnabled) {
+      audioManager.playLevelWinSound();
+    }
+    
     this.generateLevel();
     this.updateGameState();
   }
@@ -718,7 +764,3 @@ export class GameEngine {
     // Для попаданий НЕ запускать 10-секундный таймер — только после смерти босса!
   }
 }
-
-import { drawPixelCoral } from './drawPixelCoral';
-import { drawPixelSand } from './drawPixelSand';
-import { createStaticSandLayer } from './staticSandLayer';
