@@ -60,7 +60,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
       : undefined;
 
   // --- Управляемость с мобильных телефонов ---
-  const showMobileControls = isMobileDevice() || isTelegramBrowser();
+  const showMobileControls = (isMobileDevice() || isTelegramBrowser()) && !gameEnded;
 
   React.useEffect(() => {
     if (showMobileControls) {
@@ -77,6 +77,11 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   useEffect(() => {
     setInitialGameState(makeInitialGameState());
     setGameSessionId(Date.now());
+    // Сбросить флаги, если вдруг что-то зависло (safety)
+    setGameEnded(false);
+    setVictory(false);
+    setFinalStats(null);
+    setIsPaused(false);
   }, [playerData]);
 
   useEffect(() => {
@@ -110,45 +115,50 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     });
   };
 
+  // --- КРИТИЧНО: остановить движение и UI при gameEnded, гарантировать stop движка ---
+  // handleGameEnd вызывается только движком
   const handleGameEnd = (isVictory: boolean, stats: any) => {
     setGameEnded(true);
     setVictory(isVictory);
     setFinalStats(stats);
-    setGameSessionId(Date.now());
+    setIsPaused(false);
+    setGameSessionId(Date.now()); // Обновим любую логику gameEngine (он перезапишется новым)
   };
 
+  // --- Сброс игры: флаг gameEnded сбрасывается до перезапуска канваса ---
   const handleRestart = () => {
-    const newState = makeInitialGameState();
-    setHud({ health: 100, ammo: 10, coins: 0, level: 1, score: 110 });
     setGameEnded(false);
     setVictory(false);
     setFinalStats(null);
-    setInitialGameState(newState);
+    setHud({ health: 100, ammo: 10, coins: 0, level: 1, score: 110 });
+    setIsPaused(false);
+    // Новое игровое состояние с новым id = гарантирует пересоздание GameEngine
+    setInitialGameState(makeInitialGameState());
     setGameSessionId(Date.now());
   };
 
-  // --- привязываем мобильные контролы к движению ---
+  // --- Engine ref и мобильные контролы всегда сбрасываются при gameEnded ---
   const lastGameEngine = useRef<any>(null);
 
-  // Получаем ссылку на GameEngine от GameCanvas через ref
   const collectEngineRef = (engineInstance: any) => {
     lastGameEngine.current = engineInstance;
   };
 
-  // Реализация: дергаем GameEngine.setMobileControlState для управления
+  // React UI-обработка мобильных контролов: НЕ активны в gameEnded!
   const handleControl = (control: string, state: boolean) => {
-    if (lastGameEngine.current && typeof lastGameEngine.current.setMobileControlState === "function") {
+    if (!lastGameEngine.current || gameEnded) return;
+    if (typeof lastGameEngine.current.setMobileControlState === "function") {
       lastGameEngine.current.setMobileControlState(control, state);
     }
   };
 
-  // HUD и Level теперь явно получают язык через props, строго по цепочке.
   return (
     <div
       className="w-screen bg-[#011b2e] relative flex flex-col overflow-hidden"
       style={{
         height: '100svh',
       }}
+      tabIndex={-1}
     >
       <div 
         className="z-10 shrink-0"
@@ -169,7 +179,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
           onStateUpdate={onStateUpdate}
           isMobile={showMobileControls}
           username={username}
-          isPaused={isPaused}
+          isPaused={isPaused || gameEnded}  // <--- ВАЖНО: всегда пауза если gameEnded
           gameSessionId={gameSessionId}
           collectEngineRef={collectEngineRef}
         />
@@ -182,6 +192,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         <MolaMolaMobileControlsWrapper show={showMobileControls} onControl={handleControl} />
       </div>
 
+      {/* Game End Dialog всегда настолько выше, что UI не мешает! */}
       <MolaMolaGameEndDialog
         open={gameEnded}
         victory={victory}
@@ -192,7 +203,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         }}
         onRestart={handleRestart}
       />
-      <PauseOverlay visible={isPaused} />
+      <PauseOverlay visible={isPaused && !gameEnded} />
     </div>
   );
 };
