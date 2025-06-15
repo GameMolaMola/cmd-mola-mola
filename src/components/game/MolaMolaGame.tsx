@@ -27,6 +27,16 @@ function isTelegramBrowser() {
   return ua.toLowerCase().includes("telegram");
 }
 
+function isEqualHud(a: any, b: any) {
+  // HUD считается тем же самым, если все ключевые показатели совпадают
+  return (
+    a.health === b.health &&
+    a.ammo === b.ammo &&
+    a.coins === b.coins &&
+    a.level === b.level
+  );
+}
+
 const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   const { playerData, language } = useGame();
   const freeBrasilena = useFreeBrasilena();
@@ -90,15 +100,17 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     if (!gameEnded) setIsPaused((p: boolean) => !p);
   };
 
-  // обновляем HUD без score, только если значения действительно изменились
+  // обновляем HUD без score, только если значения действительно изменились и не выставляем некорректные:
   const onStateUpdate = (updates: any) => {
     setHud((prev: any) => {
       const safeUpdates = updates ?? {};
-      // Только если значения health, ammo, coins, level действительно изменились
-      const nextHud = { ...prev };
+      // Новые значения только если они ЧИСЛОВЫЕ, не NaN и изменились
       let changed = false;
+      let nextHud = { ...prev };
+
       if (
         typeof safeUpdates.health === "number" &&
+        isFinite(safeUpdates.health) &&
         safeUpdates.health !== prev.health
       ) {
         nextHud.health = safeUpdates.health;
@@ -106,6 +118,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
       }
       if (
         typeof safeUpdates.ammo === "number" &&
+        isFinite(safeUpdates.ammo) &&
         safeUpdates.ammo !== prev.ammo
       ) {
         nextHud.ammo = safeUpdates.ammo;
@@ -113,20 +126,31 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
       }
       if (
         typeof safeUpdates.coins === "number" &&
+        isFinite(safeUpdates.coins) &&
         safeUpdates.coins !== prev.coins
       ) {
-        nextHud.coins = safeUpdates.coins;
+        // clamp coins: 0..1000
+        nextHud.coins = Math.max(0, Math.min(1000, safeUpdates.coins));
         changed = true;
       }
       if (
         typeof safeUpdates.level === "number" &&
+        isFinite(safeUpdates.level) &&
         safeUpdates.level !== prev.level
       ) {
         nextHud.level = safeUpdates.level;
         changed = true;
       }
-      // Исключаем фальшивые апдейты — не обновляем HUD зря
-      return changed ? nextHud : prev;
+
+      // Не обновляем HUD если ничего реально не поменялось
+      if (!changed || isEqualHud(nextHud, prev)) {
+        return prev;
+      }
+
+      // Логирование для контроля
+      console.info("[HUD update] from", prev, "to", nextHud);
+
+      return nextHud;
     });
   };
 
