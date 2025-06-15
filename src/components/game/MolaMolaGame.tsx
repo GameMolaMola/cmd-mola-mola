@@ -145,38 +145,41 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   // HUD и Level теперь явно получают язык через props, строго по цепочке.
   return (
     <div
-      className="w-[100vw] h-[100svh] bg-[#011b2e] flex flex-col overflow-hidden"
+      className="w-screen bg-[#011b2e] relative overflow-hidden"
       style={{
-        paddingTop: 'env(safe-area-inset-top, 0px)',
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        paddingLeft: 'env(safe-area-inset-left, 0px)',
-        paddingRight: 'env(safe-area-inset-right, 0px)',
-        boxSizing: 'border-box',
+        height: '100svh',
       }}
     >
-      <MolaMolaHUDWrapper
-        hud={hud}
+      <GameCanvas
+        key={gameSessionId}
+        gameState={initialGameState}
+        onGameEnd={handleGameEnd}
+        onStateUpdate={onStateUpdate}
         isMobile={showMobileControls}
-        onPause={onPause}
+        username={username}
+        isPaused={isPaused}
+        gameSessionId={gameSessionId}
+        collectEngineRef={collectEngineRef}
       />
-
-      <div className="flex-1 w-full relative">
-        <GameCanvas
-          key={gameSessionId}
-          gameState={initialGameState}
-          onGameEnd={handleGameEnd}
-          onStateUpdate={onStateUpdate}
-          onMobileControl={handleControl}
+      
+      <div 
+        className="absolute top-0 left-0 right-0 z-10"
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+      >
+        <MolaMolaHUDWrapper
+          hud={hud}
           isMobile={showMobileControls}
-          username={username}
-          isPaused={isPaused}
-          gameSessionId={gameSessionId}
-          collectEngineRef={collectEngineRef}
+          onPause={onPause}
         />
       </div>
 
-      <MolaMolaMobileControlsWrapper show={showMobileControls} onControl={handleControl} />
-      
+      <div 
+        className="absolute bottom-0 left-0 right-0 z-10"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        <MolaMolaMobileControlsWrapper show={showMobileControls} onControl={handleControl} />
+      </div>
+
       <MolaMolaGameEndDialog
         open={gameEnded}
         victory={victory}

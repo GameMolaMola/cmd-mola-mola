@@ -6,7 +6,6 @@ interface GameCanvasProps {
   gameState: any;
   onGameEnd: (victory: boolean, stats: any) => void;
   onStateUpdate: (updates: any) => void;
-  onMobileControl?: (control: string, state: boolean) => void;
   isMobile?: boolean;
   username?: string;
   isPaused?: boolean;
@@ -18,7 +17,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   gameState,
   onGameEnd,
   onStateUpdate,
-  onMobileControl,
   isMobile,
   username,
   isPaused = false,
@@ -97,7 +95,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     <canvas
       ref={canvasRef}
       tabIndex={0}
-      className="absolute top-0 left-0 w-full h-full bg-[#011b2e] outline-none"
+      className="absolute inset-0 w-full h-full bg-[#011b2e] outline-none"
       style={{
         touchAction: "pinch-zoom"
       }}
