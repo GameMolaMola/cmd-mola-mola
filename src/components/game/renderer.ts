@@ -55,15 +55,14 @@ export function renderScene(
           platform.width, platform.height
         );
       } else {
-        require('./drawPixelSand').drawPixelSand(
+        drawPixelSand(
           ctx,
           platform.x, platform.y,
           platform.width, platform.height
         );
       }
     } else {
-      // "коралл" или статика
-      require('./drawPixelCoral').drawPixelCoral(
+      drawPixelCoral(
         ctx, platform.x, platform.y, platform.width, platform.height,
         ['#ea866c', '#e7b76a', '#fcf596', '#89f4fb']
       );
