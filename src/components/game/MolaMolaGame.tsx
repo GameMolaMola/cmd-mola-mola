@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from "react";
 import { useGame } from "@/contexts/GameContext";
 import { Button } from "@/components/ui/button";
@@ -143,19 +144,30 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
 
   // HUD и Level теперь явно получают язык через props, строго по цепочке.
   return (
-    <div className="relative w-full h-full flex flex-col items-center justify-start overflow-hidden"
-         style={{minHeight: showMobileControls ? '100svh' : '100%'}}>
+    <div
+      className="relative w-full h-full flex flex-col items-center justify-start overflow-hidden"
+      style={{
+        minHeight: '100svh',
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "max(12px, env(safe-area-inset-bottom))",
+        boxSizing: 'border-box'
+      }}
+    >
       <MolaMolaHUDWrapper
         hud={hud}
         isMobile={showMobileControls}
         isPaused={isPaused}
         onPause={onPause}
       />
-      <div className="relative w-full flex flex-col items-center justify-center"
-           style={{
-             maxWidth: 900, width: '100%',
-             margin: '0 auto'
-           }}>
+      <div
+        className="relative w-full flex flex-col items-center justify-center"
+        style={{
+          maxWidth: 900,
+          width: '100%',
+          margin: '0 auto',
+          flex: 1
+        }}
+      >
         <GameCanvas
           key={gameSessionId}
           gameState={initialGameState}
@@ -185,3 +197,4 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
 };
 
 export default MolaMolaGame;
+
