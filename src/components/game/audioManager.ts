@@ -45,7 +45,7 @@ class AudioManager {
       }
     }
     
-    // Дополнительная проверка для мобильных устройств
+    // Проверяем состояние после возможного resume
     if (this.audioContext.state !== 'running') {
       console.warn('[AudioManager] AudioContext not in running state:', this.audioContext.state);
       return false;
