@@ -4,8 +4,11 @@ import { makeInitialGameState } from "./makeInitialGameState";
 import type { GameState } from "./types";
 
 export function useGameReset(playerData: any) {
-  const [hud, setHud] = useState(() => makeInitialGameState());
-  const [initialGameState, setInitialGameState] = useState<GameState>(() => makeInitialGameState());
+  // Если в playerData есть уровень, используем его для initialState
+  const startLevel = playerData?.level ?? 1;
+
+  const [hud, setHud] = useState(() => makeInitialGameState(startLevel));
+  const [initialGameState, setInitialGameState] = useState<GameState>(() => makeInitialGameState(startLevel));
   const [gameSessionId, setGameSessionId] = useState<number>(() => Date.now());
   const [gameEnded, setGameEnded] = useState(false);
   const [victory, setVictory] = useState(false);
@@ -13,7 +16,9 @@ export function useGameReset(playerData: any) {
   const [isPaused, setIsPaused] = useState(false);
 
   const resetGame = () => {
-    const initial = makeInitialGameState();
+    // При сбросе берём level из playerData, если есть
+    const levelToStart = playerData?.level ?? 1;
+    const initial = makeInitialGameState(levelToStart);
     setGameEnded(false);
     setVictory(false);
     setFinalStats(null);
