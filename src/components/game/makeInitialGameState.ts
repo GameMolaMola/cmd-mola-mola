@@ -14,6 +14,7 @@ export function makeInitialGameState(
     level: playerLevel,
     godmode,    // теперь это валидное поле типа GameState!
     markJump,   // теперь это валидное поле типа GameState!
+    username: undefined, // добавляем поле username
     powerUps: {
       speedBoost: false,
       speedBoostTime: 0,
