@@ -17,6 +17,13 @@ const translations = {
     wineEffect: "🍷 JUMP BOOST (3.5x for 7s)",
     startButton: "START OPERATION BUCATINI!",
     subtitle: "A pixel adventure inspired by Calabria, Italy.",
+    playButton: "PLAY",
+    nicknameRequired: "Nickname required",
+    emailRequired: "Email required",
+    enterNickname: "Enter your nickname",
+    enterEmail: "Enter your email",
+    registerAndPlay: "Register and Play",
+    aboutTitle: "About the Game",
     gameOverTitle: "GAME OVER!",
     gameWinTitle: "VICTORY!",
     restartButton: "RETRY!",
@@ -35,6 +42,11 @@ const translations = {
     healthText: "Health",
     bossHealthText: "Boss Health",
     speedBoostEffectText: "SPEED BOOST!",
+    pause: "Pause",
+    victory: "VICTORY!",
+    gameOver: "GAME OVER!",
+    playAgain: "PLAY AGAIN!",
+    level: "Level"
   },
   ru: {
     title: "🐟 COMMANDER MOLA MOLA 🐟",
@@ -53,6 +65,13 @@ const translations = {
     wineEffect: "🍷 УСИЛЕНИЕ ПРЫЖКА (в 3.5x на 7с)",
     startButton: "НАЧАТЬ ОПЕРАЦИЮ БУКАТИНИ!",
     subtitle: "Пиксельное приключение, вдохновленное Калабрией, Италия.",
+    playButton: "ИГРАТЬ",
+    nicknameRequired: "Введите ник",
+    emailRequired: "Введите email",
+    enterNickname: "Введите ваш ник",
+    enterEmail: "Введите ваш email",
+    registerAndPlay: "Зарегистрироваться и играть",
+    aboutTitle: "О игре",
     gameOverTitle: "ИГРА ОКОНЧЕНА!",
     gameWinTitle: "ПОБЕДА!",
     restartButton: "ПОПРОБОВАТЬ СНОВА!",
@@ -71,6 +90,11 @@ const translations = {
     healthText: "Здоровье",
     bossHealthText: "Здоровье Босса",
     speedBoostEffectText: "УСКОРЕНИЕ!",
+    pause: "Пауза",
+    victory: "ПОБЕДА!",
+    gameOver: "ИГРА ОКОНЧЕНА!",
+    playAgain: "НАЧАТЬ ЗАНОВО!",
+    level: "Уровень"
   },
   it: {
     title: "🐟 COMANDANTE MOLA MOLA 🐟",
@@ -89,6 +113,13 @@ const translations = {
     wineEffect: "🍷 SALTO POTENZIATO (3.5x per 7s)",
     startButton: "INIZIA OPERAZIONE BUCATINI!",
     subtitle: "Un'avventura pixel ispirata alla Calabria, Italia.",
+    playButton: "GIOCA",
+    nicknameRequired: "Nickname obbligatorio",
+    emailRequired: "Email obbligatoria",
+    enterNickname: "Inserisci il tuo nickname",
+    enterEmail: "Inserisci la tua email",
+    registerAndPlay: "Registrati e gioca",
+    aboutTitle: "Informazioni sul Gioco",
     gameOverTitle: "GAME OVER!",
     gameWinTitle: "VITTORIA!",
     restartButton: "RIPROVA!",
@@ -107,10 +138,15 @@ const translations = {
     healthText: "Salute",
     bossHealthText: "Salute Boss",
     speedBoostEffectText: "AUMENTO VELOCITÀ!",
+    pause: "Pausa",
+    victory: "VITTORIA!",
+    gameOver: "GAME OVER!",
+    playAgain: "GIOCA ANCORA!",
+    level: "Livello"
   },
 };
 
-// Compose all keys across all languages as possible translations
+// Compose all keys across all languages as possible translations, including functional keys
 type TranslationMap = typeof translations['en'] & typeof translations['ru'] & typeof translations['it'];
 export type TranslationKeys = keyof TranslationMap;
 

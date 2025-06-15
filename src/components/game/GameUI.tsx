@@ -17,19 +17,19 @@ const GameUI = ({ gameState }: GameUIProps) => {
         <div className="space-y-1 text-sm">
           <div className="flex items-center gap-2">
             <span className="text-red-400">❤️</span>
-            <span>{t.health}: {gameState.health}/100</span>
+            <span>{t.healthText}: {gameState.health}/100</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-yellow-400">🚀</span>
-            <span>{t.ammo}: {gameState.ammo}</span>
+            <span>{t.ammoText}: {gameState.ammo}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-yellow-400">🪙</span>
-            <span>{t.coins}: {gameState.coins}</span>
+            <span>{t.coinsText}: {gameState.coins}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-cyan-400">🎯</span>
-            <span>{t.level}: {gameState.level}</span>
+            <span>{t.levelText}: {gameState.level}</span>
           </div>
         </div>
       </div>

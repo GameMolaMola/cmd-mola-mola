@@ -17,7 +17,7 @@ const HealthDisplay: React.FC<HealthDisplayProps> = ({ health }) => {
   return (
     <span className="flex items-center font-semibold text-white whitespace-nowrap">
       <Heart size={18} className="mr-1 text-red-400" />
-      {t.health}: {health}
+      {t.healthText}: {health}
     </span>
   );
 };

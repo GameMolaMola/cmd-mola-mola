@@ -17,7 +17,7 @@ const CoinsDisplay: React.FC<CoinsDisplayProps> = ({ coins }) => {
   return (
     <span className="flex items-center font-semibold text-yellow-300 whitespace-nowrap">
       <Coins size={18} className="mr-1" />
-      {t.coins}: {coins}
+      {t.coinsText}: {coins}
     </span>
   );
 };
