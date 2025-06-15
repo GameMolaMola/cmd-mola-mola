@@ -436,6 +436,20 @@ export class GameEngine {
     this.brasilenas = [];
     this.wines = [];
 
+    // --- Новый вызов: музыка для этого уровня ---
+    if (typeof window !== "undefined") {
+      // взятие аудио-метода из audioManager
+      try {
+        // Импорт делаем динамический, чтобы избежать лишних ошибок в тестах
+        require("./audioManager").playLevelMusic(this.player.level ?? 1);
+      } catch (e) {
+        // fallback если что
+        if (window && (window as any).audioManager?.playLevelMusic) {
+          (window as any).audioManager.playLevelMusic(this.player.level ?? 1);
+        }
+      }
+    }
+
     // Исправлено: теперь босс появляется при уровне >= 10 (раньше было > 10)
     if (this.player.level >= 10) {
       this.bossLucia = {
