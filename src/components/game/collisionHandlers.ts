@@ -2,9 +2,6 @@
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
 import { takeDamage, Player } from './playerEffects'; // используем Player из playerEffects
 
-// Добавим таймер чтобы не наносить урон слишком быстро
-let lastDamageTime: number = 0;
-
 // type Player -- убираем, используем импортируемый
 
 type Enemy = {
@@ -29,9 +26,17 @@ export function handleEnemyCollisions(
   callbacks: GameCallbacks
 ) {
   const now = Date.now();
+  // Используем lastDamageTime на игроке (уникально для каждой игровой сессии)
+  if (!('_lastDamageTime' in player)) player._lastDamageTime = 0;
+
+  // НЕ даём несколько раз подряд выполнять урон и не трогаем если погиб
+  if (player.health === 0) return false;
+
+  let collided = false;
   for (const enemy of enemies) {
-    // ВАЖНО: урон только если КОНКРЕТНО это соприкосновение!
     if (checkCollision(player, enemy)) {
+      collided = true;
+      // ВАЖНО: урон только если КОНКРЕТНО это соприкосновение!
       if (player?.username === '@MolaMolaCoin') {
         player.health = 100;
         continue;
@@ -40,8 +45,8 @@ export function handleEnemyCollisions(
         applyGodmodeIfNeeded(player, godmode);
         continue;
       } else {
-        if (now - lastDamageTime >= DAMAGE_COOLDOWN) {
-          lastDamageTime = now;
+        if (now - player._lastDamageTime >= DAMAGE_COOLDOWN) {
+          player._lastDamageTime = now;
           takeDamage(player, 2);
           if (player.health < 0) player.health = 0;
           callbacks.onStateUpdate?.({
@@ -57,8 +62,8 @@ export function handleEnemyCollisions(
         }
       }
       // ЕСЛИ столкновения нет – вообще не трогать здоровье!
-    } 
+    }
   }
+  // Если было столкновение — всё уже обработано. Если не было, ничего не меняем.
   return false;
 }
-
