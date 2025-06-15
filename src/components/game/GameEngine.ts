@@ -1,23 +1,16 @@
-import { GameState } from './types';
-import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
-import { handleEnemyCollisions } from './collisionHandlers';
-import { useFreeBrasilena } from './useFreeBrasilena';
+import { GameState } from './types'; // Предполагается, что у вас есть файл types.ts для GameState
 
-import { updatePlayer } from './player';
-import { updateEnemies } from './enemies';
-import { handleBonuses } from './bonuses';
-import { updateBullets } from './bullets';
-// --- FIX: убираем жизненный конфликт с environment, используем только bubblesManager
-import { generateBubbles, updateBubbles, drawBubbles } from './bubblesManager';
-import { createDefaultPlatforms } from './platformsManager';
-import { setupKeyboardHandlers } from './controlsManager';
-
-import { renderScene } from './renderer';
-import { gameTick } from './loop';
-import { loadImages } from './imageLoader';
-
-import { spawnResourceForType, ResourceType } from './resourceSpawner';
-import { spawnDynamicPlatform, updateDynamicPlatforms } from './dynamicPlatforms';
+// Константы для настройки игры
+const JUMP_BOOST_MULTIPLIER = 3.5;
+const JUMP_BOOST_DURATION_FRAMES = 7 * 60; // 7 секунд * 60 кадров/сек
+const MAX_WINES_PER_LEVEL = 10;
+const MAX_WINES_BOSS_LEVEL = 15;
+const BOSS_LEVEL = 10; // Финальный уровень
+const BOSS_INITIAL_HEALTH = 1000; // Примерное здоровье босса
+const BOSS_COIN_DROP_PERCENTAGES = [0.2, 0.1, 0]; // 80%, 90%, 100% жизни истощено
+const BOSS_COIN_DROP_AMOUNT_ON_HIT = 100; // Монет за каждый выстрел в босса
+const BOSS_DEATH_COIN_COLLECTION_TIME_FRAMES = 10 * 60; // 10 секунд после смерти босса
+const MAX_GLOBAL_COINS = 1000; // Максимальное количество монет за всю игру
 
 export class GameEngine {
   private canvas: HTMLCanvasElement;
@@ -25,7 +18,7 @@ export class GameEngine {
   private animationId: number | null = null;
   private keys: { [key: string]: boolean } = {};
   private lastShotTime = 0;
-  private readonly SHOT_COOLDOWN = 200;
+  private readonly SHOT_COOLDOWN = 200; // milliseconds between shots
 
   private player = {
     x: 100,
@@ -35,7 +28,8 @@ export class GameEngine {
     velX: 0,
     velY: 0,
     speed: 5,
-    jumpPower: -15,
+    baseJumpPower: -15, // Базовая сила прыжка
+    jumpPower: -15, // Текущая сила прыжка
     grounded: false,
     health: 100,
     ammo: 20,
@@ -47,9 +41,9 @@ export class GameEngine {
     powerUps: {
       speedBoost: false,
       speedBoostTime: 0,
+      jumpBoost: false, // Новое: усиление прыжка
+      jumpBoostTime: 0, // Новое: таймер усиления прыжка
     },
-    username: '', // login игрока, теперь есть всегда!
-    direction: 1, // <--- добавим по умолчанию вправо
   };
 
   private bullets: Array<{
@@ -58,7 +52,6 @@ export class GameEngine {
     width: number;
     height: number;
     speed: number;
-    direction?: number;
   }> = [];
 
   private enemies: Array<{
@@ -67,10 +60,12 @@ export class GameEngine {
     width: number;
     height: number;
     speed: number;
+    health?: number; // Для босса
+    isBoss?: boolean; // Для идентификации босса
+    coinDropThresholds?: number[]; // Для босса, чтобы отслеживать выпадение монет
   }> = [];
 
-  // --> Расширяем тип для coins: разрешаем опциональное поле _bossCoin
-  private coins: Array<{ x: number; y: number; width: number; height: number; _bossCoin?: boolean }> = [];
+  private coins: Array<{ x: number; y: number; width: number; height: number; isFromBoss?: boolean }> = [];
   private pizzas: Array<{ x: number; y: number; width: number; height: number }> = [];
   private brasilenas: Array<{ x: number; y: number; width: number; height: number }> = [];
   private wines: Array<{ x: number; y: number; width: number; height: number }> = [];
@@ -83,578 +78,730 @@ export class GameEngine {
     color: string;
   }> = [];
 
+  private winesCollectedThisLevel: number = 0; // Новое: счетчик вина за уровень
+  private bossHealth: number = BOSS_INITIAL_HEALTH; // Новое: здоровье босса
+  private bossCoinCollectionTimer: number = 0; // Новое: таймер для сбора монет после смерти босса
+  private bossAlreadyDroppedCoinsAt: { [key: string]: boolean } = {}; // Новое: отслеживание дропа монет боссом
+
+  // Загрузка изображений
   private images: {
     playerFrames: HTMLImageElement[];
-    playerLeft: HTMLImageElement; // добавим
     enemy: HTMLImageElement;
-    enemyLeft: HTMLImageElement;
+    boss?: HTMLImageElement; // Новое: спрайт босса
     pizza: HTMLImageElement;
     brasilena: HTMLImageElement;
     wine: HTMLImageElement;
     coin: HTMLImageElement;
     backgrounds: { img: HTMLImageElement; level: number }[];
-    bossLucia: HTMLImageElement;
   };
 
-  private bubbles: Array<{
-    x: number; y: number; radius: number; speed: number; drift: number; driftPhase: number;
-    alpha: number;
-  }> = [];
-
-  private callbacks: {
-    onGameEnd: (victory: boolean, finalStats: any) => void;
-    onStateUpdate: (updates: any) => void;
-  };
-
-  private mobileControlState: Record<string, boolean> = {};
-
-  private staticSandLayer: HTMLCanvasElement | null = null;
-
-  private godmode: boolean = false;
-
-  private freeBrasilena?: ReturnType<typeof useFreeBrasilena>;
-
-  private bossLucia: null | {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    health: number;
-    image: HTMLImageElement;
-    direction: number;
-  } = null;
-
-  private renderer: (ctx: CanvasRenderingContext2D, engine: any) => void = renderScene;
-
-  private scaleFactor: number = 1;
-
-  private dynamicPlatforms: import("./dynamicPlatforms").DynamicPlatform[] = [];
-  private lastResourceSpawnTime: number = 0;
-  private lastPlatformSpawnTime: number = 0;
-
-  private bossCoinTimer: number | null = null;
-  private bossCoinsEndTime: number | null = null;
-  private bossRewardActive: boolean = false;
+  // Callback'и для связи с React-компонентами UI
+  private onUpdateUI: (state: GameState) => void;
+  private onGameOver: (score: number) => void;
+  private onGameWin: (score: number) => void;
+  private onShowPowerUp: (type: 'speed' | 'jump' | 'ammo' | 'health') => void;
+  private onRemovePowerUp: (type: 'speed' | 'jump' | 'ammo' | 'health') => void;
+  private onBossHealthUpdate: (health: number, maxHealth: number) => void; // Новое: для обновления UI здоровья босса
 
   constructor(
     canvas: HTMLCanvasElement,
-    ctx: CanvasRenderingContext2D,
-    options: {
-      onGameEnd: (victory: boolean, finalStats: any) => void;
-      onStateUpdate: (updates: any) => void;
-      initialState: any;
-      freeBrasilena?: ReturnType<typeof useFreeBrasilena>;
-      scaleFactor?: number;
-    }
+    onUpdateUI: (state: GameState) => void,
+    onGameOver: (score: number) => void,
+    onGameWin: (score: number) => void,
+    onShowPowerUp: (type: 'speed' | 'jump' | 'ammo' | 'health') => void,
+    onRemovePowerUp: (type: 'speed' | 'jump' | 'ammo' | 'health') => void,
+    onBossHealthUpdate: (health: number, maxHealth: number) => void
   ) {
     this.canvas = canvas;
-    this.ctx = ctx;
-    this.ctx.imageSmoothingEnabled = false;
-    this.callbacks = options;
+    this.ctx = canvas.getContext('2d')!;
+    this.ctx.imageSmoothingEnabled = false; // Отключаем сглаживание для пиксель-арта
 
-    // handle scaleFactor if provided, default to 1  
-    this.scaleFactor = options.scaleFactor ?? 1;
-
-    Object.assign(this.player, options.initialState);
-
-    // Протаскиваем логин (username) в player, если есть
-    if (options.initialState && options.initialState.username) {
-      this.player.username = options.initialState.username;
-    }
-
-    if (options.initialState?.markJump) {
-      this.player.jumpPower = -15;
-    } else {
-      this.player.jumpPower = -15;
-    }
-
-    this.godmode = !!(options.initialState && options.initialState.godmode);
-    applyGodmodeIfNeeded(this.player, this.godmode);
-    if (this.godmode) {
-      this.player.health = 100;
-    }
-
-    if (options.freeBrasilena) this.freeBrasilena = options.freeBrasilena;
+    this.onUpdateUI = onUpdateUI;
+    this.onGameOver = onGameOver;
+    this.onGameWin = onGameWin;
+    this.onShowPowerUp = onShowPowerUp;
+    this.onRemovePowerUp = onRemovePowerUp;
+    this.onBossHealthUpdate = onBossHealthUpdate;
 
     this.images = {
       playerFrames: [new Image(), new Image()],
-      playerLeft: new Image(),
       enemy: new Image(),
-      enemyLeft: new Image(),
       pizza: new Image(),
       brasilena: new Image(),
       wine: new Image(),
       coin: new Image(),
       backgrounds: [],
-      bossLucia: new Image(),
     };
 
-    loadImages(this.images);
-    setupKeyboardHandlers(this.keys, this.shoot.bind(this));
-    this.generateLevel();
-    this.platforms = createDefaultPlatforms(this.canvas.width, this.canvas.height);
-    setTimeout(() => this.generateStaticSandLayer(), 0);
+    this.loadImages();
+    this.addEventListeners();
+    this.resetGame(); // Вызываем resetGame здесь, чтобы инициализировать состояние
+  }
 
-    // Поправленная логика стартовых координат:
-    // Находим пол (floor), гарантируем корректную установку позиции игрока строго по верху пола
-    const floor = this.platforms.find(
-      (p) => Math.abs(p.y + p.height - this.canvas.height) <= 1
-    );
-    if (floor) {
-      this.player.y = floor.y - this.player.height;
-      this.player.x = Math.max(
-        20,
-        Math.min(
-          floor.x + floor.width / 2 - this.player.width / 2,
-          this.canvas.width - this.player.width - 20
-        )
-      );
-      // !!! ВАЖНО: Устанавливаем velY и grounded прямо сейчас !!!
-      this.player.velY = 0;
-      this.player.grounded = true;
+  private loadImages() {
+    // ВНИМАНИЕ: ЗАМЕНИТЕ ЭТИ URL-АДРЕСА НА ВАШИ РЕАЛЬНЫЕ!
+    // Предполагается, что эти файлы находятся в корневом каталоге `public` в Lovable.dev
+    this.images.playerFrames[0].src = '/Mola walking 1.webp';
+    this.images.playerFrames[1].src = '/Mola walking 2.webp';
+    this.images.enemy.src = '/medusa_pixel.jpg'; // Или .png с прозрачным фоном
+    this.images.pizza.src = '/pizza_pixel.png';
+    this.images.brasilena.src = '/brasilena_pixel.png';
+    this.images.wine.src = '/wine_pixel.png';
+    this.images.coin.src = '/coin_pixel.png'; // Убедитесь, что coin_pixel.png предоставлен
 
-      // Логируем всё для отладки
-      console.log("[GameEngine:Debug] Floor platform:", floor);
-      console.log("[GameEngine:Debug] Player position after spawn:", {
-        x: this.player.x,
-        y: this.player.y,
-        width: this.player.width,
-        height: this.player.height,
-        velY: this.player.velY,
-        grounded: this.player.grounded,
-      });
+    // Если есть отдельный спрайт босса:
+    this.images.boss = new Image();
+    this.images.boss.src = '/medusa_boss_pixel.png'; // Или используйте существующий enemy спрайт
 
-      // Ещё раз убеждаемся что по Y всё сходится:
-      if (this.player.y + this.player.height !== floor.y) {
-        console.warn(
-          `[GameEngine:spawn] fix: player.y (${this.player.y}) + player.height (${this.player.height}) != floor.y (${floor.y}). Correcting...`
-        );
-        this.player.y = floor.y - this.player.height;
-      }
-    } else {
-      // Если пол не найден — fallback
-      this.player.y = Math.max(0, this.canvas.height - this.player.height - 40);
-      this.player.x = 100;
-      this.player.velY = 0;
-      this.player.grounded = true;
-      console.log(
-        "[GameEngine:spawn] Floor not found! Using fallback: x=100, y=",
-        this.player.y
-      );
+    for (let i = 1; i <= 10; i++) {
+      const bg = new Image();
+      bg.src = `/underwater_bg_${i}_pixel.png`; // Убедитесь, что эти файлы предоставлены
+      this.images.backgrounds.push({ img: bg, level: i });
     }
-    // runtime check (help debug): после инициализации координаты игрока
-    setTimeout(() => {
-      console.log(
-        `[GameEngine:debug] After 1 tick: player at x=${this.player.x}, y=${this.player.y}, grounded=${this.player.grounded}`
-      );
-    }, 500);
   }
 
-  // --- Используем только bubblesManager ---
-  private generateBubbles() {
-    generateBubbles(this.bubbles, this.canvas);
-  }
-  private updateBubbles() {
-    updateBubbles(this.bubbles, this.canvas);
-  }
-  private drawBubbles(ctx: CanvasRenderingContext2D) {
-    drawBubbles(ctx, this.bubbles);
+  private addEventListeners() {
+    window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('keyup', this.handleKeyUp);
   }
 
-  public setMobileControlState(control: string, state: boolean) {
-    this.mobileControlState[control] = state;
+  private removeEventListeners() {
+    window.removeEventListener('keydown', this.handleKeyDown);
+    window.removeEventListener('keyup', this.handleKeyUp);
   }
 
-  private setupEventListeners() {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      this.keys[e.code] = true;
-
-      if (e.code === 'Space') {
-        e.preventDefault();
-        this.shoot();
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      this.keys[e.code] = false;
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('keyup', handleKeyUp);
-  }
-
-  private generateStaticSandLayer() {
-    const bottomPlatform = this.platforms.find(
-      (p) => p.y >= this.canvas.height - 40 - 1
-    );
-    if (!bottomPlatform) return;
-    this.staticSandLayer = createStaticSandLayer(
-      bottomPlatform.width,
-      bottomPlatform.height
-    );
-  }
-
-  private generatePlatforms() {
-    this.platforms = [
-      { x: 0, y: this.canvas.height - 40, width: this.canvas.width, height: 40, color: '#F87171' },
-      { x: 300, y: 350, width: 120, height: 20, color: '#7DD3FC' },
-      { x: 500, y: 280, width: 100, height: 20, color: '#6EE7B7' },
-      { x: 150, y: 220, width: 80, height: 20, color: '#FBBF24' },
-      { x: 650, y: 200, width: 100, height: 20, color: '#A78BFA' }
-    ];
-
-    setTimeout(() => this.generateStaticSandLayer(), 0);
-  }
-
-  private drawCoral(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string) {
-    ctx.save();
-    ctx.beginPath();
-    let waviness = 8 + Math.random() * 20;
-    ctx.moveTo(x, y + height);
-    for (let i = 0; i <= width; i += 6) {
-      ctx.lineTo(x + i, y + height - Math.sin(i / 17) * waviness);
+  private handleKeyDown = (e: KeyboardEvent) => {
+    this.keys[e.key.toLowerCase()] = true;
+    if (e.key === ' ' && this.player.ammo > 0 && Date.now() - this.lastShotTime > this.SHOT_COOLDOWN) {
+      this.shoot();
+      this.lastShotTime = Date.now();
     }
-    ctx.lineTo(x + width, y + height);
-    ctx.lineTo(x + width, y);
-
-    ctx.lineTo(x, y);
-    ctx.closePath();
-    ctx.fillStyle = color;
-    ctx.shadowColor = "#fef08a";
-    ctx.shadowBlur = 18;
-    ctx.globalAlpha = 0.97;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    let branchCount = 2 + Math.floor(Math.random() * 4);
-    for (let b = 0; b < branchCount; b++) {
-      let bx = x + 16 + Math.random() * (width - 38);
-      let by = y + 8 + Math.random() * (height/2);
-      ctx.beginPath();
-      ctx.moveTo(bx, by + height/3);
-      let len = 38 + Math.random() * 40;
-      let dir = (Math.random() - 0.5) * 0.8;
-      ctx.bezierCurveTo(
-        bx + 12*dir, by - len/1.5,
-        bx + 24*dir, by - len*0.75,
-        bx + 30*dir, by - len
-      );
-      ctx.lineWidth = 5 + Math.random() * 8;
-      ctx.strokeStyle = color;
-      ctx.shadowBlur = 9;
-      ctx.shadowColor = "#f9fafb";
-      ctx.globalAlpha = 0.95;
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-    }
-    ctx.restore();
-  }
-
-  private spawnResource = (type: ResourceType) => {
-    spawnResourceForType({
-      type,
-      arrays: {
-        health: this.pizzas, // Возможно, устаревшее! Но совместимо.
-        ammo: this.brasilenas,
-        coin: this.coins,
-        pizza: this.pizzas,
-        brasilena: this.brasilenas,
-        wine: this.wines,
-      },
-      player: this.player,
-      platforms: this.getAllPlatforms(),
-      canvasWidth: this.canvas.width,
-      canvasHeight: this.canvas.height,
-      resourceWidth: type === "brasilena" || type === "wine" ? 21 : 32,
-      resourceHeight: type === "brasilena" || type === "wine" ? 64 : 32,
-    });
   };
 
-  private generateLevel() {
-    if (this.freeBrasilena && typeof this.freeBrasilena.reset === "function") {
-      this.freeBrasilena.reset();
-    }
+  private handleKeyUp = (e: KeyboardEvent) => {
+    this.keys[e.key.toLowerCase()] = false;
+  };
 
-    this.enemies = [];
-    this.coins = [];
-    this.pizzas = [];
-    this.brasilenas = [];
-    this.wines = [];
-
-    // Отдельно обрабатываем босса для 11+ уровней
-    if (this.player.level > 10) {
-      this.bossLucia = {
-        x: 300,
-        y: 150,
-        width: 128,
-        height: 128,
-        health: 200 + (this.player.level - 10) * 40,
-        image: this.images?.bossLucia ?? new Image(),
-        direction: 1,
-      };
-      // Пиццы, вино, коин можно добавлять по желанию
-      for (let i = 0; i < 2; i++) {
-        this.pizzas.push({
-          x: 250 + Math.random() * 350,
-          y: 110 + Math.random() * 200,
-          width: 36,
-          height: 36
-        });
-      }
-      for (let i = 0; i < 2; i++) {
-        this.wines.push({
-          x: 260 + Math.random() * 320,
-          y: 130 + Math.random() * 140,
-          width: 32,
-          height: 32
-        });
-      }
-      // Обновляем: обычные монеты не спавним на босс-уровне!
-      // for (let i = 0; i < 4; i++) {
-      //   this.coins.push({
-      //     x: 200 + Math.random() * 400,
-      //     y: 100 + Math.random() * 200,
-      //     width: 32,
-      //     height: 32
-      //   });
-      // }
-      return;
-    } else {
-      this.bossLucia = null;
-    }
-
-    // Обычные уровни
-    const enemyCount = 3 + this.player.level;
-    const coinCount = 5 + this.player.level * 2;
-
-    // canvas.height и sandHeight гарантированы, т.к. инициализированы к этому моменту
-    const sandHeight = 40;
-    const enemyHeight = 48;
-    const upperBoundY = 20; // минимум отступ сверху для рыб
-    for (let i = 0; i < enemyCount; i++) {
-      const minX = 20, maxX = this.canvas.width - 48 - 20;
-      const minY = upperBoundY, maxY = this.canvas.height - sandHeight - enemyHeight - 8;
-      // Не спавним рыб под песком!
-      this.enemies.push({
-        x: minX + Math.random() * (maxX - minX),
-        y: minY + Math.random() * (maxY - minY),
-        width: 48,
-        height: 48,
-        speed: 1 + this.player.level * 0.2
-      });
-    }
-
-    for (let i = 0; i < coinCount; i++) {
-      this.coins.push({
-        x: 200 + Math.random() * 400,
-        y: 100 + Math.random() * 200,
-        width: 32,
-        height: 32
-      });
-    }
-
-    for (let i = 0; i < 3; i++) {
-      this.pizzas.push({
-        x: 200 + Math.random() * 400,
-        y: 100 + Math.random() * 200,
-        width: 32,
-        height: 32
-      });
-    }
-
-    // Бонус "Бразильена" и "Вино" шириной 21px и высотой 64px
-    const slimBonusWidth = 21;
-    const tallBonusHeight = 64;
-    for (let i = 0; i < 2; i++) {
-      this.brasilenas.push({
-        x: 200 + Math.random() * 400,
-        y: 100 + Math.random() * 200,
-        width: slimBonusWidth,
-        height: tallBonusHeight
-      });
-
-      this.wines.push({
-        x: 200 + Math.random() * 400,
-        y: 100 + Math.random() * 200,
-        width: slimBonusWidth,
-        height: tallBonusHeight
-      });
-    }
-
-    this.dynamicPlatforms = [];
-    // Добавим от 1 до 3 динамических платформ разных типов
-    const dynCount = 1 + Math.floor(Math.random() * 3);
-    for (let i = 0; i < dynCount; i++) {
-      const typeRand = Math.random();
-      let type: 'static' | 'disappearing' | 'moving' = 'static';
-      if (typeRand > 0.8) type = 'moving';
-      else if (typeRand > 0.4) type = 'disappearing';
-      this.dynamicPlatforms.push(
-        spawnDynamicPlatform(
-          this.canvas.width,
-          this.canvas.height,
-          this.dynamicPlatforms,
-          type
-        )
-      );
-    }
-  }
-
-  private shoot() {
-    const currentTime = Date.now();
-    if (this.player.ammo <= 0 || currentTime - this.lastShotTime < this.SHOT_COOLDOWN) {
-      return;
-    }
-    const direction = typeof this.player.direction === "number" ? this.player.direction : 1;
-
-    this.bullets.push({
-      x: direction === 1 ? this.player.x + this.player.width : this.player.x - 20,
-      y: this.player.y + this.player.height / 2 - 5,
-      width: 20,
-      height: 10,
-      speed: 10 * direction,
-      direction
-    });
-
-    this.player.ammo--;
-    this.lastShotTime = currentTime;
-    this.updateGameState();
-  }
-
-  private updateGameState() {
-    // --- score удаляем полностью
-    if (isGodmodeActive(this.godmode)) {
-      applyGodmodeIfNeeded(this.player, this.godmode);
-    }
-    this.callbacks.onStateUpdate({
-      health: this.player.health,
-      ammo: this.player.ammo,
-      coins: this.player.coins,
-      level: this.player.level
-      // без score!
-    });
-  }
-
-  private lastUpdateTimestamp: number = Date.now();
-
-  private gameLoop = () => {
-    const now = Date.now();
-    const deltaTime = now - this.lastUpdateTimestamp;
-    this.lastUpdateTimestamp = now;
-
-    // --- динамика: генерация бонусов и платформ ---
-    if (now - this.lastResourceSpawnTime > 2650) {
-      if (!this.bossRewardActive) { 
-        const types: Array<'health' | 'ammo' | 'coin' | 'pizza' | 'brasilena' | 'wine'> = [
-          'coin', 'coin', 'coin', 'coin',
-          'pizza', 'health',
-          'ammo', 'brasilena',
-          'wine'
-        ];
-        const type = types[Math.floor(Math.random() * types.length)];
-        this.spawnResource(type);
-      }
-      this.lastResourceSpawnTime = now;
-    }
-
-    // КОГДА срок босс-монет закончился — удаляем только их
-    if (this.bossRewardActive && this.bossCoinsEndTime && now >= this.bossCoinsEndTime) {
-      this.coins = this.coins.filter(coin => !coin._bossCoin);
-      this.bossRewardActive = false;
-      this.bossCoinsEndTime = null;
-      this.updateGameState();
-    }
-
-    if (now - this.lastPlatformSpawnTime > 4200) {
-      if (!this.bossRewardActive) { // не спавним платформы во время фазы сбора босс-монет
-        // минимальная плотность плат
-        const typeRand = Math.random();
-        let type: 'static' | 'disappearing' | 'moving' = 'static';
-        if (typeRand > 0.85) type = 'moving';
-        else if (typeRand > 0.37) type = 'disappearing';
-        this.dynamicPlatforms.push(
-          spawnDynamicPlatform(
-            this.canvas.width,
-            this.canvas.height,
-            this.dynamicPlatforms,
-            type
-          )
-        );
-      }
-      this.lastPlatformSpawnTime = now;
-    }
-
-    // двигаем динамические платформы
-    updateDynamicPlatforms(
-      this.dynamicPlatforms,
-      deltaTime,
-      this.canvas.width,
-      this.canvas.height
-    );
-
-    gameTick(this);
+  public startGame() {
+    this.resetGame();
+    if (this.animationId) cancelAnimationFrame(this.animationId); // Убедимся, что предыдущая анимация остановлена
     this.animationId = requestAnimationFrame(this.gameLoop);
-  };
-
-  // --- Переход на следующий уровень: теперь монеты не сбрасываются ---
-  public setNextLevel = () => {
-    this.player.level = (this.player.level ?? 1) + 1;
-    // Монеты НЕ сбрасываем! Просто генерим новый уровень, сохраняется накопленное количество.
-    this.generateLevel();
-    this.updateGameState();
   }
 
-  public start() {
-    console.log('Starting game engine...');
-    this.gameLoop();
-  }
-
-  public stop() {
-    if (this.freeBrasilena) {
-      this.freeBrasilena.cleanup();
-    }
+  public stopGame() {
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
     }
+    // НЕ удаляем event listeners здесь, так как они нужны для последующих запусков
+    // this.removeEventListeners();
   }
 
-  // --- исп-вать динамические платформы в расчетах игрока ---
-  getAllPlatforms() {
-    // ВСЕГДА объединять платформы
-    return [...this.platforms, ...this.dynamicPlatforms];
+  // Решение №4: кнопка запустить игру заново не срабатывает.
+  // Эта функция будет полностью сбрасывать все игровое состояние.
+  public resetGame() {
+    this.player = {
+      x: 100,
+      y: 300,
+      width: 64,
+      height: 64,
+      velX: 0,
+      velY: 0,
+      speed: 5,
+      baseJumpPower: -15,
+      jumpPower: -15,
+      grounded: false,
+      health: 100,
+      ammo: 20,
+      coins: 0,
+      level: 1,
+      frame: 0,
+      frameTimer: 0,
+      frameRate: 8,
+      powerUps: {
+        speedBoost: false,
+        speedBoostTime: 0,
+        jumpBoost: false,
+        jumpBoostTime: 0,
+      },
+    };
+
+    this.bullets.length = 0;
+    this.enemies.length = 0;
+    this.coins.length = 0;
+    this.pizzas.length = 0;
+    this.brasilenas.length = 0;
+    this.wines.length = 0;
+
+    this.winesCollectedThisLevel = 0; // Сброс счетчика вина
+    this.bossHealth = BOSS_INITIAL_HEALTH; // Сброс здоровья босса
+    this.bossCoinCollectionTimer = 0; // Сброс таймера
+    this.bossAlreadyDroppedCoinsAt = {}; // Сброс триггеров монет босса
+
+    this.onRemovePowerUp('speed'); // Убираем любые активные эффекты UI
+    this.onRemovePowerUp('jump'); // Убираем эффект прыжка
+    this.generateLevel(this.player.level); // Генерируем объекты для первого уровня
+    this.updateUI(); // Обновляем UI
+    this.onBossHealthUpdate(this.bossHealth, BOSS_INITIAL_HEALTH); // Сброс UI здоровья босса
   }
 
-  // --- Когда босс побежден: спавним 300 монет на 10 секунд ---
-  public spawnBossCoins() {
-    this.bossRewardActive = true;
-    this.bossCoinsEndTime = Date.now() + 10000;
-    // Удаляем только босс-монеты (если остались)
-    this.coins = this.coins.filter(coin => !coin._bossCoin);
-    // Размер монеты фиксирован: width 32, height 32
-    const TOTAL = 300;
-    const bossCoinList = [];
-    for (let i = 0; i < TOTAL; i++) {
-      // Рандомно рассыпаем по bосс-арене!
-      bossCoinList.push({
-        x: 200 + Math.random() * 400,
-        y: 100 + Math.random() * 200,
-        width: 32,
-        height: 32,
-        _bossCoin: true,
+  private generatePixelPlatforms(level: number) {
+    const currentPlatforms = [];
+    currentPlatforms.push({
+      x: 0,
+      y: this.canvas.height - 40,
+      width: this.canvas.width,
+      height: 40,
+      color: '#8B4513',
+    });
+
+    const platformCount = 5 + level * 2;
+    for (let i = 0; i < platformCount; i++) {
+      currentPlatforms.push({
+        x: Math.random() * (this.canvas.width - 100) + 50,
+        y: 100 + Math.random() * (this.canvas.height - 200),
+        width: 80 + Math.random() * 70,
+        height: 16,
+        color: i % 2 ? '#2E8B57' : '#1E90FF',
       });
     }
-    this.coins = [...this.coins, ...bossCoinList];
-    // Через 10 секунд босс-монеты удалятся (gameLoop их удалит)
+    return currentPlatforms;
+  }
+
+  private generateLevel(level: number) {
+    this.enemies.length = 0;
+    this.coins.length = 0;
+    this.pizzas.length = 0;
+    this.brasilenas.length = 0;
+    this.wines.length = 0;
+    this.winesCollectedThisLevel = 0; // Сбрасываем счетчик для нового уровня
+
+    this.platforms = this.generatePixelPlatforms(level);
+
+    if (level === BOSS_LEVEL) {
+      // Финальный уровень с боссом
+      this.bossHealth = BOSS_INITIAL_HEALTH; // Инициализация здоровья босса
+      this.bossAlreadyDroppedCoinsAt = {}; // Сброс триггеров
+      this.onBossHealthUpdate(this.bossHealth, BOSS_INITIAL_HEALTH);
+      this.enemies.push({
+        x: this.canvas.width - 150, // Босс справа
+        y: this.canvas.height / 2 - 100, // Примерное положение
+        width: 128, // Увеличим размер босса
+        height: 128,
+        speed: 0.5, // Босс движется медленнее
+        health: this.bossHealth,
+        isBoss: true,
+        // Для отслеживания дропа монет по % здоровья
+        coinDropThresholds: [...BOSS_COIN_DROP_PERCENTAGES].sort((a, b) => a - b),
+      });
+
+      // Решение №2: 15 бутылок вина на финальном уровне
+      const maxWines = MAX_WINES_BOSS_LEVEL;
+      for (let i = 0; i < maxWines; i++) {
+        this.wines.push({
+          x: Math.random() * (this.canvas.width - 100) + this.canvas.width,
+          y: Math.random() * (this.canvas.height - 150) + 50,
+          width: 32,
+          height: 32,
+        });
+      }
+    } else {
+      // Обычные уровни
+      const enemyCount = 5 + level * 2;
+      const coinCount = 10 + level * 3;
+
+      for (let i = 0; i < enemyCount; i++) {
+        this.enemies.push({
+          x: Math.random() * (this.canvas.width - 100) + this.canvas.width,
+          y: Math.random() * (this.canvas.height - 150) + 50,
+          width: 48,
+          height: 48,
+          speed: 1 + level * 0.2,
+        });
+      }
+
+      for (let i = 0; i < coinCount; i++) {
+        this.coins.push({
+          x: Math.random() * (this.canvas.width - 100) + this.canvas.width,
+          y: Math.random() * (this.canvas.height - 150) + 50,
+          width: 32,
+          height: 32,
+        });
+      }
+
+      // Генерация предметов
+      const itemSpawnArea = this.canvas.width * 1.5;
+      for (let i = 0; i < 3; i++) {
+        this.pizzas.push({
+          x: Math.random() * itemSpawnArea + this.canvas.width,
+          y: Math.random() * (this.canvas.height - 150) + 50,
+          width: 32,
+          height: 32,
+        });
+      }
+
+      for (let i = 0; i < 2; i++) {
+        this.brasilenas.push({
+          x: Math.random() * itemSpawnArea + this.canvas.width,
+          y: Math.random() * (this.canvas.height - 150) + 50,
+          width: 32,
+          height: 32,
+        });
+        // Решение №1: не больше 10 бутылок вина за уровень (для обычных уровней)
+        if (this.winesCollectedThisLevel < MAX_WINES_PER_LEVEL) {
+          this.wines.push({
+            x: Math.random() * itemSpawnArea + this.canvas.width,
+            y: Math.random() * (this.canvas.height - 150) + 50,
+            width: 32,
+            height: 32,
+          });
+        }
+      }
+    }
+  }
+
+  private shoot() {
+    if (this.player.ammo <= 0) return;
+
+    this.bullets.push({
+      x: this.player.x + this.player.width,
+      y: this.player.y + this.player.height / 2 - 5,
+      width: 20,
+      height: 10,
+      speed: 10,
+    });
+
+    this.player.ammo--;
+    this.updateUI();
+  }
+
+  private updatePlayer() {
+    this.player.velY += 0.5; // Гравитация
+
+    this.player.velX = 0;
+    if (this.keys['arrowleft'] || this.keys['a']) {
+      this.player.velX = -this.player.speed;
+    } else if (this.keys['arrowright'] || this.keys['d']) {
+      this.player.velX = this.player.speed;
+    }
+
+    // Анимация ходьбы
+    if (this.player.velX !== 0 && this.player.grounded) {
+      this.player.frameTimer++;
+      if (this.player.frameTimer >= (60 / this.player.frameRate)) {
+        this.player.frame = (this.player.frame + 1) % this.images.playerFrames.length;
+        this.player.frameTimer = 0;
+      }
+    } else {
+      this.player.frame = 0;
+      this.player.frameTimer = 0;
+    }
+
+    // Прыжок
+    if ((this.keys['arrowup'] || this.keys['w']) && this.player.grounded) {
+      this.player.velY = this.player.jumpPower; // Используем текущую силу прыжка
+      this.player.grounded = false;
+    }
+
+    this.player.x += this.player.velX;
+    this.player.y += this.player.velY;
+
+    // Ограничение по границам Canvas
+    if (this.player.x < 0) this.player.x = 0;
+    if (this.player.x + this.player.width > this.canvas.width)
+      this.player.x = this.canvas.width - this.player.width;
+
+    if (this.player.y < 0) this.player.y = 0;
+    if (this.player.y + this.player.height > this.canvas.height) {
+      this.player.y = this.canvas.height - this.player.height;
+      this.player.velY = 0;
+      this.player.grounded = true;
+    }
+
+    this.player.grounded = false;
+    this.platforms.forEach((platform) => {
+      if (
+        this.player.x < platform.x + platform.width &&
+        this.player.x + this.player.width > platform.x &&
+        this.player.y + this.player.height <= platform.y &&
+        this.player.y + this.player.height + this.player.velY >= platform.y
+      ) {
+        this.player.y = platform.y - this.player.height;
+        this.player.velY = 0;
+        this.player.grounded = true;
+      }
+    });
+
+    // Коллизия с врагами
+    this.enemies.forEach((enemy) => {
+      if (
+        this.player.x < enemy.x + enemy.width &&
+        this.player.x + this.player.width > enemy.x &&
+        this.player.y < enemy.y + enemy.height &&
+        this.player.y + this.player.height > enemy.y
+      ) {
+        if (!enemy.isBoss) { // Обычные враги наносят урон
+          this.player.health -= 5;
+          this.updateUI();
+          // Отталкивание игрока от врага
+          if (this.player.x < enemy.x) {
+            this.player.x -= 20;
+          } else {
+            this.player.x += 20;
+          }
+        }
+        
+        if (this.player.health <= 0) {
+          this.onGameOver(this.player.coins);
+          this.stopGame();
+        }
+      }
+    });
+
+    // Сбор предметов
+    this.checkCollectibles(this.coins, (itemIndex) => {
+      if (this.player.coins < MAX_GLOBAL_COINS) { // Решение №3: Максимум 1000 монет
+        this.player.coins++;
+      }
+      this.coins.splice(itemIndex, 1);
+      this.updateUI();
+    });
+    this.checkCollectibles(this.pizzas, (itemIndex) => {
+      this.player.health = Math.min(this.player.health + 20, 100);
+      this.pizzas.splice(itemIndex, 1);
+      this.updateUI();
+    });
+    this.checkCollectibles(this.brasilenas, (itemIndex) => {
+      this.player.ammo += 10;
+      this.brasilenas.splice(itemIndex, 1);
+      this.updateUI();
+    });
+    this.checkCollectibles(this.wines, (itemIndex) => {
+      // Решение №1: Усиление прыжка
+      if (!this.player.powerUps.jumpBoost) { // Применяем только если усиление не активно
+        this.player.powerUps.jumpBoost = true;
+        this.player.powerUps.jumpBoostTime = JUMP_BOOST_DURATION_FRAMES;
+        this.player.jumpPower = this.player.baseJumpPower * JUMP_BOOST_MULTIPLIER;
+        this.onShowPowerUp('jump');
+      }
+      this.wines.splice(itemIndex, 1);
+      this.winesCollectedThisLevel++; // Увеличиваем счетчик
+    });
+
+    // Обновление эффектов усилений
+    if (this.player.powerUps.speedBoost) {
+      this.player.powerUps.speedBoostTime--;
+      if (this.player.powerUps.speedBoostTime <= 0) {
+        this.player.powerUps.speedBoost = false;
+        this.player.speed = 5;
+        this.onRemovePowerUp('speed');
+      }
+    }
+    // Новое: Обновление эффекта усиления прыжка
+    if (this.player.powerUps.jumpBoost) {
+      this.player.powerUps.jumpBoostTime--;
+      if (this.player.powerUps.jumpBoostTime <= 0) {
+        this.player.powerUps.jumpBoost = false;
+        this.player.jumpPower = this.player.baseJumpPower; // Возвращаем базовую силу прыжка
+        this.onRemovePowerUp('jump');
+      }
+    }
+  }
+
+  private checkCollectibles(array: any[], action: (index: number) => void) {
+    for (let i = 0; i < array.length; i++) {
+      const item = array[i];
+      if (
+        this.player.x < item.x + item.width &&
+        this.player.x + this.player.width > item.x &&
+        this.player.y < item.y + item.height &&
+        this.player.y + this.player.height > item.y
+      ) {
+        action(i);
+        i--;
+      }
+    }
+  }
+
+  private updateEnemies() {
+    this.enemies.forEach((enemy) => {
+      // Босс не движется, только обычные враги
+      if (!enemy.isBoss) {
+        enemy.x -= enemy.speed;
+        if (enemy.x + enemy.width < 0) {
+          enemy.x = this.canvas.width + Math.random() * this.canvas.width;
+          enemy.y = Math.random() * (this.canvas.height - 200) + 100;
+        }
+      }
+    });
+  }
+
+  private updateBullets() {
+    for (let i = 0; i < this.bullets.length; i++) {
+      this.bullets[i].x += this.bullets[i].speed;
+      if (this.bullets[i].x > this.canvas.width) {
+        this.bullets.splice(i, 1);
+        i--;
+        continue;
+      }
+
+      for (let j = 0; j < this.enemies.length; j++) {
+        const enemy = this.enemies[j];
+        if (
+          this.bullets[i].x < enemy.x + enemy.width &&
+          this.bullets[i].x + this.bullets[i].width > enemy.x &&
+          this.bullets[i].y < enemy.y + enemy.height &&
+          this.bullets[i].y + this.bullets[i].height > enemy.y
+        ) {
+          // Пуля попала во врага
+          this.bullets.splice(i, 1);
+          i--; // Корректируем индекс пули
+          
+          if (enemy.isBoss && enemy.health !== undefined) {
+            // Решение №3: Логика босса
+            enemy.health -= 50; // Урон боссу от пули
+            this.bossHealth = enemy.health; // Обновляем основное состояние здоровья босса
+            this.onBossHealthUpdate(this.bossHealth, BOSS_INITIAL_HEALTH);
+
+            // Решение №3: Вылет монет за попадание
+            if (this.player.coins < MAX_GLOBAL_COINS) {
+              this.player.coins = Math.min(MAX_GLOBAL_COINS, this.player.coins + BOSS_COIN_DROP_AMOUNT_ON_HIT);
+              this.updateUI();
+            }
+
+            // Проверка порогов для массового вылета монет
+            const currentHealthPercentage = this.bossHealth / BOSS_INITIAL_HEALTH;
+            enemy.coinDropThresholds?.forEach(threshold => {
+              if (currentHealthPercentage <= threshold && !this.bossAlreadyDroppedCoinsAt[threshold]) {
+                for (let k = 0; k < BOSS_COIN_DROP_AMOUNT_ON_HIT; k++) { // Вылетает 100 монет
+                  if (this.player.coins < MAX_GLOBAL_COINS) {
+                    this.coins.push({
+                      x: enemy.x + enemy.width / 2 + Math.random() * 50 - 25,
+                      y: enemy.y + enemy.height / 2 + Math.random() * 50 - 25,
+                      width: 32,
+                      height: 32,
+                      isFromBoss: true, // Помечаем монеты от босса
+                    });
+                  }
+                }
+                this.bossAlreadyDroppedCoinsAt[threshold] = true; // Отмечаем, что монеты уже выпали на этом пороге
+              }
+            });
+
+            if (enemy.health <= 0) {
+              // Босс побежден
+              this.enemies.splice(j, 1); // Удаляем босса
+              this.bossCoinCollectionTimer = BOSS_DEATH_COIN_COLLECTION_TIME_FRAMES; // Запускаем таймер сбора монет
+              this.onBossHealthUpdate(0, BOSS_INITIAL_HEALTH); // Обновляем UI здоровья босса до 0
+
+              // Решение №3: Дополнительные монеты при смерти босса (если еще не было 100%)
+              if (!this.bossAlreadyDroppedCoinsAt[0]) {
+                for (let k = 0; k < BOSS_COIN_DROP_AMOUNT_ON_HIT; k++) {
+                  if (this.player.coins < MAX_GLOBAL_COINS) {
+                    this.coins.push({
+                      x: enemy.x + enemy.width / 2 + Math.random() * 50 - 25,
+                      y: enemy.y + enemy.height / 2 + Math.random() * 50 - 25,
+                      width: 32,
+                      height: 32,
+                      isFromBoss: true,
+                    });
+                  }
+                }
+                this.bossAlreadyDroppedCoinsAt[0] = true;
+              }
+            }
+          } else {
+            // Обычный враг
+            this.enemies.splice(j, 1);
+            this.player.coins += 2;
+            this.updateUI();
+          }
+          break; // Пуля может поразить только одного врага
+        }
+      }
+    }
+  }
+
+  private updateUI() {
+    this.onUpdateUI({
+      health: this.player.health,
+      ammo: this.player.ammo,
+      coins: this.player.coins,
+      level: this.player.level,
+      powerUps: this.player.powerUps,
+    });
+  }
+
+  private drawPixelBackground() {
+    const bg = this.images.backgrounds[this.player.level - 1];
+    if (bg && bg.img.complete) {
+      this.ctx.drawImage(bg.img, 0, 0, this.canvas.width, this.canvas.height);
+    } else {
+      this.ctx.fillStyle = '#1a2980';
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    // Пиксельные пузыри (анимация)
+    for (let i = 0; i < 20; i++) {
+      const scrollFactor = 0.1;
+      const baseX = (i * 40 - this.player.x * scrollFactor) % this.canvas.width;
+      const x = baseX < 0 ? baseX + this.canvas.width : baseX;
+
+      const y = (Date.now() / 50 + i * 20) % (this.canvas.height + 50) - 50;
+      this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      this.ctx.fillRect(Math.floor(x), Math.floor(y), 3, 3);
+      this.ctx.fillRect(Math.floor(x + 2), Math.floor(y - 3), 2, 2);
+    }
+
+    this.platforms.forEach((platform) => {
+      this.ctx.fillStyle = platform.color;
+      this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+    });
+  }
+
+  private drawGameObjects() {
+    const currentPlayerFrame = this.images.playerFrames[this.player.frame];
+    if (currentPlayerFrame.complete) {
+      this.ctx.drawImage(
+        currentPlayerFrame,
+        Math.floor(this.player.x),
+        Math.floor(this.player.y),
+        this.player.width,
+        this.player.height
+      );
+    }
+    
+    this.enemies.forEach((enemy) => {
+      const enemyImage = enemy.isBoss && this.images.boss ? this.images.boss : this.images.enemy;
+      if (enemyImage.complete) {
+        this.ctx.drawImage(enemyImage, Math.floor(enemy.x), Math.floor(enemy.y), enemy.width, enemy.height);
+      }
+    });
+    
+    this.bullets.forEach((bullet) => {
+      this.ctx.fillStyle = '#3498db';
+      this.ctx.fillRect(Math.floor(bullet.x), Math.floor(bullet.y), bullet.width, bullet.height);
+    });
+    
+    this.coins.forEach((coin) => {
+        // Если монета от босса, и таймер активен, она движется к игроку
+        if (coin.isFromBoss && this.bossCoinCollectionTimer > 0) {
+            const dx = this.player.x - coin.x;
+            const dy = this.player.y - coin.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist > 5) { // Чтобы не было бесконечного притяжения на месте
+                coin.x += (dx / dist) * 5; // Скорость притяжения
+                coin.y += (dy / dist) * 5;
+            }
+        }
+        if (this.images.coin.complete) {
+            this.ctx.drawImage(this.images.coin, Math.floor(coin.x), Math.floor(coin.y), coin.width, coin.height);
+        }
+    });
+    
+    this.pizzas.forEach((pizza) => {
+      if (this.images.pizza.complete) {
+        this.ctx.drawImage(this.images.pizza, Math.floor(pizza.x), Math.floor(pizza.y), pizza.width, pizza.height);
+      }
+    });
+    
+    this.brasilenas.forEach((brasilena) => {
+      if (this.images.brasilena.complete) {
+        this.ctx.drawImage(this.images.brasilena, Math.floor(brasilena.x), Math.floor(brasilena.y), brasilena.width, brasilena.height);
+      }
+    });
+    
+    this.wines.forEach((wine) => {
+      if (this.images.wine.complete) {
+        this.ctx.drawImage(this.images.wine, Math.floor(wine.x), Math.floor(wine.y), wine.width, wine.height);
+      }
+    });
+  }
+
+  private gameLoop = () => {
+    // Если игра завершена (Game Over / Win), просто останавливаем цикл
+    if (this.animationId === null) return;
+
+    // Обновление состояния игры
+    this.updatePlayer();
+    this.updateEnemies();
+    this.updateBullets();
+
+    // Новое: Управление таймером сбора монет после смерти босса
+    if (this.bossCoinCollectionTimer > 0) {
+      this.bossCoinCollectionTimer--;
+      if (this.bossCoinCollectionTimer <= 0) {
+        // Время для сбора монет истекло, переходим к следующему уровню/победе
+        this.onGameWin(this.player.coins); // Победа, если босс побежден
+        this.stopGame();
+        return;
+      }
+    }
+
+    // Проверка завершения уровня (если все враги и предметы собраны ИЛИ босс побежден)
+    const isLevelClear = (this.enemies.length === 0 && this.coins.filter(c => !c.isFromBoss).length === 0 && this.brasilenas.length === 0 && this.pizzas.length === 0 && this.wines.length === 0);
+    
+    if (this.player.level === BOSS_LEVEL) {
+      // На уровне босса, если босс побежден и таймер сбора монет истек
+      if (this.enemies.length === 0 && this.bossCoinCollectionTimer === 0) {
+        this.player.level++; // Переход к следующему уровню (завершение игры)
+        if (this.player.level > 10) { // Проверка на максимальный уровень
+          this.onGameWin(this.player.coins);
+          this.stopGame();
+          return;
+        }
+        this.generateLevel(this.player.level);
+        this.updateUI();
+      }
+    } else {
+      // Для обычных уровней
+      if (isLevelClear) {
+        this.player.level++;
+        if (this.player.level > 10) {
+          this.onGameWin(this.player.coins);
+          this.stopGame();
+          return;
+        }
+        this.generateLevel(this.player.level);
+        this.updateUI();
+      }
+    }
+    
+    // Очистка и отрисовка
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.drawPixelBackground();
+    this.drawGameObjects();
+
+    this.animationId = requestAnimationFrame(this.gameLoop);
+  };
+
+  // Методы для обработки мобильных нажатий
+  public handleMobileMove(direction: 'left' | 'right' | 'none') {
+    if (direction === 'left') {
+      this.keys['arrowleft'] = true;
+      this.keys['arrowright'] = false;
+    } else if (direction === 'right') {
+      this.keys['arrowright'] = true;
+      this.keys['arrowleft'] = false;
+    } else {
+      this.keys['arrowleft'] = false;
+      this.keys['arrowright'] = false;
+    }
+  }
+
+  public handleMobileJump(isJumping: boolean) {
+    if (isJumping && this.player.grounded) {
+      this.keys['arrowup'] = true;
+      this.player.velY = this.player.jumpPower;
+    } else if (!isJumping) {
+      this.keys['arrowup'] = false;
+    }
+  }
+
+  public handleMobileShoot() {
+    if (this.player.ammo > 0 && Date.now() - this.lastShotTime > this.SHOT_COOLDOWN) {
+      this.shoot();
+      this.lastShotTime = Date.now();
+    }
   }
 }
-
-import { drawPixelCoral } from './drawPixelCoral';
-import { drawPixelSand } from './drawPixelSand';
-import { createStaticSandLayer } from './staticSandLayer';
-
-// ВАЖНО: Удалили лишние старые приватные методы generateBubbles, updateBubbles, drawBubbles (оставили только три свежие выше!)
-
-// --- FIX: убираем жизненный конфликт с environment, используем только bubblesManager ---
-
-// --- FIX: убираем жизненный конфликт с environment, используем только bubblesManager --
