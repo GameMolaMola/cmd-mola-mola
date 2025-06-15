@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { GameState } from './types'; // Import GameState type
 
 // Component for displaying game UI (Moved here for self-containment)
 const GameUI: React.FC<{ gameState: GameState; bossHealth: number; maxBossHealth: number; isBossLevel: boolean }> = ({ gameState, bossHealth, maxBossHealth, isBossLevel }) => {
