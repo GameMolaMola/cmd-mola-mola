@@ -56,8 +56,7 @@ export class GameEngine {
       speedBoostTime: 0,
     },
     username: '', // login игрока, теперь есть всегда!
-    direction: 1, // <--- добавим по умолчанию вправо
-    // ЯВНО ДОБАВЛЯЕМ флаги:
+    direction: 1,
     godmode: false as boolean | undefined,
     markJump: false as boolean | undefined,
   };
@@ -166,10 +165,8 @@ export class GameEngine {
     // Прокидываем ВСЕ параметры initialState включая godmode, markJump, level
     Object.assign(this.player, options.initialState);
 
-    // Важно: после assign ЯВНО выставляем флаги (они должны быть в player!),
-    // иначе если initialState не содержит свойство, старое значение может сохраниться.
+    // ЯВНО выставляем флаги
     this.player.godmode = !!options.initialState?.godmode;
-    this.godmode = this.player.godmode;
     this.player.markJump = !!options.initialState?.markJump;
 
     // Возможно, нужно явно прокинуть стартовый уровень
@@ -184,8 +181,8 @@ export class GameEngine {
       this.player.jumpPower = -15;
     }
 
-    applyGodmodeIfNeeded(this.player, this.godmode);
-    if (this.godmode) {
+    applyGodmodeIfNeeded(this.player, this.player.godmode);
+    if (this.player.godmode) {
       this.player.health = 100;
     }
 
@@ -541,8 +538,8 @@ export class GameEngine {
 
   private updateGameState() {
     // --- score удаляем полностью
-    if (isGodmodeActive(this.godmode)) {
-      applyGodmodeIfNeeded(this.player, this.godmode);
+    if (isGodmodeActive(this.player.godmode)) {
+      applyGodmodeIfNeeded(this.player, this.player.godmode);
     }
     this.callbacks.onStateUpdate({
       health: this.player.health,
