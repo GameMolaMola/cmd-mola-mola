@@ -17,6 +17,7 @@ import { gameTick } from './loop';
 import { loadImages } from './imageLoader';
 
 import { spawnResourceForType, ResourceType } from './resourceSpawner';
+import { spawnDynamicPlatform, updateDynamicPlatforms } from './dynamicPlatforms';
 
 export class GameEngine {
   private canvas: HTMLCanvasElement;
@@ -429,7 +430,7 @@ export class GameEngine {
       if (typeRand > 0.8) type = 'moving';
       else if (typeRand > 0.4) type = 'disappearing';
       this.dynamicPlatforms.push(
-        require('./dynamicPlatforms').spawnDynamicPlatform(
+        spawnDynamicPlatform(
           this.canvas.width,
           this.canvas.height,
           this.dynamicPlatforms,
@@ -507,7 +508,7 @@ export class GameEngine {
         if (typeRand > 0.85) type = 'moving';
         else if (typeRand > 0.37) type = 'disappearing';
         this.dynamicPlatforms.push(
-          require('./dynamicPlatforms').spawnDynamicPlatform(
+          spawnDynamicPlatform(
             this.canvas.width,
             this.canvas.height,
             this.dynamicPlatforms,
@@ -519,7 +520,7 @@ export class GameEngine {
     }
 
     // двигаем динамические платформы
-    require('./dynamicPlatforms').updateDynamicPlatforms(
+    updateDynamicPlatforms(
       this.dynamicPlatforms,
       deltaTime,
       this.canvas.width,
