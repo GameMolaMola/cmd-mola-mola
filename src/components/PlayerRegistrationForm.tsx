@@ -58,6 +58,7 @@ const PlayerRegistrationForm = () => {
       email: godmode ? '-' : email,
       language,
       godmode,
+      ...(godmode ? { level: 10 } : {}), // вот тут: при godmode стартуем с 10 уровня
     } as any);
     setSubmitError('');
   };
