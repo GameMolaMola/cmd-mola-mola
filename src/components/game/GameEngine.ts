@@ -686,6 +686,3 @@ export class GameEngine {
 import { drawPixelCoral } from './drawPixelCoral';
 import { drawPixelSand } from './drawPixelSand';
 import { createStaticSandLayer } from './staticSandLayer';
-
-// Больше никаких лишних манипуляций с экспортами!
-export { GameEngine };
