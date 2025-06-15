@@ -22,7 +22,7 @@ import { spawnDynamicPlatform, updateDynamicPlatforms } from './dynamicPlatforms
 // --- ВНИМАНИЕ: Декларация для поддержки window.gameEngineInstance ---
 declare global {
   interface Window {
-    gameEngineInstance?: GameEngine;
+    gameEngineInstance?: any;
   }
 }
 

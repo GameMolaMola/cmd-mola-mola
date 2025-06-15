@@ -1,4 +1,3 @@
-
 // --- Декларация window.gameEngineInstance для TS ---
 declare global {
   interface Window {
@@ -57,4 +56,3 @@ export function updateBullets({ bullets, enemies, bossLucia, player, callbacks, 
     }
   }
 }
-
