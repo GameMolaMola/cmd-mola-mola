@@ -6,6 +6,8 @@ import Index from "./pages/Index";
 import Game from "./pages/Game";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import AppStoreGuide from "./pages/AppStoreGuide";
+import AndroidGuide from "./pages/AndroidGuide";
 import { Toaster } from "@/components/ui/toaster";
 
 function App() {
@@ -16,6 +18,8 @@ function App() {
           <Route path="/" element={<Index />} />
           <Route path="/game" element={<Game />} />
           <Route path="/about" element={<About />} />
+          <Route path="/appstore" element={<AppStoreGuide />} />
+          <Route path="/android" element={<AndroidGuide />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
