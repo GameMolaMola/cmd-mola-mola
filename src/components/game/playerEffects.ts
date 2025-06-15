@@ -1,4 +1,3 @@
-
 /**
  * Централизованный модуль управления всеми эффектами игрока.
  * Управляет: лечением, пополнением патронов, монетами, винным усилителем прыжка.
@@ -43,25 +42,28 @@ export function addCoin(player: Player, amount = 1) {
   console.log(`[playerEffects] coins from ${prev} to ${player.coins} (+${amount})`);
 }
 
-/** Активирует или обновляет Wine Jump Boost (x4 на 10с от исходного jumpPower) */
+/** Wine Jump Boost: увеличивает jumpPower в 2 раза на 10 секунд, не стакается, только обновляет время. */
 export function activateWineJumpBoost(player: Player) {
-  if (!player._originalJumpPower) {
-    player._originalJumpPower = typeof player.jumpPower === "number" ? player.jumpPower : -15;
-  }
-  if (!player._wineBoostTimeout) {
-    player.jumpPower = player._originalJumpPower * 4;
-    player._hasWineJumpBoost = true;
-    player._wineBoostTimeout = setTimeout(() => {
-      deactivateWineJumpBoost(player);
-    }, 10000);
-    console.log("[playerEffects] Wine Jump Boost ACTIVATED, jumpPower x4:", player.jumpPower);
-  } else {
-    clearTimeout(player._wineBoostTimeout);
+  if (player._hasWineJumpBoost) {
+    // Обновляем таймер, не меняем jumpPower, если буст уже активен
+    if (player._wineBoostTimeout) {
+      clearTimeout(player._wineBoostTimeout);
+    }
     player._wineBoostTimeout = setTimeout(() => {
       deactivateWineJumpBoost(player);
     }, 10000);
     console.log("[playerEffects] Wine Jump Boost timer RESET to 10s");
+    return;
   }
+
+  // Сохраняем исходный jumpPower только при первом активации буста
+  player._originalJumpPower = typeof player.jumpPower === "number" ? player.jumpPower : -15;
+  player.jumpPower = player._originalJumpPower * 2;
+  player._hasWineJumpBoost = true;
+  player._wineBoostTimeout = setTimeout(() => {
+    deactivateWineJumpBoost(player);
+  }, 10000);
+  console.log("[playerEffects] Wine Jump Boost ACTIVATED, jumpPower x2:", player.jumpPower);
 }
 
 export function deactivateWineJumpBoost(player: Player) {
@@ -71,6 +73,9 @@ export function deactivateWineJumpBoost(player: Player) {
     player.jumpPower = -15;
   }
   player._hasWineJumpBoost = false;
+  if (player._wineBoostTimeout) {
+    clearTimeout(player._wineBoostTimeout);
+  }
   player._wineBoostTimeout = null;
   console.log("[playerEffects] Wine Jump Boost DEACTIVATED, jumpPower restored:", player.jumpPower);
 }
