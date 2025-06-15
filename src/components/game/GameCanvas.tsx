@@ -3,6 +3,11 @@ import React, { useEffect, useRef } from "react";
 import { GameEngine } from "./GameEngine";
 import { useGame } from "@/contexts/GameContext";
 
+// Базовые размеры игровой области — не меняются!
+const GAME_BASE_WIDTH = 1280;
+const GAME_BASE_HEIGHT = 720;
+const GAME_ASPECT_RATIO = GAME_BASE_WIDTH / GAME_BASE_HEIGHT;
+
 interface GameCanvasProps {
   gameState: any;
   onGameEnd: (victory: boolean, stats: any) => void;
@@ -13,10 +18,6 @@ interface GameCanvasProps {
   gameSessionId?: number;
   collectEngineRef?: (engine: GameEngine | null) => void;
 }
-
-const GAME_BASE_WIDTH = 1280;
-const GAME_BASE_HEIGHT = 720;
-const GAME_ASPECT_RATIO = GAME_BASE_WIDTH / GAME_BASE_HEIGHT;
 
 const GameCanvas: React.FC<GameCanvasProps> = ({
   gameState,
@@ -33,7 +34,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   const engineRef = useRef<GameEngine | null>(null);
   const { playerData } = useGame();
 
-  // Debounced resize for performance
+  // Debounced resize
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -41,12 +42,12 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
 
     let resizeTimeout: number | undefined;
 
-    // Получает доступный размер с учетом Safe Area и visualViewport
     function getSafeAreaSize() {
+      // Определяем максимально доступную зону, учитывая safe area/inset
       let width = window.innerWidth;
       let height = window.innerHeight;
 
-      // iOS: учитываем safe area
+      // Используем visualViewport, если доступен (лучше работает с динамической клавиатурой на мобильных)
       if (window.visualViewport) {
         width = window.visualViewport.width;
         height = window.visualViewport.height;
@@ -68,45 +69,49 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       if (!canvas || !container) return;
 
       const { width: areaW, height: areaH } = getSafeAreaSize();
-      const screenAR = areaW / areaH;
 
-      let drawWidth, drawHeight;
+      // Стратегия "Contain" (вписывание): выбираем минимальный масштаб, весь контент canvas всегда виден
+      const scale = Math.min(areaW / GAME_BASE_WIDTH, areaH / GAME_BASE_HEIGHT);
 
-      if (screenAR > GAME_ASPECT_RATIO) {
-        // fill by height, horizontal cut
-        drawHeight = areaH;
-        drawWidth = areaH * GAME_ASPECT_RATIO;
-      } else {
-        // fill by width, vertical cut
-        drawWidth = areaW;
-        drawHeight = areaW / GAME_ASPECT_RATIO;
-      }
+      const drawWidth = Math.round(GAME_BASE_WIDTH * scale);
+      const drawHeight = Math.round(GAME_BASE_HEIGHT * scale);
 
-      // внутренние размеры для рендеринга (Retina-friendly, можно увеличить)
-      // Заполняет максимально, даже если обрежется!
-      // Важно: если нужен superHD - умножать drawWidth/Height на devicePixelRatio
+      // Центрирование canvas по контейнеру
       canvas.style.width = `${drawWidth}px`;
       canvas.style.height = `${drawHeight}px`;
-      canvas.width = Math.round(drawWidth);
-      canvas.height = Math.round(drawHeight);
+      canvas.width = GAME_BASE_WIDTH;
+      canvas.height = GAME_BASE_HEIGHT;
 
-      // Safe zone info: если что-то было обрезано — предупреждаем
-      if (Math.abs(drawWidth - areaW) > 1 || Math.abs(drawHeight - areaH) > 1) {
-        console.warn(
-          '[SAFE ZONE WARN] Game view cropped! Draw:', 
-          Math.round(drawWidth), 'x', Math.round(drawHeight),
-          '| Screen:', Math.round(areaW), 'x', Math.round(areaH)
+      // Обеспечиваем центральное позиционирование через flex (можно через margin auto, но тут — flex)
+      // Контейнер должен быть flex-центрован изначально
+
+      // Рекомендация для pixel-art: сохранять image-rendering: pixelated;
+      canvas.style.imageRendering = 'pixelated';
+
+      // Интеграция с игровым движком: scaleFactor может быть проброшен при необходимости
+      // Например, можно добавить: engineRef.current?.setScaleFactor?.(scale);
+
+      // Вспомогательные сообщения
+      if (Math.abs(drawWidth - areaW) > 3 || Math.abs(drawHeight - areaH) > 3) {
+        // Есть черные полосы на экране, но это нормально для "contain"
+        console.info(
+          '[SAFE ZONE]: Letterboxing: Canvas:',
+          drawWidth, 'x', drawHeight, '| Area:', areaW, 'x', areaH, '| Scale:', scale.toFixed(3)
+        );
+      } else {
+        console.info(
+          '[SAFE ZONE]: Full coverage: Canvas:',
+          drawWidth, 'x', drawHeight, '| Area:', areaW, 'x', areaH, '| Scale:', scale.toFixed(3)
         );
       }
     }
 
-    // Debounce
     function debouncedResize() {
       if (resizeTimeout) window.clearTimeout(resizeTimeout);
-      resizeTimeout = window.setTimeout(resizeCanvas, 150);
+      resizeTimeout = window.setTimeout(resizeCanvas, 180);
     }
 
-    // Стили для Safe Area через JS (дополняет существующие Tailwind классы)
+    // Safe area через JS + Tailwind (дополняет стили)
     function applySafeAreaStyle() {
       if (container) {
         container.style.paddingTop = 'env(safe-area-inset-top,0px)';
@@ -136,7 +141,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     };
   }, []);
 
-  // Повторная инициализация движка при смене основного состояния, уровня, игрока и т.д.
+  // Повторная инициализация движка при смене состояния или игрока
   useEffect(() => {
     const canvas = canvasRef.current;
     if (canvas) {
@@ -181,7 +186,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       ref={containerRef}
       className="absolute inset-0 w-full h-full bg-[#011b2e] outline-none flex items-center justify-center"
       style={{
-        touchAction: "manipulation", // критично для touch устройств
+        touchAction: "manipulation",
         WebkitTouchCallout: "none",
         WebkitUserSelect: "none",
         userSelect: "none",
@@ -209,4 +214,3 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
 };
 
 export default GameCanvas;
-
