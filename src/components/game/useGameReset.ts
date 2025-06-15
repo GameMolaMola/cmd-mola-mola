@@ -1,12 +1,14 @@
+
 import { useState } from "react";
 import { makeInitialGameState } from "./makeInitialGameState";
 import type { GameState } from "./types";
 
 export function useGameReset(playerData: any) {
-  // Если в playerData есть уровень или godmode, используем их для initialState
-  const startLevel = playerData?.level ?? 1;
-  const godmode = playerData?.godmode ?? false;
-  const markJump = playerData?.markJump ?? false;
+  // Корректно определяем стартовый уровень и godmode
+  // Учитываем, что playerData может содержать все нужные поля
+  const startLevel = playerData?.level !== undefined ? playerData.level : 1;
+  const godmode = !!playerData?.godmode;
+  const markJump = !!playerData?.markJump;
 
   // Debug log для отслеживания инициализации
   console.log("[useGameReset] INIT:", { startLevel, godmode, markJump, playerData });
@@ -20,10 +22,10 @@ export function useGameReset(playerData: any) {
   const [isPaused, setIsPaused] = useState(false);
 
   const resetGame = () => {
-    // При сбросе берём level и godmode из playerData, если есть
-    const levelToStart = playerData?.level ?? 1;
-    const godmodeHere = playerData?.godmode ?? false;
-    const markJumpHere = playerData?.markJump ?? false;
+    // Перепределяем стартовые данные точно по playerData
+    const levelToStart = playerData?.level !== undefined ? playerData.level : 1;
+    const godmodeHere = !!playerData?.godmode;
+    const markJumpHere = !!playerData?.markJump;
     const initial = makeInitialGameState(levelToStart, godmodeHere, markJumpHere);
 
     // Debug log

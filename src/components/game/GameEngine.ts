@@ -165,24 +165,17 @@ export class GameEngine {
     // handle scaleFactor if provided, default to 1  
     this.scaleFactor = options.scaleFactor ?? 1;
 
-    // Прокидываем ВСЕ параметры initialState включая godmode, markJump, level
-    Object.assign(this.player, options.initialState);
+    // [ИСПРАВЛЕНО] Прокидываем ВСЕ параметры начального состояния игрока БЕЗ потери значений!
+    // Теперь гарантируем, что godmode, markJump, level попадут в this.player.
+    const { godmode, markJump, level, ...rest } = options.initialState || {};
+    Object.assign(this.player, rest);
 
-    // ЯВНО выставляем флаги
-    this.player.godmode = !!options.initialState?.godmode;
-    this.player.markJump = !!options.initialState?.markJump;
+    this.player.godmode = !!godmode;
+    this.player.markJump = !!markJump;
+    if (typeof level === 'number') this.player.level = level;
 
-    // Возможно, нужно явно прокинуть стартовый уровень
-    if (typeof options.initialState?.level === 'number') {
-      this.player.level = options.initialState.level;
-    }
-
-    // jumpPower для markJump (по новой логике всегда -15, но расширяемость на будущее)
-    if (this.player.markJump) {
-      this.player.jumpPower = -15;
-    } else {
-      this.player.jumpPower = -15;
-    }
+    // jumpPower для markJump (по умолчанию -15, на будущее)
+    this.player.jumpPower = -15;
 
     applyGodmodeIfNeeded(this.player, this.player.godmode);
     if (this.player.godmode) {
