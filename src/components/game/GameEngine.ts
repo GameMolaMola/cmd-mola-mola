@@ -162,6 +162,7 @@ export class GameEngine {
     // handle scaleFactor if provided, default to 1  
     this.scaleFactor = options.scaleFactor ?? 1;
 
+    // Учитываем ВСЕ параметры initialState включая godmode, markJump, level
     Object.assign(this.player, options.initialState);
 
     // Протаскиваем логин (username) в player, если есть
@@ -169,16 +170,24 @@ export class GameEngine {
       this.player.username = options.initialState.username;
     }
 
+    // !!! фиксируем jumpPower для спец-флагов !!!
     if (options.initialState?.markJump) {
       this.player.jumpPower = -15;
     } else {
       this.player.jumpPower = -15;
     }
 
+    // ВАЖНО: godmode, level и прочее строго берём из initialState
     this.godmode = !!(options.initialState && options.initialState.godmode);
+    this.player.godmode = this.godmode;
     applyGodmodeIfNeeded(this.player, this.godmode);
     if (this.godmode) {
       this.player.health = 100;
+    }
+
+    // Если задан стартовый уровень — устанавливаем его явно
+    if (typeof options.initialState?.level === 'number') {
+      this.player.level = options.initialState.level;
     }
 
     if (options.freeBrasilena) this.freeBrasilena = options.freeBrasilena;
