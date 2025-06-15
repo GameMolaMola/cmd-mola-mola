@@ -1,5 +1,6 @@
 import { checkCollision } from './utils/collision';
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
+import { activateWineJumpBoost } from './playerEffects';
 
 function takeDamage(player: any, amount: number) {
   const prev = player.health;
@@ -13,35 +14,6 @@ function heal(player: any, amount: number) {
   player.health += amount;
   if (player.health > 100) player.health = 100;
   console.log(`[heal] from=${prev} to=${player.health}, amount=${amount}`);
-}
-
-// Централизованное управление WINE BOOST — новый вариант!
-function activateJumpBoost(player: any) {
-  // Эффект вина: всегда на 10 сек, строго ×4 от текущего jumpPower
-  if (!player._wineBoostTimeout) {
-    player._originalJumpPower = typeof player.jumpPower === "number"
-      ? player.jumpPower
-      : -15;
-    player.jumpPower = player._originalJumpPower * 4;
-    player._hasWineJumpBoost = true;
-    player._wineBoostTimeout = setTimeout(() => {
-      player.jumpPower = player._originalJumpPower;
-      player._hasWineJumpBoost = false;
-      player._wineBoostTimeout = null;
-      console.log("[wine] jump boost deactivated, jumpPower restored:", player.jumpPower);
-    }, 10000);
-    console.log("[wine] jump boost activated, jumpPower x4:", player.jumpPower);
-  } else {
-    // если повторный сбор — сбрасываем таймер, эффекта не стакаем!
-    clearTimeout(player._wineBoostTimeout);
-    player._wineBoostTimeout = setTimeout(() => {
-      player.jumpPower = player._originalJumpPower;
-      player._hasWineJumpBoost = false;
-      player._wineBoostTimeout = null;
-      console.log("[wine] jump boost deactivated by repeated pickup:", player.jumpPower);
-    }, 10000);
-    console.log("[wine] jump boost timer extended to 10s (no stack)");
-  }
 }
 
 export function updatePlayer({
@@ -221,7 +193,7 @@ export function updatePlayer({
     const wine = wines[i];
     if (checkCollision(player, wine)) {
       wines.splice(i, 1);
-      activateJumpBoost(player);
+      activateWineJumpBoost(player);
       callbacks.onStateUpdate({
         health: player.health,
         ammo: player.ammo,

@@ -11,6 +11,8 @@ function getMaxWineCount(isBoss: boolean) {
 const WINE_WIDTH = 21;
 const WINE_HEIGHT = 64;
 
+import { activateWineJumpBoost } from './playerEffects';
+
 export function resetWineOnLevelStart(isBoss: boolean) {
   wineCollectedTotal = 0;
   perLevelWineLimitLast = getMaxWineCount(isBoss);
@@ -79,27 +81,8 @@ export function handleBonuses({
     const wine = wines[i];
     if (checkCollision(player, wine)) {
       wines.splice(i, 1);
-      // Эффект вина: включаем только если нет активного таймера
-      if (!player._wineBoostTimeout) {
-        player._originalJumpPower = typeof player.jumpPower === "number"
-          ? player.jumpPower
-          : -15;
-        player.jumpPower = player._originalJumpPower * 4;
-        player._hasWineJumpBoost = true;
-        player._wineBoostTimeout = setTimeout(() => {
-          player.jumpPower = player._originalJumpPower;
-          player._hasWineJumpBoost = false;
-          player._wineBoostTimeout = null;
-        }, 10000);
-      } else {
-        // если собрали новое вино при активном бусте — только переустанавливаем таймер, не усиливаем jumpPower
-        clearTimeout(player._wineBoostTimeout);
-        player._wineBoostTimeout = setTimeout(() => {
-          player.jumpPower = player._originalJumpPower;
-          player._hasWineJumpBoost = false;
-          player._wineBoostTimeout = null;
-        }, 10000);
-      }
+      // Все управление эффектом через централизованную функцию:
+      activateWineJumpBoost(player);
       wineCollectedTotal += 1;
       lastWineSpawnTime = now;
       callbacks.onStateUpdate();
