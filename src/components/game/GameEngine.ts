@@ -19,6 +19,13 @@ import { loadImages } from './imageLoader';
 import { spawnResourceForType, ResourceType } from './resourceSpawner';
 import { spawnDynamicPlatform, updateDynamicPlatforms } from './dynamicPlatforms';
 
+// --- ВНИМАНИЕ: Декларация для поддержки window.gameEngineInstance ---
+declare global {
+  interface Window {
+    gameEngineInstance?: GameEngine;
+  }
+}
+
 export class GameEngine {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -248,6 +255,11 @@ export class GameEngine {
         `[GameEngine:debug] After 1 tick: player at x=${this.player.x}, y=${this.player.y}, grounded=${this.player.grounded}`
       );
     }, 500);
+
+    // После всех инициализаций:
+    if (typeof window !== "undefined") {
+      window.gameEngineInstance = this;
+    }
   }
 
   // --- Используем только bubblesManager ---
@@ -675,26 +687,5 @@ import { drawPixelCoral } from './drawPixelCoral';
 import { drawPixelSand } from './drawPixelSand';
 import { createStaticSandLayer } from './staticSandLayer';
 
-// ВАЖНО: Удалили лишние старые приватные методы generateBubbles, updateBubbles, drawBubbles (оставили только три свежие выше!)
-
-// --- FIX: убираем жизненный конфликт с environment, используем только bubblesManager ---
-
-// --- FIX: убираем жизненный конфликт с environment, используем только bubblesManager --
-
-// Связываем instance для bullets.ts (и других), чтобы можно было вызывать spawnBossCoinsOnHit/spawnBossCoins
-if (typeof window !== "undefined") {
-  // @ts-ignore
-  window.gameEngineInstance = null;
-}
-// patch constructor
-const OriginalGameEngine = GameEngine;
-GameEngine = class extends OriginalGameEngine {
-  constructor(...args: any[]) {
-    super(...args);
-    if (typeof window !== "undefined") {
-      // @ts-ignore
-      window.gameEngineInstance = this;
-    }
-  }
-};
+// Больше никаких лишних манипуляций с экспортами!
 export { GameEngine };

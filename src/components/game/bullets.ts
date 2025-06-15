@@ -1,4 +1,11 @@
 
+// --- Декларация window.gameEngineInstance для TS ---
+declare global {
+  interface Window {
+    gameEngineInstance?: any;
+  }
+}
+
 export function updateBullets({ bullets, enemies, bossLucia, player, callbacks, checkCollision, canvas }: any) {
   for (let i = bullets.length - 1; i >= 0; i--) {
     const bullet = bullets[i];
@@ -50,3 +57,4 @@ export function updateBullets({ bullets, enemies, bossLucia, player, callbacks, 
     }
   }
 }
+
