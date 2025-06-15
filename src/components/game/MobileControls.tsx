@@ -8,7 +8,7 @@ interface MobileControlsProps {
 export default function MobileControls({ onControl }: MobileControlsProps) {
   return (
     <div
-      className="w-full max-w-[900px] mx-auto flex justify-between gap-4 pb-2 pt-2"
+      className="w-full max-w-[900px] mx-auto flex justify-between gap-2 pb-2 pt-2"
       style={{
         userSelect: "none",
         WebkitUserSelect: "none",
@@ -16,10 +16,10 @@ export default function MobileControls({ onControl }: MobileControlsProps) {
       }}
     >
       {/* Левая панель */}
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         {/* Кнопки влево/вправо */}
         <button
-          className="rounded-full bg-black/80 text-white w-16 h-16 text-4xl flex items-center justify-center border-2 border-cyan-400 active:bg-cyan-800 transition duration-75"
+          className="rounded-full bg-black/80 text-white w-14 h-14 text-3xl flex items-center justify-center border-2 border-cyan-400 active:bg-cyan-800 transition duration-75"
           style={{ touchAction: "none", marginLeft: 4 }}
           tabIndex={-1}
           onTouchStart={e => { e.preventDefault(); onControl("left", true); }}
@@ -30,7 +30,7 @@ export default function MobileControls({ onControl }: MobileControlsProps) {
           ◀️
         </button>
         <button
-          className="rounded-full bg-black/80 text-white w-16 h-16 text-4xl flex items-center justify-center border-2 border-yellow-400 active:bg-yellow-800 transition duration-75"
+          className="rounded-full bg-black/80 text-white w-14 h-14 text-3xl flex items-center justify-center border-2 border-yellow-400 active:bg-yellow-800 transition duration-75"
           style={{ touchAction: "none" }}
           tabIndex={-1}
           onTouchStart={e => { e.preventDefault(); onControl("right", true); }}
@@ -42,10 +42,10 @@ export default function MobileControls({ onControl }: MobileControlsProps) {
         </button>
       </div>
       {/* Правая панель */}
-      <div className="flex gap-3">
+      <div className="flex gap-2">
         {/* Прыжок */}
         <button 
-          className="rounded-full bg-black/80 text-yellow-200 w-16 h-16 text-4xl flex items-center justify-center border-2 border-yellow-400 active:bg-cyan-800 transition duration-75"
+          className="rounded-full bg-black/80 text-yellow-200 w-14 h-14 text-3xl flex items-center justify-center border-2 border-yellow-400 active:bg-cyan-800 transition duration-75"
           style={{ touchAction: "none" }}
           tabIndex={-1}
           onTouchStart={e => { e.preventDefault(); onControl("jump", true); }}
@@ -57,7 +57,7 @@ export default function MobileControls({ onControl }: MobileControlsProps) {
         </button>
         {/* Огонь */}
         <button
-          className="rounded-full bg-black/80 text-red-400 w-16 h-16 text-4xl flex items-center justify-center border-2 border-red-400 active:bg-yellow-800 transition duration-75"
+          className="rounded-full bg-black/80 text-red-400 w-14 h-14 text-3xl flex items-center justify-center border-2 border-red-400 active:bg-yellow-800 transition duration-75"
           style={{ touchAction: "none", marginRight: 4 }}
           tabIndex={-1}
           onTouchStart={e => { e.preventDefault(); onControl("fire", true); }}
