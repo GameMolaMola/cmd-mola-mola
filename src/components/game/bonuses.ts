@@ -102,7 +102,8 @@ export function handleBonuses({
       const pf = availablePlatforms[Math.floor(Math.random() * availablePlatforms.length)];
       wines.push({
         x: pf.x + 10 + Math.random() * (pf.width - 40),
-        y: pf.y - 48,
+        // Вместо y - 48 теперь чуть-чуть выше платформы (например, -32, чтобы всегда можно было достать)
+        y: pf.y - 32,
         width: spawnBrasilenaWidth,
         height: spawnBrasilenaHeight,
       });
