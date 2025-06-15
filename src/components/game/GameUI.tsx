@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { GameState } from './types';
 import { useGame } from '@/contexts/GameContext';
@@ -32,12 +31,6 @@ const GameUI = ({ gameState }: GameUIProps) => {
             <span className="text-cyan-400">🎯</span>
             <span>{t.level}: {gameState.level}</span>
           </div>
-        </div>
-      </div>
-      
-      <div className="bg-black/70 p-3 rounded-lg border border-yellow-400">
-        <div className="text-sm">
-          <div className="text-yellow-400 mb-1">{t.score}: {gameState.score}</div>
         </div>
       </div>
     </div>

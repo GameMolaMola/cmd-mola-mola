@@ -1,3 +1,4 @@
+
 import { updatePlayer } from './player';
 import { updateEnemies } from './enemies';
 import { handleEnemyCollisions } from './collisionHandlers';
@@ -59,7 +60,8 @@ export function gameTick(engine: any) {
     spawnBrasilenaWidth: 21,
     spawnBrasilenaHeight: 64,
     platforms: engine.getAllPlatforms(),
-    canvasHeight: engine.canvas.height
+    canvasHeight: engine.canvas.height,
+    bossLucia: engine.bossLucia // добавим для лимита вина при боссе
   });
 
   updateBullets({
@@ -75,3 +77,4 @@ export function gameTick(engine: any) {
   updateBubbles(engine.bubbles, engine.canvas);
   engine.renderer(engine.ctx, engine);
 }
+

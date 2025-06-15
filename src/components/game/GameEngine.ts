@@ -516,8 +516,7 @@ export class GameEngine {
   }
 
   private updateGameState() {
-    // --- добавим вычисление и прокидывание SCORE ---
-    const score = (this.player.coins ?? 0) * 10 + (this.player.level ?? 1) * 100;
+    // --- score удаляем полностью
     if (isGodmodeActive(this.godmode)) {
       applyGodmodeIfNeeded(this.player, this.godmode);
     }
@@ -525,8 +524,8 @@ export class GameEngine {
       health: this.player.health,
       ammo: this.player.ammo,
       coins: this.player.coins,
-      level: this.player.level,
-      score, // ОБЯЗАТЕЛЬНО score!
+      level: this.player.level
+      // без score!
     });
   }
 

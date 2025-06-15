@@ -35,6 +35,7 @@ export function handleEnemyCollisions(
 ) {
   const now = Date.now();
   for (const enemy of enemies) {
+    // ВАЖНО: урон только если КОНКРЕТНО это соприкосновение!
     if (checkCollision(player, enemy)) {
       if (player?.username === '@MolaMolaCoin') {
         player.health = 100;
@@ -47,25 +48,22 @@ export function handleEnemyCollisions(
         if (now - lastDamageTime >= DAMAGE_COOLDOWN) {
           lastDamageTime = now;
           player.health -= 2;
-          // --- НЕ МОЖЕТ быть меньше 0! ---
           if (player.health < 0) player.health = 0;
           callbacks.onStateUpdate?.({
             health: player.health,
           });
-          // Завершить в момент перехода в 0, а не раньше!
           if (player.health === 0) {
             callbacks.onGameEnd(false, { 
               level: player.level, 
-              coins: player.coins, 
-              score: player.coins * 10 + player.level * 100 
+              coins: player.coins
+              // score удалён!
             });
             return true; // game ended
           }
         }
-        // если урон уже был недавно – не снимаем ещё раз
       }
-    }
+      // ЕСЛИ столкновения нет – вообще не трогать здоровье!
+    } 
   }
   return false;
 }
-

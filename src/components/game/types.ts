@@ -8,7 +8,6 @@ export interface GameState {
     speedBoost: boolean;
     speedBoostTime: number;
   };
-  // Added missing properties for UI and game end screens
-  score: number;
+  // isVictory и другие игровые состояния оставить!
   isVictory: boolean;
 }
