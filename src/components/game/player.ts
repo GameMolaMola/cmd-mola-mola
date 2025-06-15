@@ -56,8 +56,40 @@ export function updatePlayer({
     mobileControlState['fire'] = false;
   }
 
+  // [1] Определим смещение движущейся платформы, если игрок на ней
+  let platformMoveDeltaX = 0;
+  let platformMoveDeltaY = 0;
+
+  // Перед изменением позиции игрока — ищем движущуюся платформу, на которой стоит игрок
+  let standingOnMovingPlatform = null;
+  for (const platform of platforms) {
+    const prevBottom = player.y + player.height - player.velY;
+    const currBottom = player.y + player.height;
+    // Если всё как в детекте приземления:
+    const onThis = (
+      prevBottom <= platform.y &&
+      currBottom >= platform.y &&
+      player.x + player.width > platform.x + 8 &&
+      player.x < platform.x + platform.width - 8 &&
+      player.velY >= 0
+    );
+    // Проверяем движимую платформу
+    if (onThis && platform.type === 'moving') {
+      standingOnMovingPlatform = platform;
+      break;
+    }
+  }
+
   player.x += player.velX;
   player.y += player.velY;
+
+  if (standingOnMovingPlatform) {
+    platformMoveDeltaX = standingOnMovingPlatform.vx ?? 0;
+    platformMoveDeltaY = Math.sin(Date.now() / 540 + standingOnMovingPlatform.x / 37) * 0.2;
+  }
+
+  player.x += player.velX + platformMoveDeltaX;
+  player.y += player.velY + (platformMoveDeltaY || 0);
 
   if (player.x < 0) player.x = 0;
   if (player.x + player.width > canvas.width) {
@@ -66,7 +98,7 @@ export function updatePlayer({
 
   let landed = false;
   for (const platform of platforms) {
-    const prevBottom = player.y + player.height - player.velY;
+    const prevBottom = player.y + player.height - player.velY - (platformMoveDeltaY || 0);
     const currBottom = player.y + player.height;
     if (
       prevBottom <= platform.y &&

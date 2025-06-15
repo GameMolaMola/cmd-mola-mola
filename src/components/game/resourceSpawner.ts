@@ -49,6 +49,20 @@ export function getRandomResourcePosition({
   return { x, y };
 }
 
+function isOverlap(obj: { x: number; y: number; width: number; height: number }, arr: Array<{ x: number; y: number; width: number; height: number }>) {
+  for (const o of arr) {
+    if (
+      obj.x < o.x + o.width &&
+      obj.x + obj.width > o.x &&
+      obj.y < o.y + o.height &&
+      obj.y + obj.height > o.y
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /**
  * Универсальный спавнер ресурса: пушит {type, x, y, width, height}
  * в соответствующий массив [{...}] по типу
@@ -79,15 +93,27 @@ export function spawnResourceForType({
   resourceWidth?: number;
   resourceHeight?: number;
 }) {
-  const { x, y } = getRandomResourcePosition({
-    player,
-    platforms,
-    canvasWidth,
-    canvasHeight,
-    resourceWidth,
-    resourceHeight,
-  });
-  const obj = { x, y, width: resourceWidth, height: resourceHeight };
+  let attempt = 0, maxAttempts = 12;
+  let obj: { x: number; y: number; width: number; height: number };
+  let arrs = [
+    ...(arrays.coin || []),
+    ...(arrays.pizza || []),
+    ...(arrays.brasilena || []),
+    ...(arrays.wine || [])
+  ];
+  do {
+    const { x, y } = getRandomResourcePosition({
+      player,
+      platforms,
+      canvasWidth,
+      canvasHeight,
+      resourceWidth,
+      resourceHeight,
+    });
+    obj = { x, y, width: resourceWidth, height: resourceHeight };
+    attempt++;
+  } while (isOverlap(obj, arrs) && attempt < maxAttempts);
+
   if (type === "health" || type === "pizza") arrays.pizza?.push(obj);
   else if (type === "ammo" || type === "brasilena") arrays.brasilena?.push(obj);
   else if (type === "wine") arrays.wine?.push(obj);
