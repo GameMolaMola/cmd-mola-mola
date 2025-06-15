@@ -2,9 +2,9 @@
 export function updateBullets({ bullets, enemies, bossLucia, player, callbacks, checkCollision, canvas }: any) {
   for (let i = bullets.length - 1; i >= 0; i--) {
     const bullet = bullets[i];
-    bullet.x += bullet.speed; // speed теперь может быть отрицательным (влево)
+    bullet.x += bullet.speed;
 
-    // Проверяем, не ушла ли пуля за пределы (влево И/ИЛИ вправо)
+    // Проверка выхода пули за экран
     if (bullet.x > canvas.width || bullet.x + bullet.width < 0) {
       bullets.splice(i, 1);
       continue;
@@ -13,9 +13,19 @@ export function updateBullets({ bullets, enemies, bossLucia, player, callbacks, 
     // Попадание по боссу
     if (bossLucia) {
       if (checkCollision(bullet, bossLucia)) {
+        // Выпадение небольшого количества монет при каждом попадании если это босс-уровень
+        if (player.level > 10 && typeof window !== "undefined" && window.gameEngineInstance) {
+          // Безопасно вызываем специальный метод
+          window.gameEngineInstance.spawnBossCoinsOnHit?.(3, bossLucia); // по 3 монеты за попадание
+        }
+
         bossLucia.health -= 20;
         bullets.splice(i, 1);
         if (bossLucia.health <= 0) {
+          // Финальный массовый дроп монет
+          if (player.level > 10 && typeof window !== "undefined" && window.gameEngineInstance) {
+            window.gameEngineInstance.spawnBossCoins?.();
+          }
           // Победа над боссом
           player.level++;
           callbacks.onGameEnd(true, {

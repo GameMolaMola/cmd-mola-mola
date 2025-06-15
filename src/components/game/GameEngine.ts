@@ -647,6 +647,28 @@ export class GameEngine {
     this.coins = [...this.coins, ...bossCoinList];
     // Через 10 секунд босс-монеты удалятся (gameLoop их удалит)
   }
+
+  // Новый метод: постепенное выпадение части босс-монет при каждом попадании
+  public spawnBossCoinsOnHit(count: number, boss: any) {
+    // Считываем уже "активные" босс-монеты на карте
+    const activeBossCoins = (this.coins.filter(c => c._bossCoin).length) || 0;
+    const TOTAL = 300;
+    // Не даём спавнить больше 300 общее
+    if (activeBossCoins >= TOTAL) return;
+
+    const remaining = TOTAL - activeBossCoins;
+    const dropCount = Math.min(count, remaining);
+
+    for (let i = 0; i < dropCount; i++) {
+      this.coins.push({
+        x: boss.x + boss.width / 2 + (Math.random()-0.5)*boss.width,
+        y: boss.y + boss.height / 2 + (Math.random()-0.5)*boss.height,
+        width: 32,
+        height: 32,
+        _bossCoin: true,
+      });
+    }
+  }
 }
 
 import { drawPixelCoral } from './drawPixelCoral';
@@ -658,3 +680,21 @@ import { createStaticSandLayer } from './staticSandLayer';
 // --- FIX: убираем жизненный конфликт с environment, используем только bubblesManager ---
 
 // --- FIX: убираем жизненный конфликт с environment, используем только bubblesManager --
+
+// Связываем instance для bullets.ts (и других), чтобы можно было вызывать spawnBossCoinsOnHit/spawnBossCoins
+if (typeof window !== "undefined") {
+  // @ts-ignore
+  window.gameEngineInstance = null;
+}
+// patch constructor
+const OriginalGameEngine = GameEngine;
+GameEngine = class extends OriginalGameEngine {
+  constructor(...args: any[]) {
+    super(...args);
+    if (typeof window !== "undefined") {
+      // @ts-ignore
+      window.gameEngineInstance = this;
+    }
+  }
+};
+export { GameEngine };
