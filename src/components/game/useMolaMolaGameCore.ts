@@ -1,4 +1,3 @@
-
 import { useRef, useEffect } from "react";
 import { makeInitialGameState } from "./makeInitialGameState";
 import { useGameReset } from "./useGameReset";
@@ -41,15 +40,16 @@ export function useMolaMolaGameCore({
   };
 
   // side-effect сброса при смене playerData
-  useEffect(() => {
-    setInitialGameState(makeInitialGameState());
+  React.useEffect(() => {
+    const startLevel = playerData?.level ?? 1;
+    setInitialGameState(makeInitialGameState(startLevel));
     setGameSessionId(Date.now());
     setGameEnded(false);
     setVictory(false);
     setFinalStats(null);
     setIsPaused(false);
     justResetGameRef.current = true;
-    setHud(makeInitialGameState());
+    setHud(makeInitialGameState(startLevel));
   }, [playerData, setInitialGameState, setGameSessionId, setGameEnded, setVictory, setFinalStats, setIsPaused, setHud]);
 
   // сброс isPaused если конец игры
