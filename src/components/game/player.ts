@@ -9,7 +9,7 @@ export function updatePlayer({
   let right = keys['KeyD'] || keys['ArrowRight'] || !!mobileControlState['right'];
   let jump = (keys['KeyW'] || keys['ArrowUp'] || !!mobileControlState['jump']);
 
-  // Сохраняем направление (1 — вправо, -1 — влево)
+  // Корректно переключаем направление (1 – вправо, -1 – влево)
   if (left && !right) {
     player.direction = -1;
   } else if (right && !left) {
@@ -40,7 +40,7 @@ export function updatePlayer({
   }
 
   if (mobileControlState['fire']) {
-    // Стрельба должна идти в общий bullets!
+    // Стреляет в текущем направлении игрока (left/right)
     if (bullets) {
       shoot({
         player,
@@ -166,7 +166,7 @@ function shoot({
   }
   const direction = typeof player.direction === "number" ? player.direction : 1;
   bullets.push({
-    x: direction === 1 ? player.x + player.width : player.x - 20,
+    x: direction === 1 ? player.x + player.width : player.x - 20, // Влево/вправо
     y: player.y + player.height / 2 - 5,
     width: 20,
     height: 10,
