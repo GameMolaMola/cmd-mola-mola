@@ -1,5 +1,5 @@
 
-// Добавим jumpBoost и jumpBoostTime в powerUps, как в вашем примере:
+// Добавим jumpBoost и jumpBoostTime в powerUps:
 export interface GameState {
   health: number;
   ammo: number;

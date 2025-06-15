@@ -182,13 +182,13 @@ export class GameEngine {
     this.keys[e.key.toLowerCase()] = false;
   };
 
-  public startGame() {
+  public start() {
     this.resetGame();
     if (this.animationId) cancelAnimationFrame(this.animationId); // Убедимся, что предыдущая анимация остановлена
     this.animationId = requestAnimationFrame(this.gameLoop);
   }
 
-  public stopGame() {
+  public stop() {
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
@@ -453,7 +453,7 @@ export class GameEngine {
         
         if (this.player.health <= 0) {
           this.onGameOver(this.player.coins);
-          this.stopGame();
+          this.stop();
         }
       }
     });
@@ -733,7 +733,7 @@ export class GameEngine {
       if (this.bossCoinCollectionTimer <= 0) {
         // Время для сбора монет истекло, переходим к следующему уровню/победе
         this.onGameWin(this.player.coins); // Победа, если босс побежден
-        this.stopGame();
+        this.stop();
         return;
       }
     }
@@ -747,7 +747,7 @@ export class GameEngine {
         this.player.level++; // Переход к следующему уровню (завершение игры)
         if (this.player.level > 10) { // Проверка на максимальный уровень
           this.onGameWin(this.player.coins);
-          this.stopGame();
+          this.stop();
           return;
         }
         this.generateLevel(this.player.level);
@@ -759,7 +759,7 @@ export class GameEngine {
         this.player.level++;
         if (this.player.level > 10) {
           this.onGameWin(this.player.coins);
-          this.stopGame();
+          this.stop();
           return;
         }
         this.generateLevel(this.player.level);

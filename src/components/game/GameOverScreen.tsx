@@ -1,16 +1,15 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { GameState } from './types';
 import { useGame } from '@/contexts/GameContext';
 import { useTranslations } from '@/hooks/useTranslations';
 
 interface GameOverScreenProps {
-  gameState: GameState;
+  score: number;
   onRestart: () => void;
+  isWin: boolean;
 }
 
-const GameOverScreen = ({ gameState, onRestart }: GameOverScreenProps) => {
+const GameOverScreen: React.FC<GameOverScreenProps> = ({ score, onRestart, isWin }) => {
   const { language, playerData } = useGame();
   const t = useTranslations(language);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -37,8 +36,8 @@ const GameOverScreen = ({ gameState, onRestart }: GameOverScreenProps) => {
             email: playerData.email,
             code,
             language: playerData.language,
-            level: gameState.level,
-            coins: gameState.coins
+            level: 1, // TODO: fix level
+            coins: 1 // TODO: fix coins
           }),
         }
       );
@@ -56,17 +55,22 @@ const GameOverScreen = ({ gameState, onRestart }: GameOverScreenProps) => {
       email: playerData.email, 
       code,
       language: playerData.language,
-      level: gameState.level,
-      coins: gameState.coins
+      level: 1, // TODO: fix level
+      coins: 1 // TODO: fix coins
     });
   };
+
+  const title = isWin ? t.victory : t.gameOver;
+  const message = isWin
+    ? t.winFinalScoreMessage?.(score) ?? `${t.victory}!`
+    : t.finalScoreMessage?.(score) ?? `${t.gameOver}!`;
 
   if (isSubmitted) {
     return (
       <div className="absolute inset-0 bg-gradient-to-b from-blue-900 to-black flex flex-col items-center justify-center text-white font-mono p-8">
         <div className="text-center space-y-6 max-w-md">
           <h1 className="text-3xl font-bold text-yellow-400">
-            {gameState.isVictory ? t.victory : t.gameOver}
+            {t.victory}
           </h1>
           
           <div className="bg-black/70 p-6 rounded-lg border-2 border-green-400">
@@ -88,8 +92,8 @@ const GameOverScreen = ({ gameState, onRestart }: GameOverScreenProps) => {
           <div className="bg-black/50 p-4 rounded-lg border border-cyan-400">
             <div className="space-y-1 text-sm">
               <p>{t.player}: {playerData?.nickname}</p>
-              <p>{t.level}: {gameState.level}</p>
-              <p>{t.coins}: {gameState.coins}</p>
+              <p>{t.level}: 1</p> {/* TODO: fix level */}
+              <p>{t.coins}: 1</p> {/* TODO: fix coins */}
             </div>
           </div>
 
@@ -108,13 +112,13 @@ const GameOverScreen = ({ gameState, onRestart }: GameOverScreenProps) => {
     <div className="absolute inset-0 bg-gradient-to-b from-blue-900 to-black flex flex-col items-center justify-center text-white font-mono p-8">
       <div className="text-center space-y-6 max-w-md">
         <h1 className="text-3xl font-bold text-yellow-400">
-          {gameState.isVictory ? t.victory : t.gameOver}
+          {title}
         </h1>
         
         <div className="bg-black/50 p-4 rounded-lg border border-cyan-400">
           <div className="space-y-1 text-sm">
-            <p>{t.level}: {gameState.level}</p>
-            <p>{t.coins}: {gameState.coins}</p>
+            <p>{t.level}: 1</p> {/* TODO: fix level */}
+            <p>{t.coins}: 1</p> {/* TODO: fix coins */}
           </div>
         </div>
 
