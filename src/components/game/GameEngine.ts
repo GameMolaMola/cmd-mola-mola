@@ -69,7 +69,8 @@ export class GameEngine {
     speed: number;
   }> = [];
 
-  private coins: Array<{ x: number; y: number; width: number; height: number }> = [];
+  // --> Расширяем тип для coins: разрешаем опциональное поле _bossCoin
+  private coins: Array<{ x: number; y: number; width: number; height: number; _bossCoin?: boolean }> = [];
   private pizzas: Array<{ x: number; y: number; width: number; height: number }> = [];
   private brasilenas: Array<{ x: number; y: number; width: number; height: number }> = [];
   private wines: Array<{ x: number; y: number; width: number; height: number }> = [];
