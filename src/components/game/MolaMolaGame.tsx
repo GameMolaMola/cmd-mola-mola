@@ -116,6 +116,9 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
       let changed = false;
       let nextHud = { ...prev };
 
+      // Лог входящих апдейтов и предыдущего состояния
+      console.log("[onStateUpdate] prev:", prev, "updates:", safeUpdates);
+
       // --- HEALTH
       if (
         typeof safeUpdates.health === "number" &&
@@ -126,6 +129,9 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
       ) {
         nextHud.health = safeUpdates.health;
         changed = true;
+        console.log(`[HUD UPDATE] health: ${prev.health} -> ${nextHud.health}`);
+      } else if (safeUpdates.health !== prev.health) {
+        console.log(`[HUD SKIP] health update is ignored (invalid or non-monotonic):`, safeUpdates.health);
       }
 
       // --- AMMO
@@ -138,20 +144,25 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
       ) {
         nextHud.ammo = safeUpdates.ammo;
         changed = true;
+        console.log(`[HUD UPDATE] ammo: ${prev.ammo} -> ${nextHud.ammo}`);
+      } else if (safeUpdates.ammo !== prev.ammo) {
+        console.log(`[HUD SKIP] ammo update is ignored (invalid or non-monotonic):`, safeUpdates.ammo);
       }
 
       // --- COINS
       if (
         typeof safeUpdates.coins === "number" &&
-        isFinite(safeUpdates.coins) &&
-        safeUpdates.coins !== prev.coins
+        isFinite(safeUpdates.coins)
       ) {
         // clamp coins: 0..1000
         const coinsVal = Math.max(0, Math.min(1000, safeUpdates.coins));
         if (coinsVal !== prev.coins) {
           nextHud.coins = coinsVal;
           changed = true;
+          console.log(`[HUD UPDATE] coins: ${prev.coins} -> ${nextHud.coins}`);
         }
+      } else if (safeUpdates.coins !== prev.coins) {
+        console.log(`[HUD SKIP] coins update is ignored (invalid):`, safeUpdates.coins);
       }
 
       // --- LEVEL: НЕ допускаем уменьшения уровня кроме рестарта
@@ -162,6 +173,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         safeUpdates.level < 1000; // защита от аномалий
 
       if (levelValid) {
+        // Разрешаем менять уровень только если "сброс" или он увеличивается/не меняется
         const resetOrLevelIncreased =
           justResetGameRef.current || safeUpdates.level >= prev.level;
 
@@ -171,21 +183,30 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         ) {
           nextHud.level = safeUpdates.level;
           changed = true;
+          console.log(`[HUD UPDATE] level: ${prev.level} -> ${nextHud.level} (reason: resetOrLevelIncreased=${resetOrLevelIncreased})`);
+        } else if (safeUpdates.level !== prev.level) {
+          console.log(`[HUD SKIP] level: attempted to change from ${prev.level} -> ${safeUpdates.level} (resetOrLevelIncreased=${resetOrLevelIncreased})`);
         }
+      } else if (safeUpdates.level !== prev.level) {
+        console.log(`[HUD SKIP] invalid level update:`, safeUpdates.level);
       }
 
       // После успешного обновления HUD сбрасываем флаг сброса игры
       if (justResetGameRef.current) {
         justResetGameRef.current = false;
+        console.log('[HUD DEBUG] justResetGameRef сброшен');
       }
 
       // Не обновляем HUD если ничего реально не поменялось
       if (!changed || isEqualHud(nextHud, prev)) {
+        if (!changed) {
+          console.log('[HUD STABLE] No real HUD change detected. Skipping re-render.');
+        }
         return prev;
       }
 
       // Логирование каждой смены HUD для отладки всех странных скачков!
-      console.info("[HUD update] from", prev, "to", nextHud);
+      console.info("[HUD update FINAL] from", prev, "to", nextHud);
 
       return nextHud;
     });
