@@ -57,6 +57,9 @@ export class GameEngine {
     },
     username: '', // login игрока, теперь есть всегда!
     direction: 1, // <--- добавим по умолчанию вправо
+    // ЯВНО ДОБАВЛЯЕМ флаги:
+    godmode: false as boolean | undefined,
+    markJump: false as boolean | undefined,
   };
 
   private bullets: Array<{
@@ -117,8 +120,6 @@ export class GameEngine {
 
   private staticSandLayer: HTMLCanvasElement | null = null;
 
-  private godmode: boolean = false;
-
   private freeBrasilena?: ReturnType<typeof useFreeBrasilena>;
 
   private bossLucia: null | {
@@ -162,18 +163,22 @@ export class GameEngine {
     // handle scaleFactor if provided, default to 1  
     this.scaleFactor = options.scaleFactor ?? 1;
 
-    // --- Фикс: прокидываем godmode и уровень напрямую по типу GameState ---
-    // Это теперь безопасно, так как поля есть в типе!
+    // Прокидываем ВСЕ параметры initialState включая godmode, markJump, level
     Object.assign(this.player, options.initialState);
 
-    if ("godmode" in options.initialState) {
-      this.godmode = !!options.initialState.godmode;
-      this.player.godmode = this.godmode;
-    } else {
-      this.godmode = false;
+    // Важно: после assign ЯВНО выставляем флаги (они должны быть в player!),
+    // иначе если initialState не содержит свойство, старое значение может сохраниться.
+    this.player.godmode = !!options.initialState?.godmode;
+    this.godmode = this.player.godmode;
+    this.player.markJump = !!options.initialState?.markJump;
+
+    // Возможно, нужно явно прокинуть стартовый уровень
+    if (typeof options.initialState?.level === 'number') {
+      this.player.level = options.initialState.level;
     }
 
-    if ("markJump" in options.initialState && options.initialState.markJump) {
+    // jumpPower для markJump (по новой логике всегда -15, но расширяемость на будущее)
+    if (this.player.markJump) {
       this.player.jumpPower = -15;
     } else {
       this.player.jumpPower = -15;
@@ -183,13 +188,6 @@ export class GameEngine {
     if (this.godmode) {
       this.player.health = 100;
     }
-
-    // Если задан стартовый уровень — устанавливаем его явно
-    if (typeof options.initialState?.level === 'number') {
-      this.player.level = options.initialState.level;
-    }
-
-    if (options.freeBrasilena) this.freeBrasilena = options.freeBrasilena;
 
     this.images = {
       playerFrames: [new Image(), new Image()],
