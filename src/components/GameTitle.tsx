@@ -5,20 +5,20 @@ const GameTitle: React.FC = () => (
   <h1
     className="
       w-full max-w-full text-center
-      text-[7vw] xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl
-      font-bold text-yellow-300 
+      font-bold text-yellow-300
       drop-shadow-lg
-      whitespace-pre-line break-words
-      px-1 py-0.5 mx-0 
-      overflow-hidden overflow-ellipsis
+      whitespace-nowrap
+      truncate
+      overflow-x-auto
       bg-gradient-to-r from-blue-800/60 via-transparent to-blue-900/60
       rounded-lg
+      px-1 py-0 mx-0
       game-font
-      "
+      text-[5vw] xs:text-lg sm:text-2xl md:text-3xl lg:text-4xl
+    "
     style={{
       letterSpacing: ".04em",
-      lineHeight: 1.15,
-      textOverflow: "ellipsis",
+      lineHeight: 1.1,
       fontFamily: "inherit"
     }}
     title="COMMANDER MOLA MOLA"
