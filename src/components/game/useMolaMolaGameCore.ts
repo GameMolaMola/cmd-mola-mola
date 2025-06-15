@@ -1,3 +1,5 @@
+
+import React from "react";
 import { useRef, useEffect } from "react";
 import { makeInitialGameState } from "./makeInitialGameState";
 import { useGameReset } from "./useGameReset";
