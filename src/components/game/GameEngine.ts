@@ -16,6 +16,8 @@ import { renderScene } from './renderer';
 import { gameTick } from './loop';
 import { loadImages } from './imageLoader';
 
+import { spawnResourceForType, ResourceType } from './resourceSpawner';
+
 export class GameEngine {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -288,30 +290,24 @@ export class GameEngine {
     ctx.restore();
   }
 
-  private spawnResource = (type: 'health' | 'ammo' | 'coin' | 'pizza' | 'brasilena' | 'wine') => {
-    // Выбрать платформу либо платформы
-    const platforms = this.platforms.concat(this.dynamicPlatforms);
-    if (platforms.length === 0) return;
-    // Избежать "нагромождения": не ближе 40px от игрока
-    let attempts = 0;
-    let x = 0, y = 0, pf;
-    do {
-      pf = platforms[Math.floor(Math.random() * platforms.length)];
-      // рандомная точка на платформе
-      x = pf.x + 10 + Math.random() * (pf.width - 40);
-      y = pf.y - 24;
-      attempts++;
-    } while (
-      attempts < 6 &&
-      Math.abs(x - this.player.x) < 80 &&
-      Math.abs(y - this.player.y) < 60
-    );
-    // В зависимости от типа — пушим в свой массив
-    const item = { x, y, width: 32, height: 32 };
-    if (type === 'health' || type === 'pizza') this.pizzas.push(item);
-    else if (type === 'ammo' || type === 'brasilena') this.brasilenas.push(item);
-    else if (type === 'wine') this.wines.push(item);
-    else if (type === 'coin') this.coins.push(item);
+  private spawnResource = (type: ResourceType) => {
+    spawnResourceForType({
+      type,
+      arrays: {
+        health: this.pizzas, // Возможно, устаревшее! Но совместимо.
+        ammo: this.brasilenas,
+        coin: this.coins,
+        pizza: this.pizzas,
+        brasilena: this.brasilenas,
+        wine: this.wines,
+      },
+      player: this.player,
+      platforms: this.getAllPlatforms(),
+      canvasWidth: this.canvas.width,
+      canvasHeight: this.canvas.height,
+      resourceWidth: type === "brasilena" || type === "wine" ? 21 : 32,
+      resourceHeight: type === "brasilena" || type === "wine" ? 64 : 32,
+    });
   };
 
   private generateLevel() {
