@@ -1,4 +1,3 @@
-
 const translations = {
   en: {
     title: "🐟 COMMANDER MOLA MOLA 🐟",
@@ -46,7 +45,15 @@ const translations = {
     victory: "VICTORY!",
     gameOver: "GAME OVER!",
     playAgain: "PLAY AGAIN!",
-    level: "Level"
+    level: "Level",
+    features: [
+      { label: "Pixel art platformer" },
+      { type: "pixel", label: "Play as Commander Mola Mola!" },
+      { type: "adventure", label: "Adventure in Calabria-inspired worlds" },
+      { type: "molamola_coin", label: "Collect Mola Mola coins" },
+      { type: "powerup", label: "Grab legendary power-ups" },
+      { type: "boss", label: "Face the Medusa boss" },
+    ],
   },
   ru: {
     title: "🐟 COMMANDER MOLA MOLA 🐟",
@@ -94,7 +101,15 @@ const translations = {
     victory: "ПОБЕДА!",
     gameOver: "ИГРА ОКОНЧЕНА!",
     playAgain: "НАЧАТЬ ЗАНОВО!",
-    level: "Уровень"
+    level: "Уровень",
+    features: [
+      { label: "Пиксельная платформенная аркада" },
+      { type: "pixel", label: "Играйте за Коммандера Мола-Мола!" },
+      { type: "adventure", label: "Исследуйте миры, вдохновлённые Калабрией" },
+      { type: "molamola_coin", label: "Собирайте монеты Mola Mola" },
+      { type: "powerup", label: "Находите легендарные бонусы" },
+      { type: "boss", label: "Сразитесь с Медузой-боссом" },
+    ],
   },
   it: {
     title: "🐟 COMANDANTE MOLA MOLA 🐟",
@@ -142,7 +157,15 @@ const translations = {
     victory: "VITTORIA!",
     gameOver: "GAME OVER!",
     playAgain: "GIOCA ANCORA!",
-    level: "Livello"
+    level: "Livello",
+    features: [
+      { label: "Platformer in pixel art" },
+      { type: "pixel", label: "Gioca come il Comandante Mola Mola!" },
+      { type: "adventure", label: "Avventura in mondi ispirati alla Calabria" },
+      { type: "molamola_coin", label: "Raccogli monete Mola Mola" },
+      { type: "powerup", label: "Prendi i leggendari power-up" },
+      { type: "boss", label: "Sfida il boss Medusa" },
+    ],
   },
 };
 
