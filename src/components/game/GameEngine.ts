@@ -204,25 +204,34 @@ export class GameEngine {
           this.canvas.width - this.player.width - 20
         )
       );
-      // ВЫВОДИМ в консоль координаты до запуска gameTick
-      console.log(
-        `[GameEngine:spawn] Player start floor adjust: x=${this.player.x}, y=${this.player.y}, floor.y=${floor.y}, floor.h=${floor.height}, floor.x=${floor.x}, cH=${this.canvas.height}`
-      );
-      // ДОЛЖЕН стоять строго на полу:
+      // !!! ВАЖНО: Устанавливаем velY и grounded прямо сейчас !!!
+      this.player.velY = 0;
+      this.player.grounded = true;
+
+      // Логируем всё для отладки
+      console.log("[GameEngine:Debug] Floor platform:", floor);
+      console.log("[GameEngine:Debug] Player position after spawn:", {
+        x: this.player.x,
+        y: this.player.y,
+        width: this.player.width,
+        height: this.player.height,
+        velY: this.player.velY,
+        grounded: this.player.grounded,
+      });
+
+      // Ещё раз убеждаемся что по Y всё сходится:
       if (this.player.y + this.player.height !== floor.y) {
         console.warn(
           `[GameEngine:spawn] fix: player.y (${this.player.y}) + player.height (${this.player.height}) != floor.y (${floor.y}). Correcting...`
         );
         this.player.y = floor.y - this.player.height;
       }
-      this.player.grounded = true;
-      this.player.velY = 0;
     } else {
       // Если пол не найден — fallback
       this.player.y = Math.max(0, this.canvas.height - this.player.height - 40);
       this.player.x = 100;
-      this.player.grounded = true;
       this.player.velY = 0;
+      this.player.grounded = true;
       console.log(
         "[GameEngine:spawn] Floor not found! Using fallback: x=100, y=",
         this.player.y
