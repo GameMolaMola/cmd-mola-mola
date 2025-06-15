@@ -639,15 +639,20 @@ export class GameEngine {
 
   // --- Когда босс побежден: спавним 300 монет на 10 секунд ---
   public spawnBossCoins() {
+    // Если уже активировалась награда — не перезапускаем!
+    if (this.bossRewardActive) return;
+
     this.bossRewardActive = true;
+    // Сохраняем тайминги только если это окончательная победа над боссом
     this.bossCoinsEndTime = Date.now() + 10000;
-    // Удаляем только босс-монеты (если остались)
+
+    // Удаляем только босс-монеты, если вдруг остались с прошлых попаданий
     this.coins = this.coins.filter(coin => !coin._bossCoin);
+
     // Размер монеты фиксирован: width 32, height 32
     const TOTAL = 300;
     const bossCoinList = [];
     for (let i = 0; i < TOTAL; i++) {
-      // Рандомно рассыпаем по bосс-арене!
       bossCoinList.push({
         x: 200 + Math.random() * 400,
         y: 100 + Math.random() * 200,
@@ -657,15 +662,30 @@ export class GameEngine {
       });
     }
     this.coins = [...this.coins, ...bossCoinList];
-    // Через 10 секунд босс-монеты удалятся (gameLoop их удалит)
+
+    // Запускаем таймер на 10 секунд (защита от повторного запуска)
+    if (this.bossCoinTimer) {
+      clearTimeout(this.bossCoinTimer);
+    }
+    this.bossCoinTimer = window.setTimeout(() => {
+      // По завершении времени — удалить только босс-монеты
+      this.coins = this.coins.filter(coin => !coin._bossCoin);
+      this.bossRewardActive = false;
+      this.bossCoinsEndTime = null;
+      this.bossCoinTimer = null;
+      this.updateGameState();
+    }, 10000);
+
+    // Сразу обновим UI (монет становится много)
+    this.updateGameState();
   }
 
   // Новый метод: постепенное выпадение части босс-монет при каждом попадании
   public spawnBossCoinsOnHit(count: number, boss: any) {
-    // Считываем уже "активные" босс-монеты на карте
+    // Сколько уже активных босс-монет на карте (может быть до финала!)
     const activeBossCoins = (this.coins.filter(c => c._bossCoin).length) || 0;
     const TOTAL = 300;
-    // Не даём спавнить больше 300 общее
+    // Не даём спавнить больше 300 суммарно за бой
     if (activeBossCoins >= TOTAL) return;
 
     const remaining = TOTAL - activeBossCoins;
@@ -680,6 +700,7 @@ export class GameEngine {
         _bossCoin: true,
       });
     }
+    // Для попаданий НЕ запускать 10-секундный таймер — только после смерти босса!
   }
 }
 
