@@ -123,18 +123,36 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     setFinalStats(stats);
     setIsPaused(false);
     setGameSessionId(Date.now()); // Обновим любую логику gameEngine (он перезапишется новым)
+    // Лог для диагностики
+    console.log("[GameEnd] Triggered: victory=", isVictory, "stats=", stats, "gameSessionId=", gameSessionId);
   };
 
   // --- Сброс игры: флаг gameEnded сбрасывается до перезапуска канваса ---
   const handleRestart = () => {
+    // ШАГ 1: Сбросить флаги в строгом порядке
     setGameEnded(false);
     setVictory(false);
     setFinalStats(null);
-    setHud({ health: 100, ammo: 10, coins: 0, level: 1, score: 110 });
     setIsPaused(false);
-    // Новое игровое состояние с новым id = гарантирует пересоздание GameEngine
-    setInitialGameState(makeInitialGameState());
-    setGameSessionId(Date.now());
+    // ШАГ 2: Сначала сбрасываем HUD и начальное состояние одним махом
+    const initial = makeInitialGameState();
+    setHud({ ...initial });
+    setInitialGameState(initial);
+    // ШАГ 3: Новое gameSessionId — именно ПОСЛЕ сброса состояния!
+    const newSessionId = Date.now();
+    setGameSessionId(newSessionId);
+
+    // Логирование для отладки
+    console.log("[handleRestart] Reset game state", {
+      newSessionId,
+      initial,
+      flags: {
+        gameEnded: false,
+        victory: false,
+        finalStats: null,
+        isPaused: false,
+      }
+    });
   };
 
   // --- Engine ref и мобильные контролы всегда сбрасываются при gameEnded ---
@@ -209,3 +227,4 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
 };
 
 export default MolaMolaGame;
+
