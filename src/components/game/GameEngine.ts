@@ -122,6 +122,8 @@ export class GameEngine {
 
   private renderer: (ctx: CanvasRenderingContext2D, engine: any) => void = renderScene;
 
+  private scaleFactor: number = 1;
+
   constructor(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
@@ -130,12 +132,16 @@ export class GameEngine {
       onStateUpdate: (updates: any) => void;
       initialState: any;
       freeBrasilena?: ReturnType<typeof useFreeBrasilena>;
+      scaleFactor?: number; // <-- add this line!
     }
   ) {
     this.canvas = canvas;
     this.ctx = ctx;
     this.ctx.imageSmoothingEnabled = false;
     this.callbacks = options;
+
+    // handle scaleFactor if provided, default to 1  
+    this.scaleFactor = options.scaleFactor ?? 1;
 
     Object.assign(this.player, options.initialState);
 
