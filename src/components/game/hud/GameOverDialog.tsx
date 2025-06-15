@@ -8,17 +8,15 @@ import { useGame } from "@/contexts/GameContext";
 interface GameOverDialogProps {
   open: boolean;
   victory: boolean;
-  stats: { level: number; coins: number; score: number };
+  stats: { level: number; coins: number };
   onRestart: () => void;
-  // language: Language;
 }
 
 const GameOverDialog: React.FC<GameOverDialogProps> = ({
   open,
   victory,
   stats,
-  onRestart,
-  // language,
+  onRestart
 }) => {
   const { language } = useGame();
   const t = useTranslations(language);
@@ -50,7 +48,6 @@ const GameOverDialog: React.FC<GameOverDialogProps> = ({
           </div>
           <div className="flex flex-col gap-1 text-yellow-200 text-xl font-semibold bg-black/40 rounded p-4 shadow-inner w-full max-w-xs">
             <span>{t.level}: <span className="font-mono">{stats.level}</span></span>
-            <span>{t.score}: <span className="font-mono">{stats.score}</span></span>
             <span>{t.coins}: <span className="font-mono">{stats.coins}</span></span>
           </div>
           <Button

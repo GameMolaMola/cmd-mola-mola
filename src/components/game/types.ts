@@ -8,6 +8,5 @@ export interface GameState {
     speedBoost: boolean;
     speedBoostTime: number;
   };
-  // isVictory и другие игровые состояния оставить!
   isVictory: boolean;
 }

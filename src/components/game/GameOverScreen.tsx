@@ -25,7 +25,6 @@ const GameOverScreen = ({ gameState, onRestart }: GameOverScreenProps) => {
     setUniqueCode(code);
     setIsSubmitted(true);
 
-    // Отправляем на Supabase Edge Function для email уведомления
     setEmailSent("pending");
     try {
       const res = await fetch(
@@ -36,9 +35,10 @@ const GameOverScreen = ({ gameState, onRestart }: GameOverScreenProps) => {
           body: JSON.stringify({
             nickname: playerData.nickname,
             email: playerData.email,
-            score: gameState.score,
             code,
             language: playerData.language,
+            level: gameState.level,
+            coins: gameState.coins
           }),
         }
       );
@@ -51,13 +51,13 @@ const GameOverScreen = ({ gameState, onRestart }: GameOverScreenProps) => {
       setEmailSent("error");
     }
 
-    // ... логируем для отладки
     console.log("Player registered & email sent (attempted):", { 
       nickname: playerData.nickname, 
       email: playerData.email, 
-      score: gameState.score, 
       code,
-      language: playerData.language 
+      language: playerData.language,
+      level: gameState.level,
+      coins: gameState.coins
     });
   };
 
@@ -88,7 +88,6 @@ const GameOverScreen = ({ gameState, onRestart }: GameOverScreenProps) => {
           <div className="bg-black/50 p-4 rounded-lg border border-cyan-400">
             <div className="space-y-1 text-sm">
               <p>{t.player}: {playerData?.nickname}</p>
-              <p>{t.finalScore}: {gameState.score}</p>
               <p>{t.level}: {gameState.level}</p>
               <p>{t.coins}: {gameState.coins}</p>
             </div>
@@ -114,7 +113,6 @@ const GameOverScreen = ({ gameState, onRestart }: GameOverScreenProps) => {
         
         <div className="bg-black/50 p-4 rounded-lg border border-cyan-400">
           <div className="space-y-1 text-sm">
-            <p>{t.finalScore}: {gameState.score}</p>
             <p>{t.level}: {gameState.level}</p>
             <p>{t.coins}: {gameState.coins}</p>
           </div>

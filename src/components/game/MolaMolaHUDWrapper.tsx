@@ -3,7 +3,7 @@ import React from "react";
 import GameHUD from "./hud/GameHUD";
 
 interface Props {
-  hud: { health: number; ammo: number; coins: number; level: number; score: number };
+  hud: { health: number; ammo: number; coins: number; level: number };
   isMobile: boolean;
   onPause: () => void;
 }
@@ -15,7 +15,6 @@ const MolaMolaHUDWrapper: React.FC<Props> = ({ hud, isMobile, onPause }) => {
       ammo={hud.ammo}
       coins={hud.coins}
       level={hud.level}
-      score={hud.score}
       onPause={onPause}
       isMobile={isMobile}
     />

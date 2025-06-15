@@ -90,16 +90,13 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     if (!gameEnded) setIsPaused((p: boolean) => !p);
   };
 
-  // обновляем HUD и score на лету
+  // обновляем HUD без score (score не считаем)
   const onStateUpdate = (updates: any) => {
     setHud((prev: any) => {
       const safeUpdates = updates ?? {};
       const coins = typeof safeUpdates.coins === "number" ? safeUpdates.coins : prev.coins;
       const level = typeof safeUpdates.level === "number" ? safeUpdates.level : prev.level;
-      const score = typeof safeUpdates.score === "number"
-        ? safeUpdates.score
-        : coins * 10 + level * 100;
-      return { ...prev, ...safeUpdates, score, level, coins };
+      return { ...prev, ...safeUpdates, level, coins };
     });
   };
 
@@ -107,7 +104,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   const handleGameEnd = (isVictory: boolean, stats: any) => {
     setGameEnded(true);
     setVictory(isVictory);
-    setFinalStats(stats);
+    setFinalStats(stats); // теперь просто { level, coins }
     setIsPaused(false);
     setGameSessionId(Date.now());
     console.log("[GameEnd] Triggered: victory=", isVictory, "stats=", stats, "gameSessionId=", gameSessionId);
@@ -174,8 +171,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         victory={victory}
         stats={{
           level: hud.level,
-          coins: hud.coins,
-          score: hud.score
+          coins: hud.coins
         }}
         onRestart={handleRestart}
       />
