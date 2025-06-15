@@ -29,35 +29,28 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   const engineRef = useRef<GameEngine | null>(null);
   const { playerData } = useGame();
 
-  // Высота и ширина теперь строго 100vw x 100svh (landscape), без паддингов!
   useEffect(() => {
-    function resizeCanvas() {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      // Используем полный экран всегда
-      let width = window.innerWidth;
-      let height = window.innerHeight;
-      // Безопасные зоны (iOS notch и т.д.)
-      const safeTop = Number(getComputedStyle(document.documentElement).getPropertyValue('--sat') || 0);
-      const safeBottom = Number(getComputedStyle(document.documentElement).getPropertyValue('--sab') || 0);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-      width = window.innerWidth;
-      height = window.innerHeight - safeTop - safeBottom;
-      if (height < 160) height = 160;
-      // Обновляем canvas на весь экран
+    const resizeCanvas = () => {
+      if (!canvas.parentElement) return;
+      const { width, height } = canvas.parentElement.getBoundingClientRect();
       canvas.width = width;
       canvas.height = height;
-      canvas.style.width = "100vw";
-      canvas.style.height = "100svh";
-      canvas.style.maxWidth = "100vw";
-      canvas.style.maxHeight = "100svh";
-      canvas.style.display = "block";
-      canvas.style.border = "none";
+    };
+    
+    const resizeObserver = new ResizeObserver(resizeCanvas);
+    if (canvas.parentElement) {
+      resizeObserver.observe(canvas.parentElement);
+      resizeCanvas(); // Initial resize
     }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    setTimeout(resizeCanvas, 120);
-    return () => window.removeEventListener('resize', resizeCanvas);
+
+    return () => {
+      if (canvas.parentElement) {
+        resizeObserver.unobserve(canvas.parentElement);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -104,19 +97,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     <canvas
       ref={canvasRef}
       tabIndex={0}
-      className="w-[100vw] h-[100svh] max-w-none max-h-none flex-auto rounded-none shadow-none outline-none bg-[#011b2e]"
+      className="absolute top-0 left-0 w-full h-full bg-[#011b2e] outline-none"
       style={{
-        margin: "0",
-        padding: "0",
-        minHeight: "0",
-        minWidth: "0",
-        maxWidth: "100vw",
-        maxHeight: "100svh",
-        width: "100vw",
-        height: "100svh",
-        boxSizing: "border-box",
-        paddingTop: "env(safe-area-inset-top)",
-        paddingBottom: "env(safe-area-inset-bottom)",
         touchAction: "pinch-zoom"
       }}
     />

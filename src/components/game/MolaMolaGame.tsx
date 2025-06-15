@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useState } from "react";
 import { useGame } from "@/contexts/GameContext";
 import { Button } from "@/components/ui/button";
@@ -144,40 +145,38 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   // HUD и Level теперь явно получают язык через props, строго по цепочке.
   return (
     <div
-      className="relative w-[100vw] h-[100svh] overflow-hidden bg-[#011b2e]"
+      className="w-[100vw] h-[100svh] bg-[#011b2e] flex flex-col overflow-hidden"
+      style={{
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        paddingLeft: 'env(safe-area-inset-left, 0px)',
+        paddingRight: 'env(safe-area-inset-right, 0px)',
+        boxSizing: 'border-box',
+      }}
     >
-      <GameCanvas
-        key={gameSessionId}
-        gameState={initialGameState}
-        onGameEnd={handleGameEnd}
-        onStateUpdate={onStateUpdate}
-        onMobileControl={handleControl}
+      <MolaMolaHUDWrapper
+        hud={hud}
         isMobile={showMobileControls}
-        username={username}
-        isPaused={isPaused}
-        gameSessionId={gameSessionId}
-        collectEngineRef={collectEngineRef}
+        onPause={onPause}
       />
 
-      <div 
-        className="absolute top-0 left-0 right-0 z-20" 
-        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
-      >
-        <MolaMolaHUDWrapper
-          hud={hud}
+      <div className="flex-1 w-full relative">
+        <GameCanvas
+          key={gameSessionId}
+          gameState={initialGameState}
+          onGameEnd={handleGameEnd}
+          onStateUpdate={onStateUpdate}
+          onMobileControl={handleControl}
           isMobile={showMobileControls}
+          username={username}
           isPaused={isPaused}
-          onPause={onPause}
+          gameSessionId={gameSessionId}
+          collectEngineRef={collectEngineRef}
         />
       </div>
 
-      <div 
-        className="absolute bottom-0 left-0 right-0 z-30" 
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-      >
-        <MolaMolaMobileControlsWrapper show={showMobileControls} onControl={handleControl} />
-      </div>
-
+      <MolaMolaMobileControlsWrapper show={showMobileControls} onControl={handleControl} />
+      
       <MolaMolaGameEndDialog
         open={gameEnded}
         victory={victory}
@@ -188,6 +187,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         }}
         onRestart={handleRestart}
       />
+      <PauseOverlay visible={isPaused} />
     </div>
   );
 };

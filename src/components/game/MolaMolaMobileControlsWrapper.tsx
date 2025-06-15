@@ -10,7 +10,7 @@ interface Props {
 const MolaMolaMobileControlsWrapper: React.FC<Props> = ({ show, onControl }) => {
   if (!show) return null;
   return (
-    <div className="w-full z-30"
+    <div className="w-full"
       style={{
         maxWidth: 900,
         margin: "0 auto",
