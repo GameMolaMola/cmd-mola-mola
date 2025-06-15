@@ -1,4 +1,3 @@
-
 let lastWineSpawnTime = 0;
 let winePowerUpTimeout: NodeJS.Timeout | null = null;
 
@@ -15,6 +14,7 @@ export function handleBonuses({
   platforms,
   canvasHeight
 }: any) {
+  // ВСЕГДА использовать platforms из getAllPlatforms() для корректного расчета!
   // --- Пиццы и бразильена: всё как было ---
   for (let i = pizzas.length - 1; i >= 0; i--) {
     const pizza = pizzas[i];
@@ -111,4 +111,3 @@ export function handleBonuses({
     }
   }
 }
-

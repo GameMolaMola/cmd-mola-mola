@@ -124,6 +124,10 @@ export class GameEngine {
 
   private scaleFactor: number = 1;
 
+  private dynamicPlatforms: import("./dynamicPlatforms").DynamicPlatform[] = [];
+  private lastResourceSpawnTime: number = 0;
+  private lastPlatformSpawnTime: number = 0;
+
   constructor(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
@@ -284,6 +288,32 @@ export class GameEngine {
     ctx.restore();
   }
 
+  private spawnResource = (type: 'health' | 'ammo' | 'coin' | 'pizza' | 'brasilena' | 'wine') => {
+    // Выбрать платформу либо платформы
+    const platforms = this.platforms.concat(this.dynamicPlatforms);
+    if (platforms.length === 0) return;
+    // Избежать "нагромождения": не ближе 40px от игрока
+    let attempts = 0;
+    let x = 0, y = 0, pf;
+    do {
+      pf = platforms[Math.floor(Math.random() * platforms.length)];
+      // рандомная точка на платформе
+      x = pf.x + 10 + Math.random() * (pf.width - 40);
+      y = pf.y - 24;
+      attempts++;
+    } while (
+      attempts < 6 &&
+      Math.abs(x - this.player.x) < 80 &&
+      Math.abs(y - this.player.y) < 60
+    );
+    // В зависимости от типа — пушим в свой массив
+    const item = { x, y, width: 32, height: 32 };
+    if (type === 'health' || type === 'pizza') this.pizzas.push(item);
+    else if (type === 'ammo' || type === 'brasilena') this.brasilenas.push(item);
+    else if (type === 'wine') this.wines.push(item);
+    else if (type === 'coin') this.coins.push(item);
+  };
+
   private generateLevel() {
     if (this.freeBrasilena && typeof this.freeBrasilena.reset === "function") {
       this.freeBrasilena.reset();
@@ -393,6 +423,24 @@ export class GameEngine {
         height: tallBonusHeight
       });
     }
+
+    this.dynamicPlatforms = [];
+    // Добавим от 1 до 3 динамических платформ разных типов
+    const dynCount = 1 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < dynCount; i++) {
+      const typeRand = Math.random();
+      let type: 'static' | 'disappearing' | 'moving' = 'static';
+      if (typeRand > 0.8) type = 'moving';
+      else if (typeRand > 0.4) type = 'disappearing';
+      this.dynamicPlatforms.push(
+        require('./dynamicPlatforms').spawnDynamicPlatform(
+          this.canvas.width,
+          this.canvas.height,
+          this.dynamicPlatforms,
+          type
+        )
+      );
+    }
   }
 
   private shoot() {
@@ -431,7 +479,57 @@ export class GameEngine {
     });
   }
 
+  private lastUpdateTimestamp: number = Date.now();
+
   private gameLoop = () => {
+    const now = Date.now();
+    const deltaTime = now - this.lastUpdateTimestamp;
+    this.lastUpdateTimestamp = now;
+
+    // --- динамика: генерация бонусов и платформ ---
+    if (now - this.lastResourceSpawnTime > 2650) {
+      // шанс 60-80% появления бонуса
+      if (Math.random() < 0.77) {
+        // Тип выбирается с весами (монеты чаще, вино и амму — реже)
+        const types: Array<'health' | 'ammo' | 'coin' | 'pizza' | 'brasilena' | 'wine'> = [
+          'coin', 'coin', 'coin', 'coin', // х4
+          'pizza', 'health',
+          'ammo', 'brasilena',
+          'wine'
+        ];
+        const type = types[Math.floor(Math.random() * types.length)];
+        this.spawnResource(type);
+      }
+      this.lastResourceSpawnTime = now;
+    }
+
+    if (now - this.lastPlatformSpawnTime > 4200) {
+      if (Math.random() < 0.68 && this.dynamicPlatforms.length < 7) {
+        // минимальная плотность плат
+        const typeRand = Math.random();
+        let type: 'static' | 'disappearing' | 'moving' = 'static';
+        if (typeRand > 0.85) type = 'moving';
+        else if (typeRand > 0.37) type = 'disappearing';
+        this.dynamicPlatforms.push(
+          require('./dynamicPlatforms').spawnDynamicPlatform(
+            this.canvas.width,
+            this.canvas.height,
+            this.dynamicPlatforms,
+            type
+          )
+        );
+      }
+      this.lastPlatformSpawnTime = now;
+    }
+
+    // двигаем динамические платформы
+    require('./dynamicPlatforms').updateDynamicPlatforms(
+      this.dynamicPlatforms,
+      deltaTime,
+      this.canvas.width,
+      this.canvas.height
+    );
+
     gameTick(this);
     this.animationId = requestAnimationFrame(this.gameLoop);
   };
@@ -459,6 +557,11 @@ export class GameEngine {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
     }
+  }
+
+  // --- исп-вать динамические платформы в расчетах игрока ---
+  getAllPlatforms() {
+    return [...this.platforms, ...this.dynamicPlatforms];
   }
 }
 

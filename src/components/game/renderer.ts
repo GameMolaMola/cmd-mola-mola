@@ -1,4 +1,3 @@
-
 import { drawPixelCoral } from './drawPixelCoral';
 import { drawPixelSand } from './drawPixelSand';
 
@@ -28,26 +27,43 @@ export function renderScene(
   game.updateBubbles?.();
   game.drawBubbles?.(ctx);
 
-  // --- Платформы ---
-  platforms.forEach((platform: any) => {
-    if (platform.y >= canvas.height - 40 - 1) {
-      if (staticSandLayer) {
+  // --- Динамические платформы ---
+  const allPlatforms = (game.getAllPlatforms?.() ?? game.platforms);
+  allPlatforms.forEach((platform: any) => {
+    if (platform.type === 'disappearing') {
+      ctx.save();
+      ctx.globalAlpha = 0.68;
+      ctx.fillStyle = platform.color;
+      ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+      ctx.restore();
+    } else if (platform.type === 'moving') {
+      ctx.save();
+      ctx.shadowBlur = 16;
+      ctx.shadowColor = "#a7fcb2";
+      ctx.globalAlpha = 0.96;
+      ctx.fillStyle = platform.color;
+      ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+      ctx.restore();
+    } else if (platform.y >= game.canvas.height - 40 - 1 && !platform.type) {
+      // обычный "sand"
+      if (game.staticSandLayer) {
         ctx.drawImage(
-          staticSandLayer,
+          game.staticSandLayer,
           0, 0,
           platform.width, platform.height,
           platform.x, platform.y,
           platform.width, platform.height
         );
       } else {
-        drawPixelSand(
+        require('./drawPixelSand').drawPixelSand(
           ctx,
           platform.x, platform.y,
           platform.width, platform.height
         );
       }
     } else {
-      drawPixelCoral(
+      // "коралл" или статика
+      require('./drawPixelCoral').drawPixelCoral(
         ctx, platform.x, platform.y, platform.width, platform.height,
         ['#ea866c', '#e7b76a', '#fcf596', '#89f4fb']
       );
