@@ -1,0 +1,137 @@
+
+import { useRef, useEffect } from "react";
+import { makeInitialGameState } from "./makeInitialGameState";
+import { useGameReset } from "./useGameReset";
+import { loadGameSettings, saveGameSettings } from "./gameSettingsManager";
+import { isEqualHud, onStateUpdateFactory, handleGameEndFactory } from "./molaMolaHudUtils";
+
+/**
+ * Хук, который инкапсулирует основную бизнес-логику "ядра" MolaMolaGame.
+ * Абсолютно точно повторяет прежнее поведение.
+ */
+export function useMolaMolaGameCore({
+  playerData,
+  freeBrasilena,
+  username
+}: {
+  playerData: any;
+  freeBrasilena: any;
+  username: string | undefined;
+}) {
+  const {
+    hud, setHud,
+    initialGameState, setInitialGameState,
+    gameSessionId, setGameSessionId,
+    gameEnded, setGameEnded,
+    victory, setVictory,
+    finalStats, setFinalStats,
+    isPaused, setIsPaused,
+    resetGame,
+  } = useGameReset(playerData);
+
+  // Показываем мобильные контролы (оставляем юзерский хук)
+  // В компоненте!
+
+  // Флаг только-что сбросили
+  const justResetGameRef = useRef(false);
+
+  // Хэндлер pause
+  const onPause = () => {
+    if (!gameEnded) setIsPaused((p: boolean) => !p);
+  };
+
+  // side-effect сброса при смене playerData
+  useEffect(() => {
+    setInitialGameState(makeInitialGameState());
+    setGameSessionId(Date.now());
+    setGameEnded(false);
+    setVictory(false);
+    setFinalStats(null);
+    setIsPaused(false);
+    justResetGameRef.current = true;
+    setHud(makeInitialGameState());
+  }, [playerData, setInitialGameState, setGameSessionId, setGameEnded, setVictory, setFinalStats, setIsPaused, setHud]);
+
+  // сброс isPaused если конец игры
+  useEffect(() => {
+    if (!gameEnded) setIsPaused(false);
+  }, [gameEnded, setIsPaused]);
+
+  // Клавиша паузы
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.code === "KeyP" && !gameEnded) {
+        setIsPaused((v: boolean) => !v);
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [gameEnded, setIsPaused]);
+
+  // HUD и GameOver обработчики (создаём фабрики чтобы иметь доступ к рефам/состояниям)
+  const onStateUpdate = onStateUpdateFactory({ setHud, justResetGameRef });
+  const handleGameEnd = handleGameEndFactory({
+    setGameEnded, setVictory, setFinalStats, setIsPaused, setGameSessionId, setHud,
+    gameSessionId,
+  });
+
+  // Загрузка настроек из локального хранилища
+  useEffect(() => {
+    const persistent = loadGameSettings();
+    if (persistent.maxLevel > 1) {
+      setHud((h: any) => ({ ...h, level: persistent.maxLevel }));
+      setInitialGameState((gs: any) => ({ ...gs, level: persistent.maxLevel }));
+    }
+  }, [setHud, setInitialGameState]);
+
+  // Сохраняем прогресс
+  useEffect(() => {
+    saveGameSettings({
+      totalCoins: hud.coins,
+      maxLevel: hud.level
+    });
+  }, [hud.coins, hud.level]);
+
+  // Полный сброс (рестарт)
+  const lastGameEngine = useRef<any>(null);
+  const handleRestart = () => {
+    if (lastGameEngine.current) {
+      try { lastGameEngine.current.stop(); } catch {}
+      lastGameEngine.current = null;
+    }
+    resetGame();
+    justResetGameRef.current = true;
+    setHud(makeInitialGameState());
+    setInitialGameState(makeInitialGameState());
+    setGameSessionId(Date.now());
+  };
+
+  // Коллектор движка
+  const collectEngineRef = (engineInstance: any) => {
+    lastGameEngine.current = engineInstance;
+  };
+  // Mobile управление
+  const handleControl = (control: string, state: boolean) => {
+    if (!lastGameEngine.current || gameEnded) return;
+    if (typeof lastGameEngine.current.setMobileControlState === "function") {
+      lastGameEngine.current.setMobileControlState(control, state);
+    }
+  };
+
+  return {
+    hud, setHud,
+    initialGameState, setInitialGameState,
+    gameSessionId, setGameSessionId,
+    gameEnded, setGameEnded,
+    victory, setVictory,
+    finalStats, setFinalStats,
+    isPaused, setIsPaused,
+    resetGame,
+    onPause,
+    onStateUpdate,
+    handleGameEnd,
+    handleRestart,
+    collectEngineRef,
+    handleControl
+  };
+}
