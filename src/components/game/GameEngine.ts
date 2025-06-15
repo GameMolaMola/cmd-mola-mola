@@ -610,6 +610,11 @@ export class GameEngine {
 
   // --- Переход на следующий уровень: теперь монеты не сбрасываются ---
   public setNextLevel = () => {
+    // Запрещаем переход на следующий уровень, пока active boss coins (бонусный период)
+    if (this.bossRewardActive) {
+      console.log("[GameEngine:setNextLevel] WAIT: бонусный сбор монет ещё идёт, нельзя переходить на новый уровень!");
+      return;
+    }
     this.player.level = (this.player.level ?? 1) + 1;
     // Монеты НЕ сбрасываем! Просто генерим новый уровень, сохраняется накопленное количество.
     this.generateLevel();
