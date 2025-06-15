@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from "react";
 import { GameEngine } from "./GameEngine";
 import { useGame } from "@/contexts/GameContext";
@@ -34,7 +35,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     const resizeCanvas = () => {
       if (!canvas.parentElement) return;
       const { width, height } = canvas.parentElement.getBoundingClientRect();
-      // Для мобильной версии увеличиваем внутренний размер canvas в 4.576 раза (+30% к предыдущему масштабу)
+      // Для мобильной версии увеличиваем внутренний размер canvas в 4.576 раза
       if (isMobile) {
         canvas.width = width * 4.576;
         canvas.height = height * 4.576;
@@ -104,7 +105,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       className="absolute inset-0 w-full h-full bg-[#011b2e] outline-none"
       style={{
         touchAction: "pinch-zoom",
-        transform: isMobile ? "scale(0.2185)" : "scale(1)",
+        transform: isMobile ? "scale(0.3278)" : "scale(1)", // увеличено на 50%!
         transformOrigin: "top left"
       }}
     />
@@ -112,3 +113,4 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
 };
 
 export default GameCanvas;
+
