@@ -34,7 +34,7 @@ class AudioManager {
       console.log('[AudioManager] AudioContext not available or disabled');
       return false;
     }
-    
+
     if (this.audioContext.state === 'suspended') {
       try {
         await this.audioContext.resume();
@@ -44,13 +44,13 @@ class AudioManager {
         return false;
       }
     }
-    
-    // Проверяем состояние после возможного resume
+
+    // После resume просто проверяем, что оно 'running'
     if (this.audioContext.state !== 'running') {
       console.warn('[AudioManager] AudioContext not in running state:', this.audioContext.state);
       return false;
     }
-    
+
     return true;
   }
 
