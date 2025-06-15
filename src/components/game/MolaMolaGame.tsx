@@ -145,25 +145,13 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   // HUD и Level теперь явно получают язык через props, строго по цепочке.
   return (
     <div
-      className="w-screen bg-[#011b2e] relative overflow-hidden"
+      className="w-screen bg-[#011b2e] relative flex flex-col overflow-hidden"
       style={{
         height: '100svh',
       }}
     >
-      <GameCanvas
-        key={gameSessionId}
-        gameState={initialGameState}
-        onGameEnd={handleGameEnd}
-        onStateUpdate={onStateUpdate}
-        isMobile={showMobileControls}
-        username={username}
-        isPaused={isPaused}
-        gameSessionId={gameSessionId}
-        collectEngineRef={collectEngineRef}
-      />
-      
       <div 
-        className="absolute top-0 left-0 right-0 z-10"
+        className="z-10 shrink-0"
         style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
         <MolaMolaHUDWrapper
@@ -172,9 +160,23 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
           onPause={onPause}
         />
       </div>
+      
+      <div className="relative flex-1">
+        <GameCanvas
+          key={gameSessionId}
+          gameState={initialGameState}
+          onGameEnd={handleGameEnd}
+          onStateUpdate={onStateUpdate}
+          isMobile={showMobileControls}
+          username={username}
+          isPaused={isPaused}
+          gameSessionId={gameSessionId}
+          collectEngineRef={collectEngineRef}
+        />
+      </div>
 
       <div 
-        className="absolute bottom-0 left-0 right-0 z-10"
+        className="z-10 shrink-0"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <MolaMolaMobileControlsWrapper show={showMobileControls} onControl={handleControl} />
