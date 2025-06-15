@@ -145,17 +145,17 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   // HUD и Level теперь явно получают язык через props, строго по цепочке.
   return (
     <div
-      className="relative w-full flex flex-col items-center justify-start overflow-hidden"
+      className="relative w-[100vw] flex flex-col items-center justify-start overflow-hidden"
       style={{
-        minHeight: '100svh',
+        minHeight: "100svh",
         minWidth: "100vw",
         paddingTop: "env(safe-area-inset-top, 0px)",
-        paddingBottom: "max(12px, env(safe-area-inset-bottom, 0px))",
-        boxSizing: 'border-box',
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        boxSizing: "border-box",
         background: "none",
-        // критично для ios chrome/safari чтобы canvas не "резался"
         MozUserSelect: "none",
-        WebkitUserSelect: "none"
+        WebkitUserSelect: "none",
+        // Удаляем любой margin, padding тут! Максимум экрана.
       }}
     >
       <MolaMolaHUDWrapper
@@ -165,12 +165,15 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
         onPause={onPause}
       />
       <div
-        className="relative w-full flex flex-col items-center justify-center flex-1"
+        className="relative flex flex-col items-center justify-center flex-1 w-full"
         style={{
-          maxWidth: 900,
-          width: '100%',
-          margin: '0 auto',
+          width: "100vw",
+          height: "100%",
+          minHeight: "0px",
+          maxWidth: "100vw",
+          margin: 0,
           flex: 1,
+          padding: 0,
         }}
       >
         <GameCanvas
