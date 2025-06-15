@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from "react";
 import { useGame } from "@/contexts/GameContext";
 import { Button } from "@/components/ui/button";
@@ -145,51 +144,40 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
   // HUD и Level теперь явно получают язык через props, строго по цепочке.
   return (
     <div
-      className="relative w-[100vw] flex flex-col items-center justify-start overflow-hidden"
-      style={{
-        minHeight: "100svh",
-        minWidth: "100vw",
-        paddingTop: "env(safe-area-inset-top, 0px)",
-        paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        boxSizing: "border-box",
-        background: "none",
-        MozUserSelect: "none",
-        WebkitUserSelect: "none",
-        // Удаляем любой margin, padding тут! Максимум экрана.
-      }}
+      className="relative w-[100vw] h-[100svh] overflow-hidden bg-[#011b2e]"
     >
-      <MolaMolaHUDWrapper
-        hud={hud}
+      <GameCanvas
+        key={gameSessionId}
+        gameState={initialGameState}
+        onGameEnd={handleGameEnd}
+        onStateUpdate={onStateUpdate}
+        onMobileControl={handleControl}
         isMobile={showMobileControls}
+        username={username}
         isPaused={isPaused}
-        onPause={onPause}
+        gameSessionId={gameSessionId}
+        collectEngineRef={collectEngineRef}
       />
-      <div
-        className="relative flex flex-col items-center justify-center flex-1 w-full"
-        style={{
-          width: "100vw",
-          height: "100%",
-          minHeight: "0px",
-          maxWidth: "100vw",
-          margin: 0,
-          flex: 1,
-          padding: 0,
-        }}
+
+      <div 
+        className="absolute top-0 left-0 right-0 z-20" 
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
-        <GameCanvas
-          key={gameSessionId}
-          gameState={initialGameState}
-          onGameEnd={handleGameEnd}
-          onStateUpdate={onStateUpdate}
-          onMobileControl={handleControl}
+        <MolaMolaHUDWrapper
+          hud={hud}
           isMobile={showMobileControls}
-          username={username}
           isPaused={isPaused}
-          gameSessionId={gameSessionId}
-          collectEngineRef={collectEngineRef}
+          onPause={onPause}
         />
       </div>
-      <MolaMolaMobileControlsWrapper show={showMobileControls} onControl={handleControl} />
+
+      <div 
+        className="absolute bottom-0 left-0 right-0 z-30" 
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        <MolaMolaMobileControlsWrapper show={showMobileControls} onControl={handleControl} />
+      </div>
+
       <MolaMolaGameEndDialog
         open={gameEnded}
         victory={victory}
