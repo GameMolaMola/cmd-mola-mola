@@ -12,4 +12,5 @@ export interface GameState {
   godmode?: boolean;    // теперь поддерживает godmode (опционально)
   markJump?: boolean;   // спец-флаг для отдельного пользователя (опционально)
   username?: string;    // добавляем поле username
+  soundMuted?: boolean; // добавляем поле soundMuted для состояния звука
 }
