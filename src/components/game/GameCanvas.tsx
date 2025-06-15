@@ -105,7 +105,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       className="absolute inset-0 w-full h-full bg-[#011b2e] outline-none"
       style={{
         touchAction: "pinch-zoom",
-        transform: isMobile ? "scale(0.4261)" : "scale(1)", // увеличено еще на 30%!
+        transform: isMobile ? "scale(0.5965)" : "scale(1)", // увеличено ещё на 40%!
         transformOrigin: "top left"
       }}
     />
