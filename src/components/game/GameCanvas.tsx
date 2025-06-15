@@ -1,106 +1,227 @@
-
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react"; // Added useState
 import { GameEngine } from "./GameEngine";
 import { useGame } from "@/contexts/GameContext";
 import { useGameCanvasResize } from "./useGameCanvasResize";
+import { GameState } from './types'; // Import GameState type
+import { Toaster } from '@/components/ui/toaster'; // Assuming these are from shadcn/ui
+import { useToast } from '@/components/ui/use-toast'; // Assuming these are from shadcn/ui
+import StartScreen from './StartScreen'; // Import StartScreen
+import GameOverScreen from './GameOverScreen'; // Import GameOverScreen
+import { useTranslations } from '@/hooks/useTranslations'; // Import useTranslations
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-// Базовые размеры вынесены в useGameCanvasResize
+// Component for displaying game UI (Moved here for self-containment)
+const GameUI: React.FC<{ gameState: GameState; bossHealth: number; maxBossHealth: number; isBossLevel: boolean }> = ({ gameState, bossHealth, maxBossHealth, isBossLevel }) => {
+  const { language } = useGame();
+  const t = useTranslations(language);
+
+  return (
+    <div className="absolute top-4 left-4 bg-black/50 p-4 rounded-lg text-white font-mono text-sm space-y-2 z-10">
+      <div>{t.levelText}: <span id="level">{gameState.level}</span></div>
+      <div>{t.coinsText}: <span id="coins">{gameState.coins}</span></div>
+      <div>{t.ammoText}: <span id="ammo">{gameState.ammo}</span></div>
+      <div>{t.healthText}:
+        <div className="w-[100px] h-[10px] bg-gray-600 rounded-sm overflow-hidden">
+          <div className="h-full bg-red-500 transition-all duration-300" style={{ width: `${gameState.health}%` }}></div>
+        </div>
+      </div>
+      {isBossLevel && (
+        <div className="mt-4">
+          <div className="text-lg font-bold">{t.bossHealthText}:</div>
+          <div className="w-[150px] h-[15px] bg-gray-600 rounded-sm overflow-hidden">
+            <div className="h-full bg-purple-500 transition-all duration-300" style={{ width: `${(bossHealth / maxBossHealth) * 100}%` }}></div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Component for displaying active power-ups (Moved here for self-containment)
+const PowerUpEffectsUI: React.FC<{ activePowerUps: { speedBoost: boolean; jumpBoost: boolean } }> = ({ activePowerUps }) => {
+  const { language } = useGame();
+  const t = useTranslations(language);
+  return (
+    <div className="absolute top-4 right-4 text-right text-white font-mono text-sm space-y-2 z-10">
+      {activePowerUps.speedBoost && <div className="animate-pulse text-yellow-400">🚀 {t.speedBoostEffectText}</div>}
+      {activePowerUps.jumpBoost && <div className="animate-pulse text-green-400">⬆️ {t.jumpBoostToast}</div>}
+    </div>
+  );
+};
+
 interface GameCanvasProps {
-  gameState: any;
-  onGameEnd: (victory: boolean, stats: any) => void;
-  onStateUpdate: (updates: any) => void;
   isMobile?: boolean;
   username?: string;
   isPaused?: boolean;
   gameSessionId?: number;
-  collectEngineRef?: (engine: GameEngine | null) => void;
+  collectEngineRef?: (engine: import("./GameEngine").GameEngine | null) => void;
 }
 
+import { GameState } from './types';
+
 const GameCanvas: React.FC<GameCanvasProps> = ({
-  gameState,
-  onGameEnd,
-  onStateUpdate,
   isMobile,
   username,
   isPaused = false,
   gameSessionId,
-  collectEngineRef
+  collectEngineRef,
 }) => {
-  const engineRef = useRef<GameEngine | null>(null);
-  const { playerData } = useGame();
+  const { containerRef, canvasRef: resizedCanvasRef, scale } = useGameCanvasResize();
 
-  // Применяем новый хук для адаптивного canvas и вычисленного масштаба
-  const { containerRef, canvasRef, scale } = useGameCanvasResize();
+  const gameEngineRef = useRef<import('./GameEngine').GameEngine | null>(null);
+  const { toast } = useToast();
+  const { language, setLanguage } = useGame();
+  const t = useTranslations(language);
 
-  // Передать scale при необходимости вашему GameEngine
+  const [gameStage, setGameStage] = useState<'start' | 'playing' | 'gameOver' | 'gameWin'>('start');
+  const [finalScore, setFinalScore] = useState(0);
+  const [gameState, setGameState] = useState<GameState>({
+    health: 100,
+    ammo: 20,
+    coins: 0,
+    level: 1,
+    powerUps: { speedBoost: false, speedBoostTime: 0, jumpBoost: false, jumpBoostTime: 0 },
+  });
+  const [bossHealth, setBossHealth] = useState(1000);
+  const [maxBossHealth, setMaxBossHealth] = useState(1000);
+  const BOSS_LEVEL = 10;
+
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        // Always pass 7 arguments to GameEngine!
-        if (engineRef.current) {
-          engineRef.current.stop();
-          engineRef.current = null;
+    const canvas = resizedCanvasRef.current;
+    if (!canvas) return;
+
+    if (gameEngineRef.current) {
+      gameEngineRef.current.stop();
+      gameEngineRef.current = null;
+    }
+
+    const engine = new (require("./GameEngine").GameEngine)(
+      canvas,
+      (state: GameState) => setGameState(state),
+      (score: number) => {
+        setFinalScore(score);
+        setGameStage('gameOver');
+      },
+      (score: number) => {
+        setFinalScore(score);
+        setGameStage('gameWin');
+      },
+      (type: 'speed' | 'jump' | 'ammo' | 'health') => {
+        const title = t.powerUpTitle;
+        let description = "";
+        let icon = "";
+        if (type === 'speed') {
+          description = t.speedBoostToast;
+          icon = "🚀";
+        } else if (type === 'jump') {
+          description = t.jumpBoostToast;
+          icon = "⬆️";
         }
-        engineRef.current = new GameEngine(
-          canvas,
-          (state) => onStateUpdate(state),
-          (score) => onGameEnd(false, { score }),    // onGameOver
-          (score) => onGameEnd(true, { score }),     // onGameWin
-          () => {}, // onShowPowerUp (replace with actual handler if needed)
-          () => {}, // onRemovePowerUp (replace with actual handler if needed)
-          () => {}  // onBossHealthUpdate (replace with actual handler if needed)
-        );
-        collectEngineRef?.(engineRef.current);
-        if (!isPaused) engineRef.current.start();
+        toast({
+          title: `${icon} ${title}`,
+          description: description,
+          duration: 2000,
+        });
+      },
+      (type: 'speed' | 'jump' | 'ammo' | 'health') => {
+        const title = t.effectEndedTitle;
+        let description = "";
+        if (type === 'speed') {
+          description = t.speedBoostEndToast;
+        } else if (type === 'jump') {
+          description = t.jumpBoostEndToast;
+        }
+        toast({
+          title: title,
+          description: description,
+          duration: 1500,
+        });
+      },
+      (health: number, maxHealth: number) => {
+        setBossHealth(health);
+        setMaxBossHealth(maxHealth);
       }
+    );
+
+    gameEngineRef.current = engine;
+    collectEngineRef?.(engine);
+
+    if (gameStage === 'playing' && !isPaused) {
+      engine.start();
     }
     return () => {
-      engineRef.current?.stop();
-      engineRef.current = null;
+      engine.stop();
+      gameEngineRef.current = null;
     };
-    // eslint-disable-next-line
-  }, [gameState, username, gameSessionId, scale]);
+  }, [resizedCanvasRef, toast, t, gameStage, isPaused, collectEngineRef]);
 
-  useEffect(() => {
-    if (engineRef.current) {
-      if (isPaused) {
-        engineRef.current.stop();
-      } else {
-        engineRef.current.start();
-      }
-    }
-  }, [isPaused]);
+  const handleStartGame = () => {
+    setGameStage('playing');
+    gameEngineRef.current?.start();
+  };
+
+  const handleRestartGame = () => {
+    gameEngineRef.current?.resetGame();
+    setGameStage('playing');
+    gameEngineRef.current?.start();
+  };
+
+  // Mobile controls (placeholder, include your actual implementation if different)
+  const handleMobileMove = (direction: 'left' | 'right' | 'none') => {
+    gameEngineRef.current?.handleMobileMove(direction);
+  };
+  const handleMobileJump = () => {
+    gameEngineRef.current?.handleMobileJump(true);
+  };
+  const handleMobileJumpRelease = () => {
+    gameEngineRef.current?.handleMobileJump(false);
+  };
+  const handleMobileShoot = () => {
+    gameEngineRef.current?.handleMobileShoot();
+  };
 
   return (
-    <div
-      ref={containerRef}
-      className="absolute inset-0 w-full h-full bg-[#011b2e] outline-none flex items-center justify-center"
-      style={{
-        touchAction: "manipulation",
-        WebkitTouchCallout: "none",
-        WebkitUserSelect: "none",
-        userSelect: "none",
-        paddingTop: "env(safe-area-inset-top,0px)",
-        paddingBottom: "env(safe-area-inset-bottom,0px)",
-        paddingLeft: "env(safe-area-inset-left,0px)",
-        paddingRight: "env(safe-area-inset-right,0px)",
-        willChange: "transform"
-      }}
-    >
-      <canvas
-        ref={canvasRef}
-        tabIndex={0}
-        id="game-canvas"
-        className="block outline-none"
-        style={{
-          background: "#011b2e",
-          display: "block",
-          border: "none",
-          imageRendering: "pixelated",
-        }}
-      />
+    <div ref={containerRef} className="relative w-full h-full flex justify-center items-center overflow-hidden">
+      <canvas ref={resizedCanvasRef} width="800" height="450" className="border-4 border-blue-400 rounded-lg shadow-lg"></canvas>
+      <div className="absolute top-4 right-4 z-30">
+          <Select onValueChange={setLanguage} defaultValue={language}>
+              <SelectTrigger className="w-[140px] bg-blue-700 border-blue-400 text-white">
+                  <SelectValue placeholder="Language" />
+              </SelectTrigger>
+              <SelectContent className="bg-blue-800 text-white border-blue-400">
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="ru">Русский</SelectItem>
+                  <SelectItem value="it">Italiano</SelectItem>
+              </SelectContent>
+          </Select>
+      </div>
+      {gameStage === 'start' && <StartScreen onStart={handleStartGame} />}
+      {gameStage === 'playing' && (
+        <>
+            <GameUI 
+                gameState={gameState} 
+                bossHealth={bossHealth} 
+                maxBossHealth={maxBossHealth} 
+                isBossLevel={gameState.level === BOSS_LEVEL}
+            />
+            <PowerUpEffectsUI activePowerUps={{ speedBoost: gameState.powerUps.speedBoost, jumpBoost: gameState.powerUps.jumpBoost }} />
+        </>
+      )}
+      {(gameStage === 'gameOver' || gameStage === 'gameWin') && (
+        <GameOverScreen 
+          score={finalScore} 
+          onRestart={handleRestartGame} 
+          isWin={gameStage === 'gameWin'} 
+          gameState={gameState}
+        />
+      )}
+      <Toaster />
     </div>
   );
 };
