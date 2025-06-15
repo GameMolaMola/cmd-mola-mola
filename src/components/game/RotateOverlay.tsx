@@ -1,6 +1,9 @@
 
 import React from "react";
 
+/**
+ * Overlay для поворота экрана — стилизованная копия из второго фото, на итальянском.
+ */
 interface RotateOverlayProps {
   visible: boolean;
 }
@@ -9,53 +12,90 @@ const RotateOverlay: React.FC<RotateOverlayProps> = ({ visible }) => {
   if (!visible) return null;
 
   return (
-    <div 
-      className="fixed inset-0 z-50 bg-black/85 flex flex-col items-center justify-center select-none" 
-      style={{ 
+    <div
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center select-none"
+      style={{
+        background: "#111827ee",
         pointerEvents: "auto",
-        touchAction: "pinch-zoom" // Разрешаем масштабирование двумя пальцами
+        touchAction: "pinch-zoom",
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+        minHeight: "100svh",
       }}
     >
-      <div className="flex flex-col items-center max-w-sm mx-auto px-4">
-        {/* Более понятная иконка поворота телефона */}
-        <div className="mb-6 relative">
-          <div className="w-20 h-32 bg-white rounded-2xl border-4 border-yellow-400 flex items-center justify-center relative shadow-lg">
-            <div className="w-12 h-20 bg-blue-500 rounded-lg"></div>
+      <div className="flex flex-col items-center max-w-sm mx-auto px-4 pb-1">
+        {/* Телефон со стрелкой */}
+        <div className="mb-7 relative flex items-center justify-center">
+          {/* Телефон */}
+          <div
+            className="rounded-3xl border-[5px] border-yellow-400"
+            style={{
+              width: 90,
+              height: 140,
+              background: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <div
+              className="rounded-xl"
+              style={{ width: 56, height: 95, background: "#3b82f6" }}
+            ></div>
           </div>
-          {/* Стрелка поворота */}
-          <div className="absolute -right-8 top-1/2 transform -translate-y-1/2">
-            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" className="animate-pulse">
-              <path 
-                d="M30 15 L45 30 L30 45 M15 30 L42 30" 
-                stroke="#fbbf24" 
-                strokeWidth="4" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
+          {/* Стрелка */}
+          <svg
+            width="47"
+            height="47"
+            viewBox="0 0 50 50"
+            fill="none"
+            className="absolute"
+            style={{
+              right: -52,
+              top: "50%",
+              transform: "translateY(-60%)",
+            }}
+          >
+            <g>
+              {/* Жёлтая стрелка */}
+              <path
+                d="M 14 25 H 44"
+                stroke="#FFD600"
+                strokeWidth="5"
+                strokeLinecap="round"
               />
-              <path 
-                d="M35 8 C42 8 48 14 48 21" 
-                stroke="#ef4444" 
-                strokeWidth="3" 
-                strokeLinecap="round" 
+              <polygon
+                points="44,25 35,20 35,30"
+                fill="#FFD600"
+              />
+              {/* Красная дуга */}
+              <path
+                d="M35 14 C50 16 49 34 35 36"
+                stroke="#e11d48"
+                strokeWidth="3"
                 fill="none"
               />
-            </svg>
-          </div>
+            </g>
+          </svg>
         </div>
-        
-        <span className="text-yellow-300 font-bold text-xl sm:text-2xl text-center mb-3 drop-shadow-lg">
+
+        {/* Жёлтый жирный заголовок */}
+        <span className="text-yellow-300 font-extrabold text-2xl text-center mb-3 drop-shadow-lg font-mono"
+          style={{ letterSpacing: 1.5 }}>
           Ruota il dispositivo
         </span>
-        <span className="text-white text-base sm:text-lg text-center leading-relaxed">
-          Per un'esperienza di gioco ottimale, ruota il telefono in posizione orizzontale
+
+        {/* Подзаголовок — белый, моно */}
+        <span className="text-white font-mono text-base text-center leading-relaxed mb-3"
+          style={{ lineHeight: 1.35 }}>
+          Per un'esperienza di gioco ottimale,<br />
+          ruota il telefono in posizione orizzontale
         </span>
-        
-        {/* Дополнительная информация о масштабировании */}
-        <div className="mt-4 text-center">
-          <span className="text-gray-300 text-sm">
-            📱 Usa due dita per ingrandire/rimpicciolire
-          </span>
-        </div>
+
+        {/* Подсказка о масштабировании */}
+        <span className="text-gray-200 text-md mt-2 block text-center font-mono">
+          <span role="img" aria-label="smartphone">📱</span> Usa due dita per ingrandire/rimpicciolire
+        </span>
       </div>
     </div>
   );

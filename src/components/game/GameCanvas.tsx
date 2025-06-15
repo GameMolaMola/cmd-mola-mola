@@ -30,32 +30,45 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   const engineRef = useRef<GameEngine | null>(null);
   const { playerData } = useGame();
 
-  // === Динамическая высота ===
-  // Ресайз canvas в зависимости от экрана (для мобильных)
+  // === Динамическая высота canvas с учетом safe area и scroll ===
   useEffect(() => {
     function resizeCanvas() {
       const canvas = canvasRef.current;
       if (!canvas) return;
-      if (window.innerWidth < 900) {
-        // Стараемся подогнать высоту — делаем ширину всегда 100% экрана (до 900), высоту с учетом соотношения 2:1 и safe-area-inset
-        const width = Math.min(window.innerWidth, 900);
-        // 450/900 = 0.5 (canvas соотношение 2:1)
-        let height = Math.round(width * 0.5);
-        // На мобильных маленькая высота — стараемся занять максимум доступного
-        const safeTop = Number(getComputedStyle(document.documentElement).getPropertyValue('--sat') || 0);
-        const safeBottom = Number(getComputedStyle(document.documentElement).getPropertyValue('--sab') || 0);
-        if (window.innerHeight < height + 100) {
-          height = window.innerHeight - 48 - safeTop - safeBottom;
-        }
-        canvas.width = width;
-        canvas.height = height;
-      } else {
-        canvas.width = 900;
-        canvas.height = 450;
+      // На мобильных делаем 100vw x 56vw (2:1 = landscape), но не более родителя!
+      const isPortrait = window.innerHeight > window.innerWidth;
+      let width = Math.min(window.innerWidth, 900);
+      let height = Math.round(width * 0.5);
+
+      // Если слишком мало места — делаем высоту по максимуму
+      const safeTop = Number(getComputedStyle(document.documentElement).getPropertyValue('--sat') || 0);
+      const safeBottom = Number(getComputedStyle(document.documentElement).getPropertyValue('--sab') || 0);
+
+      // Высота с учетом возможных панелей
+      let minHeight = 220;
+      if (window.innerHeight < height + 100) {
+        height = window.innerHeight - 48 - safeTop - safeBottom;
       }
+      if (isPortrait) {
+        // В портретном режиме ужимаем под safe area максимально — при этом game не отображается, но canvas не обрезать!
+        width = Math.min(window.innerWidth, 900);
+        height = Math.round(width * 0.62);
+        minHeight = 160;
+      }
+      canvas.width = width;
+      canvas.height = Math.max(height, minHeight);
+      // Убедимся что canvas максимально видим на мобилках, нет "обреза"
+      canvas.style.maxWidth = "900px";
+      canvas.style.width = "100vw";
+      canvas.style.height = `${Math.max(height, minHeight)}px`;
+      canvas.style.display = "block";
+      // лишняя рамка убираем
+      canvas.style.border = "none";
     }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
+    // иногда браузеру надо подождать
+    setTimeout(resizeCanvas, 120);
     return () => window.removeEventListener('resize', resizeCanvas);
   }, []);
 
@@ -99,8 +112,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     }
   }, [isPaused]);
 
-  // === СТИЛИ ДЛЯ МОБИЛЬНЫХ И SAFE AREA ===
-  // canvas теперь всегда максимальной ширины, высота — адаптивная, с отступами safe area
   return (
     <canvas
       ref={canvasRef}
@@ -109,19 +120,16 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         w-full max-w-full flex-auto rounded-2xl shadow-xl outline-none bg-[#011b2e]
         "
       style={{
-        display: "block",
         margin: "0 auto",
-        boxShadow: "0 2px 20px 0px #001a3a80",
-        minHeight: "220px",
+        minHeight: "160px",
         maxWidth: "900px",
-        // Высота берём из самого элемента, а внешние safe-area инлайн сверху/снизу
+        // Фон + отступы под safe-area
         paddingTop: "env(safe-area-inset-top)",
         paddingBottom: "env(safe-area-inset-bottom)",
-        touchAction: "none",
+        touchAction: "pinch-zoom"
       }}
     />
   );
 };
 
 export default GameCanvas;
-
