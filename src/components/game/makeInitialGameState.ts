@@ -10,8 +10,7 @@ export function makeInitialGameState(playerLevel = 1): GameState {
     powerUps: {
       speedBoost: false,
       speedBoostTime: 0,
-      jumpBoost: false,
-      jumpBoostTime: 0,
     },
+    isVictory: false,
   };
 }

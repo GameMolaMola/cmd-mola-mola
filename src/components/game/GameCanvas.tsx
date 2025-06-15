@@ -38,20 +38,20 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
     if (canvas) {
       const ctx = canvas.getContext("2d");
       if (ctx) {
-        // Always pass 7 arguments to GameEngine!
         if (engineRef.current) {
           engineRef.current.stop();
           engineRef.current = null;
         }
-        engineRef.current = new GameEngine(
-          canvas,
-          (state) => onStateUpdate(state),
-          (score) => onGameEnd(false, { score }),    // onGameOver
-          (score) => onGameEnd(true, { score }),     // onGameWin
-          () => {}, // onShowPowerUp (replace with actual handler if needed)
-          () => {}, // onRemovePowerUp (replace with actual handler if needed)
-          () => {}  // onBossHealthUpdate (replace with actual handler if needed)
-        );
+        engineRef.current = new GameEngine(canvas, ctx, {
+          onGameEnd,
+          onStateUpdate,
+          initialState: {
+            ...gameState,
+            username,
+            ...playerData,
+          },
+          scaleFactor: scale, // Новое: передаем актуальный масштаб для движка
+        });
         collectEngineRef?.(engineRef.current);
         if (!isPaused) engineRef.current.start();
       }

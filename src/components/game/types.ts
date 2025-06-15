@@ -1,5 +1,4 @@
 
-// Добавим jumpBoost и jumpBoostTime в powerUps:
 export interface GameState {
   health: number;
   ammo: number;
@@ -8,7 +7,6 @@ export interface GameState {
   powerUps: {
     speedBoost: boolean;
     speedBoostTime: number;
-    jumpBoost: boolean;
-    jumpBoostTime: number;
   };
+  isVictory: boolean;
 }
