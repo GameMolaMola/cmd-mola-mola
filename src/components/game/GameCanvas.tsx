@@ -2,11 +2,11 @@ import React, { useRef, useEffect, useState } from "react";
 import { GameEngine } from "./GameEngine";
 import { useGame } from "@/contexts/GameContext";
 import { useGameCanvasResize } from "./useGameCanvasResize";
-import { Toaster } from '@/components/ui/toaster'; // Assuming these are from shadcn/ui
-import { useToast } from '@/components/ui/use-toast'; // Assuming these are from shadcn/ui
-import StartScreen from './StartScreen'; // Import StartScreen
-import GameOverScreen from './GameOverScreen'; // Import GameOverScreen
-import { useTranslations } from '@/hooks/useTranslations'; // Import useTranslations
+import { Toaster } from '@/components/ui/toaster';
+import { useToast } from '@/components/ui/use-toast';
+import StartScreen from './StartScreen';
+import GameOverScreen from './GameOverScreen';
+import { useTranslations } from '@/hooks/useTranslations';
 import {
   Select,
   SelectContent,
@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { GameState } from './types'; // Import GameState type
+import { GameState } from './types';
 
 // Component for displaying game UI (Moved here for self-containment)
 const GameUI: React.FC<{ gameState: GameState; bossHealth: number; maxBossHealth: number; isBossLevel: boolean }> = ({ gameState, bossHealth, maxBossHealth, isBossLevel }) => {
@@ -99,7 +99,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
       gameEngineRef.current = null;
     }
 
-    const engine = new (require("./GameEngine").GameEngine)(
+    // FIX: Use ES module import, not require()
+    const engine = new GameEngine(
       canvas,
       (state: GameState) => setGameState(state),
       (score: number) => {
