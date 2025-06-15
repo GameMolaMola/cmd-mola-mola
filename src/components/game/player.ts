@@ -4,7 +4,9 @@ import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
 export function updatePlayer({
   player, platforms, coins, pizzas, brasilenas, wines, freeBrasilena, canvas, mobileControlState, keys, callbacks, godmode, bullets
 }: any) {
-  // Добавим сохранение направления (left/right)
+  // --- DEBUG LOGGING для треккинга положения
+  console.log('[player.ts] START pos:', { x: player.x, y: player.y, grounded: player.grounded, velY: player.velY });
+
   let left = keys['KeyA'] || keys['ArrowLeft'] || !!mobileControlState['left'];
   let right = keys['KeyD'] || keys['ArrowRight'] || !!mobileControlState['right'];
   let jump = (keys['KeyW'] || keys['ArrowUp'] || !!mobileControlState['jump']);
@@ -23,6 +25,7 @@ export function updatePlayer({
   if (left) player.velX = -player.speed;
   if (right) player.velX = player.speed;
 
+  // Анимация кадров (упрощено)
   if (player.velX !== 0 && player.grounded) {
     player.frameTimer++;
     if (player.frameTimer >= (60 / player.frameRate)) {
@@ -56,46 +59,44 @@ export function updatePlayer({
     mobileControlState['fire'] = false;
   }
 
-  // [1] Определим смещение движущейся платформы, если игрок на ней
+  // Определим сдвиг платформы (НЕ суммируем vel заново)
   let platformMoveDeltaX = 0;
   let platformMoveDeltaY = 0;
-
-  // Перед изменением позиции игрока — ищем движущуюся платформу, на которой стоит игрок
   let standingOnMovingPlatform = null;
   for (const platform of platforms) {
+    // сравниваем прошлую позицию (player.y - velY), а не -platformMoveDelta
     const prevBottom = player.y + player.height - player.velY;
     const currBottom = player.y + player.height;
     // Если всё как в детекте приземления:
-    const onThis = (
+    const onThis =
       prevBottom <= platform.y &&
       currBottom >= platform.y &&
       player.x + player.width > platform.x + 8 &&
       player.x < platform.x + platform.width - 8 &&
-      player.velY >= 0
-    );
+      player.velY >= 0;
     // Проверяем движимую платформу
     if (onThis && platform.type === 'moving') {
       standingOnMovingPlatform = platform;
       break;
     }
   }
-
-  player.x += player.velX;
-  player.y += player.velY;
-
   if (standingOnMovingPlatform) {
     platformMoveDeltaX = standingOnMovingPlatform.vx ?? 0;
     platformMoveDeltaY = Math.sin(Date.now() / 540 + standingOnMovingPlatform.x / 37) * 0.2;
   }
 
+  // --- КОРРЕКТНО: ПРИМЕНЯЕМ скорость игрока и смещение платформы РОВНО ОДИН РАЗ! ---
+  //!!! БЫЛО: player.x += player.velX;  player.y += player.velY;
   player.x += player.velX + platformMoveDeltaX;
-  player.y += player.velY + (platformMoveDeltaY || 0);
+  player.y += player.velY + platformMoveDeltaY;
 
+  // --- Границы ---, 
   if (player.x < 0) player.x = 0;
   if (player.x + player.width > canvas.width) {
     player.x = canvas.width - player.width;
   }
 
+  // --- Детект посадки на платформу (включая пол) ---
   let landed = false;
   for (const platform of platforms) {
     const prevBottom = player.y + player.height - player.velY - (platformMoveDeltaY || 0);
@@ -111,6 +112,8 @@ export function updatePlayer({
       player.velY = 0;
       player.grounded = true;
       landed = true;
+      // Для дебага:
+      console.log('[player.ts] LANDED on platform:', platform, 'player.y now', player.y);
       break;
     }
   }
@@ -185,6 +188,9 @@ export function updatePlayer({
       });
     }
   }
+
+  // --- Итоговый лог ---
+  console.log('[player.ts] END pos:', { x: player.x, y: player.y, grounded: player.grounded, velY: player.velY });
 
   return { player };
 }
