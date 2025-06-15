@@ -154,6 +154,9 @@ export class GameEngine {
       scaleFactor?: number;
     }
   ) {
+    // Debug логируем ВСЕ initialState при инициализации движка
+    console.log("[GameEngine:constructor] initialState:", options?.initialState);
+
     this.canvas = canvas;
     this.ctx = ctx;
     this.ctx.imageSmoothingEnabled = false;

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useRef, useEffect } from "react";
 import { makeInitialGameState } from "./makeInitialGameState";
@@ -29,6 +28,15 @@ export function useMolaMolaGameCore({
     isPaused, setIsPaused,
     resetGame,
   } = useGameReset(playerData);
+
+  // Debug: логируем параметры после инициализации хуков
+  React.useEffect(() => {
+    console.log("[useMolaMolaGameCore] INIT/RESET", {
+      playerData,
+      hud,
+      initialGameState,
+    });
+  }, [hud, initialGameState, playerData]);
 
   // Показываем мобильные контролы (оставляем юзерский хук)
   // В компоненте!
