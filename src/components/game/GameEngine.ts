@@ -592,6 +592,11 @@ export class GameEngine {
     }
   }
 
+  // --- NEW: публичный метод для мобильной стрельбы ---
+  public fire() {
+    this.shoot();
+  }
+
   private shoot() {
     const currentTime = Date.now();
     if (this.player.ammo <= 0 || currentTime - this.lastShotTime < this.SHOT_COOLDOWN) {

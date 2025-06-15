@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useRef, useEffect } from "react";
 import { makeInitialGameState } from "./makeInitialGameState";
@@ -138,11 +137,24 @@ export function useMolaMolaGameCore({
   const collectEngineRef = (engineInstance: any) => {
     lastGameEngine.current = engineInstance;
   };
-  // Mobile управление
+
+  // --- Исправленный Mobile-Хэндлер (запуск стрельбы и звука НАДЕЖНО!) ---
   const handleControl = (control: string, state: boolean) => {
     if (!lastGameEngine.current || gameEnded) return;
     if (typeof lastGameEngine.current.setMobileControlState === "function") {
       lastGameEngine.current.setMobileControlState(control, state);
+    }
+    // Добавляем проксирующую команду для "Огонь"
+    if (control === "fire" && state === true) {
+      // Всегда пробуем активировать аудио — даже если уже активировано, безопасно
+      import('./audioManager').then(mod => { mod.activateAudio?.(); });
+      if (typeof lastGameEngine.current.fire === "function") {
+        lastGameEngine.current.fire();
+      }
+    }
+    // Для любого ввода, который должен запускать звук — jump/fire
+    if ((control === "jump" || control === "fire") && state === true) {
+      import('./audioManager').then(mod => { mod.activateAudio?.(); });
     }
   };
 
