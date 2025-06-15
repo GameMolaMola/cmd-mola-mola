@@ -90,13 +90,43 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     if (!gameEnded) setIsPaused((p: boolean) => !p);
   };
 
-  // обновляем HUD без score (score не считаем)
+  // обновляем HUD без score, только если значения действительно изменились
   const onStateUpdate = (updates: any) => {
     setHud((prev: any) => {
       const safeUpdates = updates ?? {};
-      const coins = typeof safeUpdates.coins === "number" ? safeUpdates.coins : prev.coins;
-      const level = typeof safeUpdates.level === "number" ? safeUpdates.level : prev.level;
-      return { ...prev, ...safeUpdates, level, coins };
+      // Только если значения health, ammo, coins, level действительно изменились
+      const nextHud = { ...prev };
+      let changed = false;
+      if (
+        typeof safeUpdates.health === "number" &&
+        safeUpdates.health !== prev.health
+      ) {
+        nextHud.health = safeUpdates.health;
+        changed = true;
+      }
+      if (
+        typeof safeUpdates.ammo === "number" &&
+        safeUpdates.ammo !== prev.ammo
+      ) {
+        nextHud.ammo = safeUpdates.ammo;
+        changed = true;
+      }
+      if (
+        typeof safeUpdates.coins === "number" &&
+        safeUpdates.coins !== prev.coins
+      ) {
+        nextHud.coins = safeUpdates.coins;
+        changed = true;
+      }
+      if (
+        typeof safeUpdates.level === "number" &&
+        safeUpdates.level !== prev.level
+      ) {
+        nextHud.level = safeUpdates.level;
+        changed = true;
+      }
+      // Исключаем фальшивые апдейты — не обновляем HUD зря
+      return changed ? nextHud : prev;
     });
   };
 
