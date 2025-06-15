@@ -15,6 +15,7 @@ import MolaMolaMobileControlsWrapper from "./MolaMolaMobileControlsWrapper";
 import { makeInitialGameState } from "./makeInitialGameState";
 import { useMobileControls } from "./useMobileControls";
 import { useGameReset } from "./useGameReset";
+import { loadGameSettings, saveGameSettings, updateSettingsOnGameProgress } from "./gameSettingsManager";
 
 function isMobileDevice() {
   if (typeof navigator === "undefined") return false;
@@ -227,6 +228,26 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
     }));
     console.log("[GameEnd] Triggered: victory=", isVictory, "stats=", stats, "gameSessionId=", gameSessionId);
   };
+
+  // Загружаем настройки при первом рендере и обновляем HUD/начальное состояние
+  useEffect(() => {
+    const persistent = loadGameSettings();
+    if (persistent.maxLevel > 1) {
+      // Устанавливаем стартовый уровень игрока из сохраненного значения (например, продолжаем с разблокированного уровня)
+      setHud((h: any) => ({ ...h, level: persistent.maxLevel }));
+      setInitialGameState((gs: any) => ({ ...gs, level: persistent.maxLevel }));
+      // Можно добавить другие глобальные значения, если нужно в будущем
+    }
+  }, [setHud, setInitialGameState]);
+
+  // Следим за изменениями монет/уровня для сохранения
+  useEffect(() => {
+    // Сохраняем только maxLevel (глобальный прогресс) и totalCoins (глобальные монеты)
+    saveGameSettings({
+      totalCoins: hud.coins,
+      maxLevel: hud.level
+    });
+  }, [hud.coins, hud.level]);
 
   // --- Полный сброс состояния и HUD для корректной работы рестарта ---
   const handleRestart = () => {
