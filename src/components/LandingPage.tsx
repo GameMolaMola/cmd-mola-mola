@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -7,6 +8,7 @@ import LanguageSelector from './LanguageSelector';
 import GuidoShrimpBlock from './GuidoShrimpBlock';
 import AboutSection from './AboutSection';
 import AddressSection from './AddressSection';
+import GameTitle from './GameTitle';
 
 const LandingPage = ({
   onPlay
@@ -70,12 +72,8 @@ const LandingPage = ({
               v.1.0
             </span>
           </div>
-          <h1
-            className="text-2xl md:text-4xl text-yellow-400 font-bold text-center m-0 p-0 leading-tight overflow-visible text-ellipsis whitespace-nowrap w-auto max-w-full drop-shadow-lg"
-            style={{ marginTop: "7mm" }}
-          >
-            {t.title}
-          </h1>
+          {/* Новый компонент заголовка */}
+          <GameTitle />
         </div>
         <img
           src="/lovable-uploads/ee8156f0-ed84-469d-b314-13a6aa436d63.png"
