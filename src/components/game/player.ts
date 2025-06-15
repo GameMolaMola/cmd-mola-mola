@@ -59,24 +59,24 @@ export function updatePlayer({
     mobileControlState['fire'] = false;
   }
 
-  // Определим сдвиг платформы (НЕ суммируем vel заново)
+  // ====== Новый код для корректной поддержки движущихся платформ ======
   let platformMoveDeltaX = 0;
   let platformMoveDeltaY = 0;
   let standingOnMovingPlatform = null;
+  let onMovingPlatform = false; // <- новое: стоим на движущейся платформе
+
   for (const platform of platforms) {
-    // сравниваем прошлую позицию (player.y - velY), а не -platformMoveDelta
     const prevBottom = player.y + player.height - player.velY;
     const currBottom = player.y + player.height;
-    // Если всё как в детекте приземления:
     const onThis =
       prevBottom <= platform.y &&
       currBottom >= platform.y &&
       player.x + player.width > platform.x + 8 &&
       player.x < platform.x + platform.width - 8 &&
       player.velY >= 0;
-    // Проверяем движимую платформу
     if (onThis && platform.type === 'moving') {
       standingOnMovingPlatform = platform;
+      onMovingPlatform = true;
       break;
     }
   }
@@ -85,9 +85,12 @@ export function updatePlayer({
     platformMoveDeltaY = Math.sin(Date.now() / 540 + standingOnMovingPlatform.x / 37) * 0.2;
   }
 
-  // --- КОРРЕКТНО: ПРИМЕНЯЕМ скорость игрока и смещение платформы РОВНО ОДИН РАЗ! ---
-  //!!! БЫЛО: player.x += player.velX;  player.y += player.velY;
-  player.x += player.velX + platformMoveDeltaX;
+  // --- КОРРЕКТНЫЙ пересчет X:
+  // Если игрок стоит на движущейся платформе и не двигается сам, платформа тянет его
+  if (onMovingPlatform && player.velX === 0 && player.grounded) {
+    player.x += platformMoveDeltaX;
+  }
+  player.x += player.velX;
   player.y += player.velY + platformMoveDeltaY;
 
   // --- Границы ---, 
