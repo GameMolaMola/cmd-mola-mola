@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import MolaMolaGame from '@/components/game/MolaMolaGame';
 import { useLocation } from 'react-router-dom';
@@ -44,14 +45,14 @@ const Game = () => {
   // Класс для Telegram UI-правок
   const telegramClass = isTelegramBrowser() ? "tg-browser" : "";
 
-  // Заблокируем прокрутку только на странице игры
+  // Заблокируем прокрутку только на странице игры, но разрешим масштабирование
   const containerClass = `no-scroll fixed inset-0 z-0 bg-gradient-to-b from-blue-900 to-blue-700 flex items-center justify-center p-0 ${telegramClass}`;
 
   return (
     <div
       className={containerClass}
       style={{
-        touchAction: 'none',
+        touchAction: 'pinch-zoom', // Разрешаем масштабирование двумя пальцами
         WebkitOverflowScrolling: "auto",
       }}
     >
