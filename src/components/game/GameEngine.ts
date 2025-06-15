@@ -189,6 +189,23 @@ export class GameEngine {
     this.generateLevel();
     this.platforms = createDefaultPlatforms(this.canvas.width, this.canvas.height);
     setTimeout(() => this.generateStaticSandLayer(), 0);
+
+    // --- NEW: Гарантируем появление игрока над полом
+    const floor = this.platforms.find(
+      (p) => p.y >= this.canvas.height - 40 - 1
+    );
+    if (floor) {
+      this.player.y = floor.y - this.player.height;
+      // Дополнительно переместим игрока чуть правее центра пола (для наглядности)
+      this.player.x = Math.max(20, Math.min(floor.x + floor.width / 2 - this.player.width / 2, this.canvas.width - this.player.width - 20));
+      console.log(
+        `[GameEngine] Player start adjusted to: x=${this.player.x}, y=${this.player.y}. Floor at y=${floor.y}, height=${floor.height}`,
+      );
+    } else {
+      // Если пола нет, fallback-координаты
+      this.player.y = Math.max(0, this.canvas.height - this.player.height - 40);
+      console.log('[GameEngine] No floor platform found during spawn. Fallback position used.');
+    }
   }
 
   // --- Используем только bubblesManager ---
@@ -568,3 +585,5 @@ import { drawPixelSand } from './drawPixelSand';
 import { createStaticSandLayer } from './staticSandLayer';
 
 // ВАЖНО: Удалили лишние старые приватные методы generateBubbles, updateBubbles, drawBubbles (оставили только три свежие выше!)
+
+// --- FIX: убираем жизненный конфликт с environment, используем только bubblesManager ---
