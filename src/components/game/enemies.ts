@@ -1,5 +1,5 @@
 
-export function updateEnemies({ bossLucia, enemies, player, canvas, callbacks, checkCollision, godmode }: any) {
+export function updateEnemies({ bossLucia, enemies, swordfish, player, canvas, callbacks, checkCollision, godmode }: any) {
   // Если есть босс - управляем только им
   if (bossLucia) {
     // Движение босса — плавает влево-вправо, иногда двигается к игроку
@@ -40,5 +40,36 @@ export function updateEnemies({ bossLucia, enemies, player, canvas, callbacks, c
       enemy._vy = (Math.random() - 0.5) * 2;
     }
     // Вся обработка урона отдельным модулем!
+  });
+
+  // Обновление Swordfish - горизонтальное движение по середине экрана
+  swordfish.forEach(sword => {
+    // Инициализация направления движения если не задано
+    if (!sword.direction) {
+      sword.direction = Math.random() > 0.5 ? 1 : -1;
+    }
+
+    // Горизонтальное движение
+    sword.x += sword.direction * 3;
+
+    // Смена направления при достижении границ экрана
+    if (sword.x <= 0) {
+      sword.x = 0;
+      sword.direction = 1;
+    } else if (sword.x + sword.width >= canvas.width) {
+      sword.x = canvas.width - sword.width;
+      sword.direction = -1;
+    }
+
+    // Небольшие вертикальные колебания для реалистичности
+    if (!sword._wavePhase) sword._wavePhase = Math.random() * Math.PI * 2;
+    sword._wavePhase += 0.05;
+    sword.y += Math.sin(sword._wavePhase) * 0.5;
+
+    // Ограничиваем вертикальное движение
+    const minY = canvas.height * 0.3;
+    const maxY = canvas.height * 0.7 - sword.height;
+    if (sword.y < minY) sword.y = minY;
+    if (sword.y > maxY) sword.y = maxY;
   });
 }

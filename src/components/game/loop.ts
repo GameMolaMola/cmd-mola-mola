@@ -1,6 +1,7 @@
+
 import { updatePlayer } from './player';
 import { updateEnemies } from './enemies';
-import { handleEnemyCollisions } from './collisionHandlers';
+import { handleEnemyCollisions, handleSwordfishCollisions } from './collisionHandlers';
 import { checkCollision } from './utils/collision';
 import { handleBonuses } from './bonuses';
 import { updateBullets } from './bullets';
@@ -26,6 +27,7 @@ export function gameTick(engine: any) {
   updateEnemies({
     bossLucia: engine.bossLucia,
     enemies: engine.enemies,
+    swordfish: engine.getSwordfish(), // добавляем Swordfish
     player: engine.player,
     canvas: engine.canvas,
     callbacks: engine.callbacks,
@@ -33,15 +35,25 @@ export function gameTick(engine: any) {
     godmode: engine.player.godmode, // передаём godmode из игрока
   });
 
-  if (!engine.bossLucia && engine.enemies.length === 0) {
+  if (!engine.bossLucia && engine.enemies.length === 0 && engine.getSwordfish().length === 0) {
     engine.setNextLevel?.();
     return;
   }
 
   if (!engine.bossLucia) {
+    // Обработка коллизий с обычными врагами
     handleEnemyCollisions(
       engine.player,
       engine.enemies,
+      engine.player.godmode, // передаём godmode из игрока
+      checkCollision,
+      engine.callbacks
+    );
+
+    // Обработка коллизий с Swordfish
+    handleSwordfishCollisions(
+      engine.player,
+      engine.getSwordfish(),
       engine.player.godmode, // передаём godmode из игрока
       checkCollision,
       engine.callbacks
@@ -66,6 +78,7 @@ export function gameTick(engine: any) {
   updateBullets({
     bullets: engine.bullets,
     enemies: engine.enemies,
+    swordfish: engine.getSwordfish(), // добавляем Swordfish
     bossLucia: engine.bossLucia,
     player: engine.player,
     callbacks: engine.callbacks,

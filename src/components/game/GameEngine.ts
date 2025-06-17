@@ -1,6 +1,6 @@
 import { GameState } from './types';
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
-import { handleEnemyCollisions } from './collisionHandlers';
+import { handleEnemyCollisions, handleSwordfishCollisions } from './collisionHandlers';
 import { useFreeBrasilena } from './useFreeBrasilena';
 
 import { updatePlayer } from './player';
@@ -82,6 +82,16 @@ export class GameEngine {
     speed: number;
   }> = [];
 
+  // Новый массив для врагов Swordfish
+  private swordfish: Array<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    direction: number;
+    _wavePhase?: number;
+  }> = [];
+
   // --> Расширяем тип для coins: разрешаем опциональное поле _bossCoin
   private coins: Array<{ x: number; y: number; width: number; height: number; _bossCoin?: boolean }> = [];
   private pizzas: Array<{ x: number; y: number; width: number; height: number }> = [];
@@ -107,6 +117,8 @@ export class GameEngine {
     coin: HTMLImageElement;
     backgrounds: { img: HTMLImageElement; level: number }[];
     bossLucia: HTMLImageElement;
+    swordfishRight: HTMLImageElement;
+    swordfishLeft: HTMLImageElement;
   };
 
   private bubbles: Array<{
@@ -207,6 +219,8 @@ export class GameEngine {
       coin: new Image(),
       backgrounds: [],
       bossLucia: new Image(),
+      swordfishRight: new Image(),
+      swordfishLeft: new Image(),
     };
 
     loadImages(this.images);
@@ -462,6 +476,7 @@ export class GameEngine {
     }
 
     this.enemies = [];
+    this.swordfish = []; // Очищаем массив Swordfish
     this.coins = [];
     this.pizzas = [];
     this.brasilenas = [];
@@ -501,15 +516,6 @@ export class GameEngine {
           height: 32
         });
       }
-      // Обычные монеты не спавним на босс-уровне!
-      // for (let i = 0; i < 4; i++) {
-      //   this.coins.push({
-      //     x: 200 + Math.random() * 400,
-      //     y: 100 + Math.random() * 200,
-      //     width: 32,
-      //     height: 32
-      //   });
-      // }
       return;
     } else {
       this.bossLucia = null;
@@ -534,6 +540,20 @@ export class GameEngine {
         height: 48,
         speed: 1 + this.player.level * 0.2
       });
+    }
+
+    // Спавн Swordfish начиная с уровня 2
+    if (this.player.level >= 2) {
+      const swordfishCount = 1 + Math.floor(this.player.level / 3); // больше Swordfish на высоких уровнях
+      for (let i = 0; i < swordfishCount; i++) {
+        this.swordfish.push({
+          x: Math.random() * (this.canvas.width - 64),
+          y: this.canvas.height * 0.4 + Math.random() * (this.canvas.height * 0.2), // середина экрана
+          width: 64,
+          height: 48,
+          direction: Math.random() > 0.5 ? 1 : -1,
+        });
+      }
     }
 
     for (let i = 0; i < coinCount; i++) {
@@ -809,5 +829,10 @@ export class GameEngine {
       });
     }
     // Для попаданий НЕ запускать 10-секундный таймер — только после смерти босса!
+  }
+
+  // Новый метод: получить массив Swordfish
+  getSwordfish() {
+    return this.swordfish;
   }
 }

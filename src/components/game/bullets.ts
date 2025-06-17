@@ -1,3 +1,4 @@
+
 // --- Декларация window.gameEngineInstance для TS ---
 declare global {
   interface Window {
@@ -7,7 +8,7 @@ declare global {
 
 import { audioManager } from './audioManager';
 
-export function updateBullets({ bullets, enemies, bossLucia, player, callbacks, checkCollision, canvas }: any) {
+export function updateBullets({ bullets, enemies, swordfish, bossLucia, player, callbacks, checkCollision, canvas }: any) {
   for (let i = bullets.length - 1; i >= 0; i--) {
     const bullet = bullets[i];
     bullet.x += bullet.speed;
@@ -49,18 +50,37 @@ export function updateBullets({ bullets, enemies, bossLucia, player, callbacks, 
         }
       }
     } else {
-      for (let j = enemies.length - 1; j >= 0; j--) {
-        const enemy = enemies[j];
-        if (checkCollision(bullet, enemy)) {
-          enemies.splice(j, 1);
+      // Проверка попаданий по Swordfish
+      for (let j = swordfish.length - 1; j >= 0; j--) {
+        const sword = swordfish[j];
+        if (checkCollision(bullet, sword)) {
+          swordfish.splice(j, 1);
           bullets.splice(i, 1);
-          player.coins += 2;
+          player.coins += 5; // Swordfish дает больше монет
           
           // Звук получения монет
           audioManager.playCoinSound();
           
           callbacks.onStateUpdate();
           break;
+        }
+      }
+
+      // Проверка попаданий по обычным врагам (только если не попали в Swordfish)
+      if (bullets[i]) { // проверяем что пуля еще существует
+        for (let j = enemies.length - 1; j >= 0; j--) {
+          const enemy = enemies[j];
+          if (checkCollision(bullet, enemy)) {
+            enemies.splice(j, 1);
+            bullets.splice(i, 1);
+            player.coins += 2;
+            
+            // Звук получения монет
+            audioManager.playCoinSound();
+            
+            callbacks.onStateUpdate();
+            break;
+          }
         }
       }
     }

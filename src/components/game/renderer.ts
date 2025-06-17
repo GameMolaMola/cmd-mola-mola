@@ -11,7 +11,7 @@ export function renderScene(
     canvas, player, images, platforms,
     staticSandLayer, bubbles, coins,
     pizzas, brasilenas, wines,
-    bullets, bossLucia, enemies
+    bullets, bossLucia, enemies, swordfish
   } = game;
 
   // --- Фон ---
@@ -160,7 +160,25 @@ export function renderScene(
     ctx.restore();
   });
 
-  // --- Босс и враги ---
+  // --- Swordfish враги ---
+  swordfish.forEach((sword: any) => {
+    let image;
+    if (sword.direction < 0 && images.swordfishLeft?.complete) {
+      image = images.swordfishLeft;
+    } else if (images.swordfishRight?.complete) {
+      image = images.swordfishRight;
+    }
+    
+    if (image) {
+      ctx.drawImage(image, sword.x, sword.y, sword.width, sword.height);
+    } else {
+      // Запасной вариант отрисовки
+      ctx.fillStyle = '#ff4444';
+      ctx.fillRect(sword.x, sword.y, sword.width, sword.height);
+    }
+  });
+
+  // --- Босс и обычные враги ---
   if (bossLucia) {
     const image = images.bossLucia;
     if (image?.complete) {
@@ -182,7 +200,7 @@ export function renderScene(
     ctx.restore();
   }
 
-  // Враги
+  // Обычные враги
   if (!bossLucia) {
     enemies.forEach((enemy: any) => {
       let image;
