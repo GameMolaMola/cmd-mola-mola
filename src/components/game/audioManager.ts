@@ -63,11 +63,7 @@ class AudioManager {
         console.log('[AudioManager] Audio activated by user interaction, state:', this.audioContext.state);
         
         // Дополнительная проверка после активации
-        if (this.audioContext.state === 'running') {
-          console.log('[AudioManager] AudioContext is now running successfully');
-        } else {
-          console.log('[AudioManager] AudioContext state after resume:', this.audioContext.state);
-        }
+        console.log('[AudioManager] AudioContext state after resume:', this.audioContext.state);
       } catch (error) {
         console.error('[AudioManager] Failed to resume audio context:', error);
       }
