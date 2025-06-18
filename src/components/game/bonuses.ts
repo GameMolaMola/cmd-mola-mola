@@ -1,7 +1,8 @@
+
 let lastWineSpawnTime = 0;
 let winePowerUpTimeout: NodeJS.Timeout | null = null;
-let wineCollectedTotal = 0; // Счётчик вин на уровень
-let perLevelWineLimitLast = 0; // Для сброса между уровнями
+let wineCollectedTotal = 0;
+let perLevelWineLimitLast = 0;
 
 // Максимум 10 — обычные уровни, 15 — при боссе
 function getMaxWineCount(isBoss: boolean) {
@@ -24,6 +25,7 @@ export function resetWineOnLevelStart(isBoss: boolean) {
   perLevelWineLimitLast = getMaxWineCount(isBoss);
   lastWineSpawnTime = 0;
 }
+
 export function handleBonuses({
   player,
   pizzas,
@@ -36,20 +38,20 @@ export function handleBonuses({
   spawnBrasilenaHeight = 64,
   platforms,
   canvasHeight,
-  bossLucia // для лимита вина
+  bossLucia
 }: any) {
-  // --- Пиццы ---
+  // --- Пиццы - восстановление здоровья ---
   for (let i = pizzas.length - 1; i >= 0; i--) {
     const pizza = pizzas[i];
     if (checkCollision(player, pizza)) {
-      heal(player, 20);
+      heal(player, 20); // Восстанавливаем 20 HP
       pizzas.splice(i, 1);
-      // Звук сбора предмета
-      audioManager.playItemSound();
+      audioManager.playHealthSound();
       callbacks.onStateUpdate();
     }
   }
 
+  // --- Бразильена - восстановление патронов ---
   if (freeBrasilena) {
     freeBrasilena.trigger(
       player.ammo,
@@ -69,16 +71,15 @@ export function handleBonuses({
   for (let i = brasilenas.length - 1; i >= 0; i--) {
     const brasilena = brasilenas[i];
     if (checkCollision(player, brasilena)) {
-      addAmmo(player, 10);
+      addAmmo(player, 10); // Добавляем 10 патронов
       brasilenas.splice(i, 1);
       if (freeBrasilena) freeBrasilena.onPickup();
-      // Звук сбора предмета
-      audioManager.playItemSound();
+      audioManager.playAmmoSound();
       callbacks.onStateUpdate();
     }
   }
 
-  // --- ВИНО: прыжок x4, максимум X раз за уровень, на 10 сек, респавн не чаще раз в 30 сек ---
+  // --- ВИНО: прыжок x2.5, максимум X раз за уровень, на 10 сек, респавн не чаще раз в 30 сек ---
   const now = Date.now();
   const isBoss = !!bossLucia;
   const maxWine = getMaxWineCount(isBoss);
@@ -87,11 +88,10 @@ export function handleBonuses({
     const wine = wines[i];
     if (checkCollision(player, wine)) {
       wines.splice(i, 1);
-      activateWineJumpBoost(player);
+      activateWineJumpBoost(player); // Усиливаем прыжок в 2.5 раза на 10 секунд
       wineCollectedTotal += 1;
       lastWineSpawnTime = now;
-      // Звук сбора предмета
-      audioManager.playItemSound();
+      audioManager.playPowerupSound();
       callbacks.onStateUpdate();
     }
   }
