@@ -1,3 +1,4 @@
+
 // Менеджер звуков для ретро-игры с интеграцией генератора фоновой музыки уровней (чиптюн)
 class AudioManager {
   private audioContext: AudioContext | null = null;
@@ -284,6 +285,79 @@ class AudioManager {
     
     oscillator.start(this.audioContext!.currentTime);
     oscillator.stop(this.audioContext!.currentTime + 0.1);
+  }
+
+  // Звук восстановления здоровья (мелодичный восходящий тон)
+  async playHealthSound() {
+    if (!await this.ensureAudioContext() || this.isMuted) return;
+    
+    const frequencies = [440, 523.25, 659.25]; // A4, C5, E5
+    
+    for (let i = 0; i < frequencies.length; i++) {
+      const oscillator = this.audioContext!.createOscillator();
+      const gainNode = this.audioContext!.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(this.masterGain!);
+      
+      oscillator.frequency.setValueAtTime(frequencies[i], this.audioContext!.currentTime);
+      
+      const startTime = this.audioContext!.currentTime + i * 0.08;
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(0.12, startTime + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + 0.12);
+      
+      oscillator.start(startTime);
+      oscillator.stop(startTime + 0.12);
+    }
+  }
+
+  // Звук восстановления патронов (быстрые клики)
+  async playAmmoSound() {
+    if (!await this.ensureAudioContext() || this.isMuted) return;
+    
+    for (let i = 0; i < 3; i++) {
+      const oscillator = this.audioContext!.createOscillator();
+      const gainNode = this.audioContext!.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(this.masterGain!);
+      
+      oscillator.type = 'square';
+      oscillator.frequency.setValueAtTime(600, this.audioContext!.currentTime);
+      
+      const startTime = this.audioContext!.currentTime + i * 0.05;
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(0.08, startTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + 0.04);
+      
+      oscillator.start(startTime);
+      oscillator.stop(startTime + 0.04);
+    }
+  }
+
+  // Звук получения усиления (мощный аккорд)
+  async playPowerupSound() {
+    if (!await this.ensureAudioContext() || this.isMuted) return;
+    
+    const frequencies = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5 (C major chord)
+    
+    frequencies.forEach((freq, i) => {
+      const oscillator = this.audioContext!.createOscillator();
+      const gainNode = this.audioContext!.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(this.masterGain!);
+      
+      oscillator.frequency.setValueAtTime(freq, this.audioContext!.currentTime);
+      
+      gainNode.gain.setValueAtTime(0, this.audioContext!.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.1, this.audioContext!.currentTime + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext!.currentTime + 0.3);
+      
+      oscillator.start(this.audioContext!.currentTime);
+      oscillator.stop(this.audioContext!.currentTime + 0.3);
+    });
   }
 
   // Звук урона (низкий резкий тон)
