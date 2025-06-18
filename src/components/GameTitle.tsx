@@ -1,9 +1,5 @@
-
 import React from "react";
-
-const GameTitle: React.FC = () => (
-  <h1
-    className="
+const GameTitle: React.FC = () => <h1 className="
       w-full max-w-full text-center
       font-bold text-yellow-300
       drop-shadow-lg
@@ -15,16 +11,9 @@ const GameTitle: React.FC = () => (
       px-1 py-0 mx-0
       game-font
       text-[5vw] xs:text-lg sm:text-2xl md:text-3xl lg:text-4xl
-    "
-    style={{
-      letterSpacing: ".04em",
-      lineHeight: 1.1,
-      fontFamily: "inherit"
-    }}
-    title="COMMANDER MOLA MOLA"
-  >
-    🐟 COMMANDER MOLA MOLA 🐟
-  </h1>
-);
-
+    " style={{
+  letterSpacing: ".04em",
+  lineHeight: 1.1,
+  fontFamily: "inherit"
+}} title="COMMANDER MOLA MOLA">🐟COMMANDER MOLA MOLA🐟</h1>;
 export default GameTitle;
