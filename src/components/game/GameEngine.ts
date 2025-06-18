@@ -30,6 +30,9 @@ declare global {
   }
 }
 
+import { ParticleSystem } from './particleSystem';
+import { ScreenShake } from './screenShake';
+
 export class GameEngine {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -161,6 +164,9 @@ export class GameEngine {
 
   private soundEnabled: boolean = true;
   private audioActivated: boolean = false;
+
+  private particleSystem: ParticleSystem = new ParticleSystem();
+  private screenShake: ScreenShake = new ScreenShake();
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -629,14 +635,26 @@ export class GameEngine {
     const bulletWidth = isMobile ? 25 : 20;
     const bulletHeight = isMobile ? 12 : 10;
 
+    const bulletX = direction === 1 ? this.player.x + this.player.width : this.player.x - bulletWidth;
+    const bulletY = this.player.y + this.player.height / 2 - bulletHeight / 2;
+
     this.bullets.push({
-      x: direction === 1 ? this.player.x + this.player.width : this.player.x - bulletWidth,
-      y: this.player.y + this.player.height / 2 - bulletHeight / 2,
+      x: bulletX,
+      y: bulletY,
       width: bulletWidth,
       height: bulletHeight,
       speed: 10 * direction,
       direction
     });
+
+    // Add muzzle flash effect
+    this.particleSystem.createMuzzleFlash(
+      bulletX + (direction === 1 ? -5 : bulletWidth + 5),
+      bulletY + bulletHeight / 2
+    );
+
+    // Small screen shake for shooting
+    this.screenShake.shake(1, 50);
 
     this.player.ammo--;
     this.lastShotTime = currentTime;
@@ -720,6 +738,10 @@ export class GameEngine {
       this.canvas.width,
       this.canvas.height
     );
+
+    // Update particle system and screen shake
+    this.particleSystem.update(deltaTime);
+    this.screenShake.update(deltaTime);
 
     gameTick(this);
     this.animationId = requestAnimationFrame(this.gameLoop);
@@ -834,5 +856,15 @@ export class GameEngine {
   // Новый метод: получить массив Swordfish
   getSwordfish() {
     return this.swordfish;
+  }
+
+  // Add method to access particle system
+  getParticleSystem() {
+    return this.particleSystem;
+  }
+
+  // Add method to access screen shake
+  getScreenShake() {
+    return this.screenShake;
   }
 }

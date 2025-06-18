@@ -1,18 +1,20 @@
-
 import { drawPixelCoral } from './drawPixelCoral';
 import { drawPixelSand } from './drawPixelSand';
 
 export function renderScene(
   ctx: CanvasRenderingContext2D,
-  game: any // GameEngine instance
+  engine: any // GameEngine instance
 ) {
+  // Apply screen shake at the beginning
+  engine.screenShake.applyShake(ctx);
+
   // вынесем практически всё содержимое оригинального render из GameEngine
   const {
     canvas, player, images, platforms,
     staticSandLayer, bubbles, coins,
     pizzas, brasilenas, wines,
     bullets, bossLucia, enemies, swordfish
-  } = game;
+  } = engine;
 
   // --- Фон ---
   const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -25,11 +27,11 @@ export function renderScene(
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // --- Пузыри ---
-  game.updateBubbles?.();
-  game.drawBubbles?.(ctx);
+  engine.updateBubbles?.();
+  engine.drawBubbles?.(ctx);
 
   // --- Динамические платформы ---
-  const allPlatforms = (game.getAllPlatforms?.() ?? game.platforms);
+  const allPlatforms = (engine.getAllPlatforms?.() ?? engine.platforms);
   allPlatforms.forEach((platform: any) => {
     if (platform.type === 'disappearing') {
       ctx.save();
@@ -45,11 +47,11 @@ export function renderScene(
       ctx.fillStyle = platform.color;
       ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
       ctx.restore();
-    } else if (platform.y >= game.canvas.height - 40 - 1 && !platform.type) {
+    } else if (platform.y >= engine.canvas.height - 40 - 1 && !platform.type) {
       // обычный "sand"
-      if (game.staticSandLayer) {
+      if (engine.staticSandLayer) {
         ctx.drawImage(
-          game.staticSandLayer,
+          engine.staticSandLayer,
           0, 0,
           platform.width, platform.height,
           platform.x, platform.y,
@@ -217,4 +219,10 @@ export function renderScene(
       }
     });
   }
+
+  // Render particle effects on top of everything else
+  engine.particleSystem.render(ctx);
+
+  // Reset screen shake at the end
+  engine.screenShake.resetShake(ctx);
 }
