@@ -46,7 +46,7 @@ export function addCoin(player: Player, amount = 1) {
   console.log(`[playerEffects] coins from ${prev} to ${player.coins} (+${actualAmount}, req=${amount})`);
 }
 
-/** Wine Jump Boost: увеличивает jumpPower в 2.5 раза на 10 секунд, не стакается, только обновляет время. */
+/** Wine Jump Boost: увеличивает jumpPower в 1.5 раза на 10 секунд, не стакается, только обновляет время. */
 export function activateWineJumpBoost(player: Player) {
   if (player._hasWineJumpBoost) {
     // Обновляем таймер, не меняем jumpPower, если буст уже активен
@@ -62,12 +62,12 @@ export function activateWineJumpBoost(player: Player) {
 
   // Сохраняем исходный jumpPower только при первом активации буста
   player._originalJumpPower = typeof player.jumpPower === "number" ? player.jumpPower : -15;
-  player.jumpPower = player._originalJumpPower * 2.5; // Увеличиваем в 2.5 раза
+  player.jumpPower = player._originalJumpPower * 1.5; // Увеличиваем в 1.5 раза
   player._hasWineJumpBoost = true;
   player._wineBoostTimeout = setTimeout(() => {
     deactivateWineJumpBoost(player);
   }, 10000);
-  console.log("[playerEffects] Wine Jump Boost ACTIVATED, jumpPower x2.5:", player.jumpPower);
+  console.log("[playerEffects] Wine Jump Boost ACTIVATED, jumpPower x1.5:", player.jumpPower);
 }
 
 export function deactivateWineJumpBoost(player: Player) {
