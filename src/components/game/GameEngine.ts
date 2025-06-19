@@ -488,6 +488,11 @@ export class GameEngine {
     this.brasilenas = [];
     this.wines = [];
 
+    // Сброс таймеров появления ресурсов и платформ при старте уровня
+    this.lastResourceSpawnTime = Date.now();
+    this.lastPlatformSpawnTime = Date.now();
+    this.lastUpdateTimestamp = Date.now();
+
     // --- Запускаем музыку для этого уровня ---
     if (this.audioActivated && this.soundEnabled && !audioManager.isMutedState()) {
       console.log(`[GameEngine] Starting music for level ${this.player.level}`);
