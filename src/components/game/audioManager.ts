@@ -100,7 +100,8 @@ class AudioManager {
 
     const promise = new Promise<void>((resolve) => {
       const audio = new Audio();
-      const musicPath = `/audio/music/${level}.ogg`;
+      // Use BASE_URL so paths work both in dev and in production subfolders
+      const musicPath = `${import.meta.env.BASE_URL}audio/music/${level}.ogg`;
       
       audio.preload = 'auto';
       audio.loop = true;
@@ -127,6 +128,8 @@ class AudioManager {
       audio.addEventListener('canplaythrough', onLoad);
       audio.addEventListener('error', onError);
       audio.src = musicPath;
+      // Ensure the file actually begins loading
+      audio.load();
     });
 
     this.musicPreloadPromises.set(level, promise);
