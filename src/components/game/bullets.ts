@@ -95,8 +95,8 @@ export function updateBullets({ bullets, enemies, swordfish, bossLucia, player, 
           
           // Звук получения монет
           audioManager.playCoinSound();
-          
-          callbacks.onStateUpdate();
+
+          callbacks.onStateUpdate({ coins: player.coins });
           break;
         }
       }
@@ -123,8 +123,8 @@ export function updateBullets({ bullets, enemies, swordfish, bossLucia, player, 
             
             // Звук получения монет
             audioManager.playCoinSound();
-            
-            callbacks.onStateUpdate();
+
+            callbacks.onStateUpdate({ coins: player.coins });
             break;
           }
         }
