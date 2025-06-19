@@ -377,6 +377,8 @@ export class GameEngine {
 
   public setMobileControlState(control: string, state: boolean) {
     this.mobileControlState[control] = state;
+    if (control === "jump") this.mobileControlState["up"] = state;
+    if (control === "up") this.mobileControlState["jump"] = state;
   }
 
   private setupEventListeners() {
