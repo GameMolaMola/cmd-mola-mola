@@ -193,8 +193,10 @@ export const translations = {
     continueHintBefore: "Нажмите ",
     continueHintAfter: " чтобы продолжить"
   }
-};
+} as const;
 
-export const useTranslations = (language: Language) => {
+export type Translations = (typeof translations)[keyof typeof translations];
+
+export const useTranslations = (language: Language): Translations => {
   return translations[language];
 };

@@ -117,7 +117,11 @@ export function useMolaMolaGameCore({
   const lastGameEngine = useRef<any>(null);
   const handleRestart = () => {
     if (lastGameEngine.current) {
-      try { lastGameEngine.current.stop(); } catch {}
+      try {
+        lastGameEngine.current.stop();
+      } catch {
+        // ignore errors stopping the engine
+      }
       lastGameEngine.current = null;
     }
     resetGame();
