@@ -1,6 +1,6 @@
-
-export function loadImages(images: any, onLoaded?: () => void) {
-  const imageUrls = {
+export function loadImages(images: any): Promise<void> {
+  return new Promise((resolve) => {
+    const imageUrls = {
     player1: '/lovable-uploads/d62d1b89-98ee-462d-bbc4-37715a91950f.png',
     player2: '/lovable-uploads/00354654-8e2c-4993-8167-a9e91aef0d44.png',
     playerLeft: '/lovable-uploads/2c28ddc1-8540-47f5-9b8d-78887b6c289f.png',
@@ -15,30 +15,34 @@ export function loadImages(images: any, onLoaded?: () => void) {
     swordfishLeft: '/lovable-uploads/58702cbc-b33c-48fc-bfce-8f3d6bed589a.png',
   };
   
-  images.playerFrames[0].src = imageUrls.player1;
-  images.playerFrames[1].src = imageUrls.player2;
-  images.playerLeft.src = imageUrls.playerLeft;
-  images.enemy.src = imageUrls.enemy;
-  images.enemyLeft.src = imageUrls.enemyLeft;
-  images.pizza.src = imageUrls.pizza;
-  images.brasilena.src = imageUrls.brasilena;
-  images.wine.src = imageUrls.wine;
-  images.coin.src = imageUrls.coin;
-  images.bossLucia.src = imageUrls.bossLucia;
-  images.swordfishRight.src = imageUrls.swordfishRight;
-  images.swordfishLeft.src = imageUrls.swordfishLeft;
+    images.playerFrames[0].src = imageUrls.player1;
+    images.playerFrames[1].src = imageUrls.player2;
+    images.playerLeft.src = imageUrls.playerLeft;
+    images.enemy.src = imageUrls.enemy;
+    images.enemyLeft.src = imageUrls.enemyLeft;
+    images.pizza.src = imageUrls.pizza;
+    images.brasilena.src = imageUrls.brasilena;
+    images.wine.src = imageUrls.wine;
+    images.coin.src = imageUrls.coin;
+    images.bossLucia.src = imageUrls.bossLucia;
+    images.swordfishRight.src = imageUrls.swordfishRight;
+    images.swordfishLeft.src = imageUrls.swordfishLeft;
 
-  let loadedCount = 0;
-  let toLoad = Object.keys(imageUrls).length;
-  Object.entries(imageUrls).forEach(([key, url]) => {
-    const img = new window.Image();
-    img.src = url;
-    img.onload = () => {
+    let loadedCount = 0;
+    const toLoad = Object.keys(imageUrls).length;
+
+    const checkResolve = () => {
       loadedCount += 1;
-      if (loadedCount >= toLoad && onLoaded) onLoaded();
+      if (loadedCount >= toLoad) {
+        resolve();
+      }
     };
-    img.onerror = () => {
-      if (loadedCount >= toLoad && onLoaded) onLoaded();
-    };
+
+    Object.values(imageUrls).forEach((url) => {
+      const img = new window.Image();
+      img.src = url;
+      img.onload = checkResolve;
+      img.onerror = checkResolve;
+    });
   });
 }
