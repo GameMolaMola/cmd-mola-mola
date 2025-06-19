@@ -634,6 +634,17 @@ export class GameEngine {
     this.shoot();
   }
 
+  // Позволяет мгновенно прыгать по мобильному нажатию
+  public jump() {
+    if (this.player.grounded) {
+      this.player.velY = this.player.jumpPower;
+      this.player.grounded = false;
+      if (this.soundEnabled && this.audioActivated) {
+        audioManager.playJumpSound();
+      }
+    }
+  }
+
   private shoot() {
     const currentTime = Date.now();
     if (this.player.ammo <= 0 || currentTime - this.lastShotTime < this.SHOT_COOLDOWN) {
