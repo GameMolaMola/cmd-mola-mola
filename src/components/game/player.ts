@@ -13,7 +13,6 @@ export function updatePlayer({ player, platforms, coins, pizzas, brasilenas, win
   const upPressed =
     keys.ArrowUp ||
     keys.KeyW ||
-    keys.Space ||
     mobileControlState.up ||
     mobileControlState.jump;
 
