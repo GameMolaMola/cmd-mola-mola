@@ -32,6 +32,7 @@ declare global {
 
 import { ParticleSystem } from './particleSystem';
 import { ScreenShake } from './screenShake';
+import { getLevelConfig } from './levels';
 
 export class GameEngine {
   private canvas: HTMLCanvasElement;
@@ -489,11 +490,13 @@ export class GameEngine {
     }
 
     this.enemies = [];
-    this.swordfish = []; // Очищаем массив Swordfish
+    this.swordfish = [];
     this.coins = [];
     this.pizzas = [];
     this.brasilenas = [];
     this.wines = [];
+
+    const config = getLevelConfig(this.player.level);
 
     // --- Запускаем музыку для этого уровня ---
     if (this.audioActivated && this.soundEnabled && !audioManager.isMutedState()) {
@@ -501,8 +504,7 @@ export class GameEngine {
       audioManager.playLevelMusic(this.player.level ?? 1);
     }
 
-    // Исправлено: теперь босс появляется при уровне >= 10 (раньше было > 10)
-    if (this.player.level >= 10) {
+    if (config.boss) {
       this.bossLucia = {
         x: 300,
         y: 150,
@@ -512,31 +514,29 @@ export class GameEngine {
         image: this.images?.bossLucia ?? new Image(),
         direction: 1,
       };
-      // Пиццы, вино, коин можно добавлять по желанию
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < config.pizzaCount; i++) {
         this.pizzas.push({
           x: 250 + Math.random() * 350,
           y: 110 + Math.random() * 200,
           width: 36,
-          height: 36
+          height: 36,
         });
       }
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < config.wineCount; i++) {
         this.wines.push({
           x: 260 + Math.random() * 320,
           y: 130 + Math.random() * 140,
           width: 32,
-          height: 32
+          height: 32,
         });
       }
       return;
-    } else {
-      this.bossLucia = null;
     }
 
-    // Обычные уровни
-    const enemyCount = 3 + this.player.level;
-    const coinCount = 5 + this.player.level * 2;
+    this.bossLucia = null;
+
+    const enemyCount = config.enemyCount;
+    const coinCount = config.coinCount;
 
     // canvas.height и sandHeight гарантированы, т.к. инициализированы к этому моменту
     const sandHeight = 40;
@@ -555,10 +555,8 @@ export class GameEngine {
       });
     }
 
-    // Спавн Swordfish начиная с уровня 2
-    if (this.player.level >= 2) {
-      const swordfishCount = 1 + Math.floor(this.player.level / 3); // больше Swordfish на высоких уровнях
-      for (let i = 0; i < swordfishCount; i++) {
+    if (config.swordfishCount && config.swordfishCount > 0) {
+      for (let i = 0; i < config.swordfishCount; i++) {
         this.swordfish.push({
           x: Math.random() * (this.canvas.width - 64),
           y: this.canvas.height * 0.4 + Math.random() * (this.canvas.height * 0.2), // середина экрана
@@ -578,7 +576,7 @@ export class GameEngine {
       });
     }
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < config.pizzaCount; i++) {
       this.pizzas.push({
         x: 200 + Math.random() * 400,
         y: 100 + Math.random() * 200,
@@ -590,14 +588,16 @@ export class GameEngine {
     // Бонус "Бразильена" и "Вино" шириной 21px и высотой 64px
     const slimBonusWidth = 21;
     const tallBonusHeight = 64;
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < config.brasilenaCount; i++) {
       this.brasilenas.push({
         x: 200 + Math.random() * 400,
         y: 100 + Math.random() * 200,
         width: slimBonusWidth,
         height: tallBonusHeight
       });
+    }
 
+    for (let i = 0; i < config.wineCount; i++) {
       this.wines.push({
         x: 200 + Math.random() * 400,
         y: 100 + Math.random() * 200,
