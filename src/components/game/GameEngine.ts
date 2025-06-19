@@ -22,6 +22,7 @@ import { drawPixelCoral } from './drawPixelCoral';
 import { drawPixelSand } from './drawPixelSand';
 import { createStaticSandLayer } from './staticSandLayer';
 import { audioManager, activateAudio } from './audioManager';
+import { loadBackground, ParallaxBackground } from './backgroundManager';
 
 // --- ВНИМАНИЕ: Декларация для поддержки window.gameEngineInstance ---
 declare global {
@@ -139,6 +140,7 @@ export class GameEngine {
   private mobileControlState: Record<string, boolean> = {};
 
   private staticSandLayer: HTMLCanvasElement | null = null;
+  private background: ParallaxBackground | null = null;
 
   private freeBrasilena?: ReturnType<typeof useFreeBrasilena>;
 
@@ -238,6 +240,7 @@ export class GameEngine {
     this.generateLevel();
     this.platforms = createDefaultPlatforms(this.canvas.width, this.canvas.height);
     setTimeout(() => this.generateStaticSandLayer(), 0);
+    this.background = loadBackground(this.player.level, this.canvas.width, this.canvas.height);
 
     // Поправленная логика стартовых координат:
     // Находим пол (floor), гарантируем корректную установку позиции игрока строго по верху пола
@@ -496,6 +499,8 @@ export class GameEngine {
     this.brasilenas = [];
     this.wines = [];
 
+    this.background = loadBackground(this.player.level, this.canvas.width, this.canvas.height);
+
     const config = getLevelConfig(this.player.level);
 
     // --- Запускаем музыку для этого уровня ---
@@ -690,11 +695,14 @@ export class GameEngine {
   }
 
   private lastUpdateTimestamp: number = Date.now();
+  public deltaTime: number = 0;
 
   private gameLoop = () => {
     const now = Date.now();
     const deltaTime = now - this.lastUpdateTimestamp;
     this.lastUpdateTimestamp = now;
+    this.deltaTime = deltaTime;
+    this.background?.update(deltaTime);
 
     // --- динамика: генерация бонусов и платформ ---
     if (now - this.lastResourceSpawnTime > 2650) {

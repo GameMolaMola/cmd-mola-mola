@@ -12,6 +12,8 @@ export function renderScene(
   // Apply screen shake at the beginning
   engine.screenShake.applyShake(ctx);
 
+  engine.background?.draw(ctx);
+
   // вынесем практически всё содержимое оригинального render из GameEngine
   const {
     canvas, player, images, platforms,
