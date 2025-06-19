@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { GameEngine } from "./GameEngine";
 import { useGame } from "@/contexts/GameContext";
 import { useGameCanvasResize } from "./useGameCanvasResize";
@@ -27,6 +27,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   collectEngineRef
 }) => {
   const engineRef = useRef<GameEngine | null>(null);
+  const [loading, setLoading] = useState(true);
   const { playerData } = useGame();
 
   // Применяем новый хук для адаптивного canvas и вычисленного масштаба
@@ -35,28 +36,40 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   // Передать scale при необходимости вашему GameEngine
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        if (engineRef.current) {
-          engineRef.current.stop();
-          engineRef.current = null;
+    let cancelled = false;
+
+    async function setupEngine() {
+      if (canvas) {
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          if (engineRef.current) {
+            engineRef.current.stop();
+            engineRef.current = null;
+          }
+          const engine = new GameEngine(canvas, ctx, {
+            onGameEnd,
+            onStateUpdate,
+            initialState: {
+              ...gameState,
+              username,
+              ...playerData,
+            },
+            scaleFactor: scale,
+          });
+          engineRef.current = engine;
+          collectEngineRef?.(engine);
+          setLoading(true);
+          await engine.init();
+          if (cancelled) return;
+          setLoading(false);
+          if (!isPaused) engine.start();
         }
-        engineRef.current = new GameEngine(canvas, ctx, {
-          onGameEnd,
-          onStateUpdate,
-          initialState: {
-            ...gameState,
-            username,
-            ...playerData,
-          },
-          scaleFactor: scale, // Новое: передаем актуальный масштаб для движка
-        });
-        collectEngineRef?.(engineRef.current);
-        if (!isPaused) engineRef.current.start();
       }
     }
+
+    setupEngine();
     return () => {
+      cancelled = true;
       engineRef.current?.stop();
       engineRef.current = null;
     };
@@ -64,14 +77,14 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   }, [gameState, username, gameSessionId, scale]);
 
   useEffect(() => {
-    if (engineRef.current) {
+    if (engineRef.current && !loading) {
       if (isPaused) {
         engineRef.current.stop();
       } else {
         engineRef.current.start();
       }
     }
-  }, [isPaused]);
+  }, [isPaused, loading]);
 
   return (
     <div
@@ -101,6 +114,11 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
           imageRendering: "pixelated",
         }}
       />
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center text-white bg-black/50 z-10">
+          Loading...
+        </div>
+      )}
     </div>
   );
 };

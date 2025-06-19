@@ -40,6 +40,7 @@ export class GameEngine {
   private keys: { [key: string]: boolean } = {};
   private lastShotTime = 0;
   private readonly SHOT_COOLDOWN = 200;
+  private loadPromise: Promise<void>;
 
   private player = {
     x: 100,
@@ -229,7 +230,7 @@ export class GameEngine {
       swordfishLeft: new Image(),
     };
 
-    loadImages(this.images);
+    this.loadPromise = loadImages(this.images);
     setupKeyboardHandlers(this.keys, this.shoot.bind(this));
     this.generateLevel();
     this.platforms = createDefaultPlatforms(this.canvas.width, this.canvas.height);
@@ -299,6 +300,10 @@ export class GameEngine {
     if (typeof window !== "undefined") {
       window.gameEngineInstance = this;
     }
+  }
+
+  public async init() {
+    await this.loadPromise;
   }
 
   private async initializeAudio() {
