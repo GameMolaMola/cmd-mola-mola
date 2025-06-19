@@ -377,6 +377,10 @@ export class GameEngine {
 
   public setMobileControlState(control: string, state: boolean) {
     this.mobileControlState[control] = state;
+    // Map legacy "up" control to "jump" for backward compatibility
+    if (control === "jump") {
+      this.mobileControlState["up"] = state;
+    }
   }
 
   private setupEventListeners() {
