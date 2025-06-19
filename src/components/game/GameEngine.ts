@@ -161,6 +161,8 @@ export class GameEngine {
 
   private bossCoinTimer: number | null = null;
   private bossCoinsEndTime: number | null = null;
+  private bossCoinTimerRemaining: number | null = null;
+  private pauseTimestamp: number | null = null;
   private bossRewardActive: boolean = false;
 
   private soundEnabled: boolean = true;
@@ -773,8 +775,38 @@ export class GameEngine {
 
   public start() {
     console.log('Starting game engine...');
+    const now = Date.now();
+
+    if (this.pauseTimestamp !== null) {
+      // Resuming from pause: shift all internal timers forward so they
+      // continue as if the game never stopped
+      const pausedDuration = now - this.pauseTimestamp;
+      this.lastResourceSpawnTime += pausedDuration;
+      this.lastPlatformSpawnTime += pausedDuration;
+      this.lastShotTime += pausedDuration;
+      this.dynamicPlatforms.forEach(p => {
+        p.created += pausedDuration;
+      });
+      this.enemies.forEach(e => {
+        if ((e as any)._chaosTimer) (e as any)._chaosTimer += pausedDuration;
+      });
+
+      if (this.bossCoinTimerRemaining !== null) {
+        if (this.bossCoinTimerRemaining > 0) {
+          this.bossCoinTimer = window.setTimeout(this.endBossCoinsReward, this.bossCoinTimerRemaining);
+          this.bossCoinsEndTime = now + this.bossCoinTimerRemaining;
+        } else {
+          this.endBossCoinsReward();
+        }
+        this.bossCoinTimerRemaining = null;
+      } else if (this.bossCoinsEndTime !== null) {
+        this.bossCoinsEndTime += pausedDuration;
+      }
+      this.pauseTimestamp = null;
+    }
+
     // Reset timestamp to avoid huge delta after pause
-    this.lastUpdateTimestamp = Date.now();
+    this.lastUpdateTimestamp = now;
     this.gameLoop();
   }
 
@@ -785,6 +817,16 @@ export class GameEngine {
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
+    }
+
+    this.pauseTimestamp = Date.now();
+
+    if (this.bossCoinTimer) {
+      clearTimeout(this.bossCoinTimer);
+      this.bossCoinTimerRemaining = this.bossCoinsEndTime
+        ? Math.max(0, this.bossCoinsEndTime - this.pauseTimestamp)
+        : null;
+      this.bossCoinTimer = null;
     }
   }
 
@@ -824,18 +866,19 @@ export class GameEngine {
     if (this.bossCoinTimer) {
       clearTimeout(this.bossCoinTimer);
     }
-    this.bossCoinTimer = window.setTimeout(() => {
-      // По завершении времени — удалить только босс-монеты
-      this.coins = this.coins.filter(coin => !coin._bossCoin);
-      this.bossRewardActive = false;
-      this.bossCoinsEndTime = null;
-      this.bossCoinTimer = null;
-      this.updateGameState();
-    }, 10000);
+    this.bossCoinTimer = window.setTimeout(this.endBossCoinsReward, 10000);
 
     // Сразу обновим UI (монет становится много)
     this.updateGameState();
   }
+
+  private endBossCoinsReward = () => {
+    this.coins = this.coins.filter(coin => !coin._bossCoin);
+    this.bossRewardActive = false;
+    this.bossCoinsEndTime = null;
+    this.bossCoinTimer = null;
+    this.updateGameState();
+  };
 
   // Новый метод: постепенное выпадение части босс-монет при каждом попадании
   public spawnBossCoinsOnHit(count: number, boss: any) {
