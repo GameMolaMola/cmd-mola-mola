@@ -782,6 +782,12 @@ export class GameEngine {
       this.lastResourceSpawnTime += pausedDuration;
       this.lastPlatformSpawnTime += pausedDuration;
       this.lastShotTime += pausedDuration;
+      this.dynamicPlatforms.forEach(p => {
+        p.created += pausedDuration;
+      });
+      this.enemies.forEach(e => {
+        if ((e as any)._chaosTimer) (e as any)._chaosTimer += pausedDuration;
+      });
 
       if (this.bossCoinTimerRemaining !== null) {
         if (this.bossCoinTimerRemaining > 0) {
