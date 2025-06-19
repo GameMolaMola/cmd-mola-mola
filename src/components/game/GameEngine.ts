@@ -377,6 +377,10 @@ export class GameEngine {
 
   public setMobileControlState(control: string, state: boolean) {
     this.mobileControlState[control] = state;
+    // Map legacy "up" control to "jump" for backward compatibility
+    if (control === "jump") {
+      this.mobileControlState["up"] = state;
+    }
   }
 
   private setupEventListeners() {
@@ -628,6 +632,17 @@ export class GameEngine {
   // --- NEW: публичный метод для мобильной стрельбы ---
   public fire() {
     this.shoot();
+  }
+
+  // Позволяет мгновенно прыгать по мобильному нажатию
+  public jump() {
+    if (this.player.grounded) {
+      this.player.velY = this.player.jumpPower;
+      this.player.grounded = false;
+      if (this.soundEnabled && this.audioActivated) {
+        audioManager.playJumpSound();
+      }
+    }
   }
 
   private shoot() {
