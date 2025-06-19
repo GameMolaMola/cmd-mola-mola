@@ -61,7 +61,9 @@ export const translations = {
     sendingEmail: "Sending notification...",
     emailSentSuccess: "Notification to admin sent!",
     emailSentError: "Failed to send admin notification.",
-    pause: "Pause"
+    pause: "Pause",
+    continueHintBefore: "Press",
+    continueHintAfter: "to continue"
   },
   it: {
     // Landing page
@@ -123,7 +125,9 @@ export const translations = {
     sendingEmail: "Invio notifica...",
     emailSentSuccess: "Notifica inviata all’amministratore!",
     emailSentError: "Errore invio notifica all’amministratore.",
-    pause: "Pausa"
+    pause: "Pausa",
+    continueHintBefore: "Premi",
+    continueHintAfter: "per continuare"
   },
   ru: {
     // Landing page
@@ -185,7 +189,9 @@ export const translations = {
     sendingEmail: "Отправка оповещения...",
     emailSentSuccess: "Оповещение администратору отправлено!",
     emailSentError: "Ошибка отправки оповещения админу.",
-    pause: "Пауза"
+    pause: "Пауза",
+    continueHintBefore: "Нажмите",
+    continueHintAfter: "чтобы продолжить"
   }
 };
 
