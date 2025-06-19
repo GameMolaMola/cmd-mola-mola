@@ -10,7 +10,12 @@ export function updatePlayer({ player, platforms, coins, pizzas, brasilenas, win
   // Обработка мобильных контролов
   const leftPressed = keys.ArrowLeft || keys.KeyA || mobileControlState.left;
   const rightPressed = keys.ArrowRight || keys.KeyD || mobileControlState.right;
-  const upPressed = keys.ArrowUp || keys.KeyW || keys.Space || mobileControlState.up;
+  const upPressed =
+    keys.ArrowUp ||
+    keys.KeyW ||
+    keys.Space ||
+    mobileControlState.up ||
+    mobileControlState.jump;
 
   // Горизонтальное движение
   if (leftPressed) {
