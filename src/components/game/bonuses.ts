@@ -47,7 +47,7 @@ export function handleBonuses({
       heal(player, 20); // Восстанавливаем 20 HP
       pizzas.splice(i, 1);
       audioManager.playHealthSound();
-      callbacks.onStateUpdate();
+      callbacks.onStateUpdate({ health: player.health });
     }
   }
 
@@ -75,7 +75,7 @@ export function handleBonuses({
       brasilenas.splice(i, 1);
       if (freeBrasilena) freeBrasilena.onPickup();
       audioManager.playAmmoSound();
-      callbacks.onStateUpdate();
+      callbacks.onStateUpdate({ ammo: player.ammo });
     }
   }
 
@@ -92,7 +92,7 @@ export function handleBonuses({
       wineCollectedTotal += 1;
       lastWineSpawnTime = now;
       audioManager.playPowerupSound();
-      callbacks.onStateUpdate();
+      callbacks.onStateUpdate({});
     }
   }
 

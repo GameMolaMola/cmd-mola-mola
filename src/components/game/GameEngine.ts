@@ -773,6 +773,8 @@ export class GameEngine {
 
   public start() {
     console.log('Starting game engine...');
+    // Reset timestamp to avoid huge delta after pause
+    this.lastUpdateTimestamp = Date.now();
     this.gameLoop();
   }
 

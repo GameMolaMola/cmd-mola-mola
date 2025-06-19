@@ -86,7 +86,7 @@ export function updatePlayer({ player, platforms, coins, pizzas, brasilenas, win
       coins.splice(i, 1);
       addCoin(player, 1);
       audioManager.playCoinSound();
-      callbacks.onStateUpdate();
+      callbacks.onStateUpdate({ coins: player.coins });
     }
   }
 
@@ -109,7 +109,7 @@ export function updatePlayer({ player, platforms, coins, pizzas, brasilenas, win
       onCollect: () => {
         player.ammo += 20;
         audioManager.playAmmoSound();
-        callbacks.onStateUpdate();
+        callbacks.onStateUpdate({ ammo: player.ammo });
       }
     });
   }
