@@ -36,6 +36,15 @@ npm i
 npm run dev
 ```
 
+## Linting
+
+To run the linter, ensure that you have installed all dependencies first:
+
+```sh
+npm install
+npm run lint
+```
+
 **Edit a file directly in GitHub**
 
 - Navigate to the desired file(s).
