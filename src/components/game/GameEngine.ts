@@ -778,8 +778,8 @@ export class GameEngine {
     const now = Date.now();
 
     if (this.pauseTimestamp !== null) {
-      // If resuming from pause, shift all timers forward so they don't
-      // expire while the game was stopped
+      // Resuming from pause: shift all internal timers forward so they
+      // continue as if the game never stopped
       const pausedDuration = now - this.pauseTimestamp;
       this.lastResourceSpawnTime += pausedDuration;
       this.lastPlatformSpawnTime += pausedDuration;
