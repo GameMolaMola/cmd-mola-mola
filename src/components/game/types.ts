@@ -14,3 +14,13 @@ export interface GameState {
   username?: string;    // добавляем поле username
   soundMuted?: boolean; // добавляем поле soundMuted для состояния звука
 }
+
+export interface LevelConfig {
+  enemyCount: number;
+  coinCount: number;
+  pizzaCount: number;
+  brasilenaCount: number;
+  wineCount: number;
+  swordfishCount?: number;
+  boss?: boolean;
+}
