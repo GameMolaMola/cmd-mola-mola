@@ -1,10 +1,11 @@
 
 import React from "react";
 import SocialLinks from "./SocialLinks";
+import type { Translations } from "@/hooks/useTranslations";
 
 const DONATE_URL = "https://buymeacoffee.com/com.molamola";
 
-export default function AddressSection({ t }: { t: any }) {
+export default function AddressSection({ t }: { t: Translations }) {
   return (
     <div className="bg-blue-800/70 border border-yellow-400 p-4 rounded-lg w-full mb-4">
       <h2 className="text-yellow-300 font-semibold mb-1">{t.addressTitle}</h2>
