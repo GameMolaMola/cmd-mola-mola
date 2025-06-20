@@ -57,7 +57,7 @@ const PlayerRegistrationForm = () => {
       return;
     }
     const data: PlayerData = {
-      nickname,
+      nickname: nickname.trim(),
       email: godmode ? '-' : email,
       language,
       godmode,
