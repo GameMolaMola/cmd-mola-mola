@@ -1,5 +1,6 @@
 import { GameState } from './types';
-import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
+import { applyGodmodeIfNeeded } from './godmode';
+import { isGodmodeUser } from '@/constants';
 import { handleEnemyCollisions, handleSwordfishCollisions } from './collisionHandlers';
 import { useFreeBrasilena } from './useFreeBrasilena';
 
@@ -209,7 +210,7 @@ export class GameEngine {
     this.player.jumpPower = -15;
 
     // ВАЖНО: Применяем godmode ПОСЛЕ установки всех параметров
-    if (this.player.godmode || this.player.username === '@MolaMolaCoin') {
+    if (isGodmodeUser(this.player.username, this.player.godmode)) {
       console.log("[GameEngine] GODMODE ACTIVATED for user:", this.player.username, "godmode flag:", this.player.godmode);
       this.player.health = 100;
       applyGodmodeIfNeeded(this.player, this.player.godmode);
@@ -602,7 +603,7 @@ export class GameEngine {
   private updateGameState() {
     // --- score удаляем полностью
     // Применяем godmode если активен
-    if (isGodmodeActive(this.player.godmode) || this.player.username === '@MolaMolaCoin') {
+    if (isGodmodeUser(this.player.username, this.player.godmode)) {
       this.player.health = 100;
     }
     this.callbacks.onStateUpdate({
