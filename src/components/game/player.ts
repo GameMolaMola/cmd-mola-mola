@@ -13,8 +13,9 @@ export function updatePlayer({ player, platforms, coins, pizzas, brasilenas, win
   const upPressed =
     keys.ArrowUp ||
     keys.KeyW ||
-    mobileControlState.up ||
-    mobileControlState.jump;
+    keys.Space ||
+    mobileControlState.jump ||
+    mobileControlState.up;
 
   // Горизонтальное движение
   if (leftPressed) {
