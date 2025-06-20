@@ -13,4 +13,12 @@ describe('isGodmodeUser', () => {
   it('returns false for normal users without flag', () => {
     expect(isGodmodeUser('player')).toBe(false);
   });
+
+  it('is case insensitive', () => {
+    expect(isGodmodeUser('@molamolacoin')).toBe(true);
+  });
+
+  it('ignores leading and trailing spaces', () => {
+    expect(isGodmodeUser('  @MolaMolaCoin  ')).toBe(true);
+  });
 });
