@@ -11,8 +11,8 @@ export function loadImages(images: any): Promise<void> {
     enemy: '/lovable-uploads/080fcc27-fe7b-448a-9661-9e1a894abab7.png',
     enemyLeft: '/lovable-uploads/65338906-ef6b-4097-bcbc-73770f962827.png',
     bossLucia: '/lovable-uploads/e2e9e94b-84f9-450f-a422-4f25b84dc5c0.png',
-    swordfishRight: '/lovable-uploads/a3528156-315d-4ec1-87c0-a7f31e824978.png',
-    swordfishLeft: '/lovable-uploads/58702cbc-b33c-48fc-bfce-8f3d6bed589a.png',
+    swordfishRight: '/lovable-uploads/swordfish-right.png',
+    swordfishLeft: '/lovable-uploads/swordfish-left.png',
   };
   
     images.playerFrames[0].src = imageUrls.player1;
