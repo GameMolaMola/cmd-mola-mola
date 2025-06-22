@@ -44,7 +44,7 @@ export default function MobileControls({ onControl }: MobileControlsProps) {
       {/* Правая панель */}
       <div className="flex gap-2">
         {/* Прыжок */}
-          <button
+<button
             className="rounded-full bg-black/80 text-yellow-200 w-14 h-14 text-3xl flex items-center justify-center border-2 border-yellow-400 active:bg-cyan-800 transition duration-75"
             style={{ touchAction: "none", pointerEvents: "auto" }}
             tabIndex={-1}
@@ -69,6 +69,8 @@ export default function MobileControls({ onControl }: MobileControlsProps) {
             onMouseDown={() => onControl("jump", true)}
             onMouseUp={() => onControl("jump", false)}
           >
+            ⬆️
+          </button>
           ⬆️
         </button>
         {/* Огонь */}
