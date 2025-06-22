@@ -374,9 +374,15 @@ export class GameEngine {
 
   public setMobileControlState(control: string, state: boolean) {
     this.mobileControlState[control] = state;
-    if (control === "jump") this.mobileControlState["up"] = state;
-    if (control === "up") this.mobileControlState["jump"] = state;
-  }
+public setMobileControlState(control: string, state: boolean) {
+    this.mobileControlState[control] = state;
+    // Синхронизируем состояние "jump" и "up" для обратной совместимости и полноты
+    if (control === "jump") {
+      this.mobileControlState["up"] = state;
+    } else if (control === "up") { // Используем else if, чтобы избежать циклической зависимости, если вдруг "up" сам по себе вызовет "jump"
+      this.mobileControlState["jump"] = state;
+    }
+  }
 
 
   private generateStaticSandLayer() {
@@ -561,6 +567,17 @@ export class GameEngine {
   // --- NEW: публичный метод для мобильной стрельбы ---
   public fire() {
     this.shoot();
+  }
+
+  // Позволяет мгновенно прыгать по мобильному нажатию
+  public jump() {
+    if (this.player.grounded) {
+      this.player.velY = this.player.jumpPower;
+      this.player.grounded = false;
+      if (this.soundEnabled && this.audioActivated) {
+        audioManager.playJumpSound();
+      }
+    }
   }
 
   private shoot() {
