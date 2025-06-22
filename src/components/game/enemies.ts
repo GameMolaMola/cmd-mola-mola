@@ -44,6 +44,16 @@ export function updateEnemies({ bossLucia, enemies, swordfish, player, canvas, c
 
   // Обновление Swordfish - горизонтальное движение по середине экрана
   swordfish.forEach(sword => {
+    // Пропускаем обновление, если рыба вне экрана
+    if (
+      sword.x + sword.width < 0 ||
+      sword.x > canvas.width ||
+      sword.y + sword.height < 0 ||
+      sword.y > canvas.height
+    ) {
+      return;
+    }
+
     // Инициализация направления движения если не задано
     if (!sword.direction) {
       sword.direction = Math.random() > 0.5 ? 1 : -1;
@@ -65,6 +75,13 @@ export function updateEnemies({ bossLucia, enemies, swordfish, player, canvas, c
     if (!sword._wavePhase) sword._wavePhase = Math.random() * Math.PI * 2;
     sword._wavePhase += 0.05;
     sword.y += Math.sin(sword._wavePhase) * 0.5;
+
+    // Анимация
+    sword.frameTimer += 1;
+    if (sword.frameTimer >= sword.frameRate) {
+      sword.frameTimer = 0;
+      sword.frame = (sword.frame + 1) % 2;
+    }
 
     // Ограничиваем вертикальное движение
     const minY = canvas.height * 0.3;

@@ -93,6 +93,9 @@ export class GameEngine {
     width: number;
     height: number;
     direction: number;
+    frame: number;
+    frameTimer: number;
+    frameRate: number;
     _wavePhase?: number;
   }> = [];
 
@@ -499,6 +502,9 @@ const config = getLevelConfig(this.player.level);
           width: 64,
           height: 48,
           direction: Math.random() > 0.5 ? 1 : -1,
+          frame: 0,
+          frameTimer: 0,
+          frameRate: 12,
         });
       }
     }
