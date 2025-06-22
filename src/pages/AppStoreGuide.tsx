@@ -22,7 +22,7 @@ const AppStoreGuide = () => {
             <strong>Инициализируйте Capacitor:</strong><br/>
             <code className="bg-cyan-900 px-2 py-1 rounded">
               npx cap init<br/>
-              // App ID: <span className="text-yellow-300">app.lovable.804fa8507a8a4f41934800fecc6f9455</span><br/>
+              // App ID: <span className="text-yellow-300">app.mola.mola</span><br/>
               // App Name: mola-mola-pixel
             </code>
           </li>
@@ -45,7 +45,7 @@ const AppStoreGuide = () => {
           <li>Опубликуйте приложение через <strong>App Store Connect</strong>.</li>
         </ol>
         <p className="text-cyan-300 text-sm mt-2 text-center">
-          Подробная инструкция здесь: <a className="underline text-yellow-200" href="https://docs.lovable.dev/tips-tricks/mobile-store" target="_blank" rel="noopener noreferrer">Документация Lovable – Mobile Support</a>
+          Подробная инструкция здесь: <a className="underline text-yellow-200" href="https://example.com/mobile-guide" target="_blank" rel="noopener noreferrer">Документация по мобильной поддержке</a>
         </p>
         <Button onClick={() => navigate("/")} className="mt-3">← На главную</Button>
       </div>
