@@ -422,14 +422,13 @@ export class GameEngine {
     this.brasilenas = [];
     this.wines = [];
 
-    // Сброс таймеров появления ресурсов и платформ при старте уровня
-    const now = Date.now();
-    this.lastResourceSpawnTime = now;
-    this.lastPlatformSpawnTime = now;
-    this.lastUpdateTimestamp = now;
+// Сброс таймеров появления ресурсов и платформ при старте уровня
+    const now = Date.now();
+    this.lastResourceSpawnTime = now;
+    this.lastPlatformSpawnTime = now;
+    this.lastUpdateTimestamp = now;
 
-    const config = getLevelConfig(this.player.level);
-
+    const config = getLevelConfig(this.player.level);
     // --- Запускаем музыку для этого уровня ---
     if (this.audioActivated && this.soundEnabled && !audioManager.isMutedState()) {
       console.log(`[GameEngine] Starting music for level ${this.player.level}`);
