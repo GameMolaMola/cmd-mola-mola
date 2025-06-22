@@ -94,6 +94,7 @@ export class GameEngine {
     height: number;
     direction: number;
     _wavePhase?: number;
+    frameTimer?: number;
   }> = [];
 
   // --> Расширяем тип для coins: разрешаем опциональное поле _bossCoin
@@ -499,6 +500,7 @@ const config = getLevelConfig(this.player.level);
           width: 64,
           height: 48,
           direction: Math.random() > 0.5 ? 1 : -1,
+          frameTimer: 0,
         });
       }
     }

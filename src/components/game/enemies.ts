@@ -61,15 +61,26 @@ export function updateEnemies({ bossLucia, enemies, swordfish, player, canvas, c
       sword.direction = -1;
     }
 
-    // Небольшие вертикальные колебания для реалистичности
-    if (!sword._wavePhase) sword._wavePhase = Math.random() * Math.PI * 2;
-    sword._wavePhase += 0.05;
-    sword.y += Math.sin(sword._wavePhase) * 0.5;
+    const inBounds =
+      sword.x + sword.width > 0 &&
+      sword.x < canvas.width &&
+      sword.y + sword.height > 0 &&
+      sword.y < canvas.height;
 
-    // Ограничиваем вертикальное движение
-    const minY = canvas.height * 0.3;
-    const maxY = canvas.height * 0.7 - sword.height;
-    if (sword.y < minY) sword.y = minY;
-    if (sword.y > maxY) sword.y = maxY;
+    if (inBounds) {
+      // Небольшие вертикальные колебания для реалистичности
+      if (sword.frameTimer === undefined) sword.frameTimer = 0;
+      sword.frameTimer += 1;
+
+      if (!sword._wavePhase) sword._wavePhase = Math.random() * Math.PI * 2;
+      sword._wavePhase += 0.05;
+      sword.y += Math.sin(sword._wavePhase) * 0.5;
+
+      // Ограничиваем вертикальное движение
+      const minY = canvas.height * 0.3;
+      const maxY = canvas.height * 0.7 - sword.height;
+      if (sword.y < minY) sword.y = minY;
+      if (sword.y > maxY) sword.y = maxY;
+    }
   });
 }
