@@ -45,7 +45,7 @@ const AppStoreGuide = () => {
           <li>Опубликуйте приложение через <strong>App Store Connect</strong>.</li>
         </ol>
         <p className="text-cyan-300 text-sm mt-2 text-center">
-          Подробная инструкция здесь: <a className="underline text-yellow-200" href="https://lovable.dev/blogs/TODO" target="_blank" rel="noopener noreferrer">Блог Lovable – публикация мобильных приложений</a>
+          Подробная инструкция здесь: <a className="underline text-yellow-200" href="https://docs.lovable.dev/tips-tricks/mobile-store" target="_blank" rel="noopener noreferrer">Документация Lovable – Mobile Support</a>
         </p>
         <Button onClick={() => navigate("/")} className="mt-3">← На главную</Button>
       </div>

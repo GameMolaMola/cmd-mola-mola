@@ -127,4 +127,4 @@ Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-trick
 
 6. Сборка, настройка и публикация — стандартные для App Store приложения шаги.
 
-Полное руководство — [Блог Lovable: публикация мобильных приложений](https://lovable.dev/blogs/TODO)
+Полное руководство — [Документация Lovable: Mobile Support](https://docs.lovable.dev/tips-tricks/mobile-store)
