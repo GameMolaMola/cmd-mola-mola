@@ -1,7 +1,7 @@
 import React from "react";
 
 // Путь к изображению монеты
-const MOLA_COIN_IMG = "/lovable-uploads/84eff824-67c6-4d5d-a334-63ed4014cc36.png";
+const MOLA_COIN_IMG = "/lovable-uploads/84eff824-67c6-4d5d-a334-63ed4014cc36.webp";
 
 interface Feature {
   type?: string;
