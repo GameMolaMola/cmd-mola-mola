@@ -56,9 +56,18 @@ const PlayerRegistrationForm = () => {
       setSubmitError(t.emailRequired || 'Email required');
       return;
     }
+    const trimmedNickname = nickname.trim();
+    const trimmedEmail = email.trim();
     const data: PlayerData = {
-      nickname: nickname.trim(),
-      email: godmode ? '-' : email,
+const trimmedNickname = nickname.trim();
+    const trimmedEmail = email.trim();
+    const data: PlayerData = {
+      nickname: trimmedNickname, // Используем уже обрезанный никнейм
+      email: godmode ? '-' : trimmedEmail, // Используем уже обрезанный email
+      language,
+      godmode,
+      ...(godmode ? { level: 10 } : {}),
+    } as PlayerData;
       language,
       godmode,
       ...(godmode ? { level: 10 } : {}),
