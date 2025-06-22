@@ -1,5 +1,19 @@
+let cachedImages: any | null = null;
+let cachedPromise: Promise<void> | null = null;
+
 export function loadImages(images: any): Promise<void> {
-  return new Promise((resolve) => {
+  if (cachedImages) {
+    Object.assign(images, cachedImages);
+    return Promise.resolve();
+  }
+
+  if (cachedPromise) {
+    return cachedPromise.then(() => {
+      Object.assign(images, cachedImages!);
+    });
+  }
+
+  cachedPromise = new Promise((resolve) => {
     const imageUrls = {
     player1: '/lovable-uploads/d62d1b89-98ee-462d-bbc4-37715a91950f.png',
     player2: '/lovable-uploads/00354654-8e2c-4993-8167-a9e91aef0d44.png',
@@ -34,15 +48,21 @@ export function loadImages(images: any): Promise<void> {
     const checkResolve = () => {
       loadedCount += 1;
       if (loadedCount >= toLoad) {
+        cachedImages = images;
         resolve();
       }
     };
 
-    Object.values(imageUrls).forEach((url) => {
+    Object.entries(imageUrls).forEach(([key, url]) => {
       const img = new window.Image();
       img.src = url;
       img.onload = checkResolve;
-      img.onerror = checkResolve;
+      img.onerror = (e) => {
+        console.error(`Failed to load image ${key} from ${url}`, e);
+        checkResolve();
+      };
     });
   });
+
+  return cachedPromise;
 }

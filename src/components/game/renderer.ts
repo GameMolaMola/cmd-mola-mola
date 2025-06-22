@@ -181,7 +181,11 @@ export function renderScene(
     if (isImageLoaded(image)) {
       ctx.drawImage(image, sword.x, sword.y, sword.width, sword.height);
     } else {
-      // Запасной вариант отрисовки
+      console.warn(
+        'Rendering red box for Swordfish. Image not loaded:',
+        image?.src || image,
+        image
+      );
       ctx.fillStyle = '#ff4444';
       ctx.fillRect(sword.x, sword.y, sword.width, sword.height);
     }

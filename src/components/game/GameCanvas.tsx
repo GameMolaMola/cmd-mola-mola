@@ -59,7 +59,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
           engineRef.current = engine;
           collectEngineRef?.(engine);
           setLoading(true);
+          console.log('[GameCanvas] Waiting for engine initialization...');
           await engine.init();
+          console.log('GameEngine и все ассеты загружены!');
           if (cancelled) return;
           setLoading(false);
           if (!isPaused) engine.start();
