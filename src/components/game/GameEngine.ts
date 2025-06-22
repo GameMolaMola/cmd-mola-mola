@@ -505,6 +505,7 @@ const config = getLevelConfig(this.player.level);
           frame: 0,
           frameTimer: 0,
           frameRate: 12,
+          _wavePhase: Math.random() * Math.PI * 2,
         });
       }
     }
