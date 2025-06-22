@@ -5,6 +5,7 @@ import { useTranslations } from '@/hooks/useTranslations';
 import type { PlayerData } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { isGodmodeUser } from '@/constants';
 
 const SPECIAL_LOGIN = '@Molamola_9@';
 
@@ -15,7 +16,7 @@ const PlayerRegistrationForm = () => {
   const [email, setEmail] = useState('');
   const [submitError, setSubmitError] = useState('');
 
-  const godmode = nickname.trim() === '@MolaMolaCoin';
+  const godmode = isGodmodeUser(nickname.trim());
   // Новый спец-режим (Molamola Mark)
   const isMark = nickname.trim() === SPECIAL_LOGIN;
 
@@ -58,8 +59,15 @@ const PlayerRegistrationForm = () => {
     const trimmedNickname = nickname.trim();
     const trimmedEmail = email.trim();
     const data: PlayerData = {
-      nickname: trimmedNickname,
-      email: godmode ? '-' : trimmedEmail,
+const trimmedNickname = nickname.trim();
+    const trimmedEmail = email.trim();
+    const data: PlayerData = {
+      nickname: trimmedNickname, // Используем уже обрезанный никнейм
+      email: godmode ? '-' : trimmedEmail, // Используем уже обрезанный email
+      language,
+      godmode,
+      ...(godmode ? { level: 10 } : {}),
+    } as PlayerData;
       language,
       godmode,
       ...(godmode ? { level: 10 } : {}),

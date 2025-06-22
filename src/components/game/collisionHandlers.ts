@@ -2,6 +2,7 @@
 import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
 import { takeDamage, Player } from './playerEffects'; // используем Player из playerEffects
 import { audioManager } from './audioManager';
+import { isGodmodeUser } from '@/constants';
 
 type Enemy = {
   x: number;
@@ -46,16 +47,16 @@ export function handleEnemyCollisions(
       collided = true;
       
       // Проверяем godmode двумя способами: через флаг godmode ИЛИ через username
-      const isGodmodeUser = player?.username === '@MolaMolaCoin' || isGodmodeActive(godmode) || player.godmode;
+      const godmodeUser = isGodmodeUser(player?.username, godmode || player.godmode);
       
       console.log('[collisionHandlers] Collision detected:', {
         username: player?.username,
         godmode: godmode,
         playerGodmode: player.godmode,
-        isGodmodeUser: isGodmodeUser
+        isGodmodeUser: godmodeUser
       });
       
-      if (isGodmodeUser) {
+      if (godmodeUser) {
         // Принудительно устанавливаем здоровье в 100 для godmode пользователей
         player.health = 100;
         console.log('[collisionHandlers] Godmode active - health set to 100');
@@ -109,16 +110,16 @@ export function handleSwordfishCollisions(
       collided = true;
       
       // Проверяем godmode двумя способами: через флаг godmode ИЛИ через username
-      const isGodmodeUser = player?.username === '@MolaMolaCoin' || isGodmodeActive(godmode) || player.godmode;
+      const godmodeUser = isGodmodeUser(player?.username, godmode || player.godmode);
       
       console.log('[collisionHandlers] Swordfish collision detected:', {
         username: player?.username,
         godmode: godmode,
         playerGodmode: player.godmode,
-        isGodmodeUser: isGodmodeUser
+        isGodmodeUser: godmodeUser
       });
       
-      if (isGodmodeUser) {
+      if (godmodeUser) {
         // Принудительно устанавливаем здоровье в 100 для godmode пользователей
         player.health = 100;
         console.log('[collisionHandlers] Godmode active - health set to 100');
