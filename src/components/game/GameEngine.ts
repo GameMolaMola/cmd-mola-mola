@@ -375,15 +375,14 @@ export class GameEngine {
   public setMobileControlState(control: string, state: boolean) {
     this.mobileControlState[control] = state;
 public setMobileControlState(control: string, state: boolean) {
-    this.mobileControlState[control] = state;
-    // Синхронизируем состояние "jump" и "up" для обратной совместимости и полноты
-    if (control === "jump") {
-      this.mobileControlState["up"] = state;
-    } else if (control === "up") { // Используем else if, чтобы избежать циклической зависимости, если вдруг "up" сам по себе вызовет "jump"
-      this.mobileControlState["jump"] = state;
-    }
-  }
-
+    this.mobileControlState[control] = state;
+    // Синхронизируем состояние "jump" и "up" для обратной совместимости и полноты
+    if (control === "jump") {
+        this.mobileControlState["up"] = state;
+    } else if (control === "up") {
+        this.mobileControlState["jump"] = state;
+    }
+}
 
   private generateStaticSandLayer() {
     const bottomPlatform = this.platforms.find(
