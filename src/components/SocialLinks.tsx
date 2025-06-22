@@ -60,7 +60,7 @@ export default function SocialLinks() {
         <Youtube className="w-5 h-5" />
       </a>
       <a
-        href="https://bit.ly/m/CommanderMolaMola"
+        href="https://bit.ly/m/CMDMolaMola"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Bitly"
