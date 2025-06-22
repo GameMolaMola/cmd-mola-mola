@@ -106,7 +106,7 @@ const PlayerRegistrationForm = () => {
       )}
       <Dialog open={showMarkModal} onOpenChange={(open) => setShowMarkModal(open)}>
         <DialogContent className="flex flex-col items-center gap-6 bg-black/90 border-cyan-400">
-          <img src="/lovable-uploads/64235a5a-8a4e-4fac-83fe-14e82ff1bba0.png" alt="Molamola Mark" className="w-40 h-40 object-contain mx-auto" />
+          <img src="/uploads/64235a5a-8a4e-4fac-83fe-14e82ff1bba0.png" alt="Molamola Mark" className="w-40 h-40 object-contain mx-auto" />
           <div className="text-2xl text-yellow-300 font-bold text-center animate-bounce mb-2">CIAO MARK!!!</div>
           <Button
             autoFocus

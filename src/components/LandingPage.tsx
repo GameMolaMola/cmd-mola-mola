@@ -76,7 +76,7 @@ const LandingPage = ({
           <GameTitle />
         </div>
         <img
-          src="/lovable-uploads/ee8156f0-ed84-469d-b314-13a6aa436d63.png"
+          src="/uploads/ee8156f0-ed84-469d-b314-13a6aa436d63.png"
           alt="Mola Mola"
           className="w-[160px] md:w-[210px] h-20 md:h-24 mb-1 mx-auto object-contain"
         />
