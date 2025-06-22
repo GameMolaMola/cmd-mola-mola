@@ -49,10 +49,11 @@ the `prelint` script defined in `package.json`.
 
 ## Running tests
 
-To run the test suite, make sure the project dependencies are installed:
+To run the test suite, first install the project dependencies with `npm install`
+or `pnpm install`:
 
 ```sh
-npm install
+npm install # or pnpm install
 npm test
 ```
 This will execute the Vitest suite.

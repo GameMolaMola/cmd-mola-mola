@@ -10,6 +10,7 @@
     "prelint": "npm install",
     "lint": "eslint .",
     "preview": "vite preview",
+    "pretest": "node -e 'const fs=require(\"fs\"); if (!fs.existsSync(\"node_modules\")) { console.error(\"Dependencies not installed. Run npm install or pnpm install before testing.\"); process.exit(1); }'",
     "test": "vitest"
   },
   "dependencies": {
