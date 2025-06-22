@@ -206,8 +206,8 @@ export class GameEngine {
       this.player.username = username;
     }
 
-    // jumpPower для markJump (по умолчанию -15, на будущее)
-    this.player.jumpPower = -15;
+    // Настраиваем jumpPower для спец-режима Mark
+    this.player.jumpPower = this.player.markJump ? -20 : -15;
 
     // ВАЖНО: Применяем godmode ПОСЛЕ установки всех параметров
     if (isGodmodeUser(this.player.username, this.player.godmode)) {
@@ -374,15 +374,13 @@ export class GameEngine {
 
   public setMobileControlState(control: string, state: boolean) {
     this.mobileControlState[control] = state;
-public setMobileControlState(control: string, state: boolean) {
-    this.mobileControlState[control] = state;
     // Синхронизируем состояние "jump" и "up" для обратной совместимости и полноты
     if (control === "jump") {
-        this.mobileControlState["up"] = state;
+      this.mobileControlState["up"] = state;
     } else if (control === "up") {
-        this.mobileControlState["jump"] = state;
+      this.mobileControlState["jump"] = state;
     }
-}
+  }
 
   private generateStaticSandLayer() {
     const bottomPlatform = this.platforms.find(
