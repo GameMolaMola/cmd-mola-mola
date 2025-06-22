@@ -180,7 +180,18 @@ export function renderScene(
     }
 
     if (isImageLoaded(image)) {
-      ctx.drawImage(image, sword.x, sword.y, sword.width, sword.height);
+      const frameWidth = image.width / 2;
+      ctx.drawImage(
+        image,
+        sword.frame * frameWidth,
+        0,
+        frameWidth,
+        image.height,
+        sword.x,
+        sword.y,
+        sword.width,
+        sword.height
+      );
     } else {
       // Логирование только в dev-режиме
       if (process.env.NODE_ENV !== 'production') {
