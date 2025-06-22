@@ -77,7 +77,7 @@ export function updateEnemies({ bossLucia, enemies, swordfish, player, canvas, c
     sword.y += Math.sin(sword._wavePhase) * 0.5;
 
     // Анимация
-    sword.frameTimer += 1;
+    sword.frameTimer = (sword.frameTimer ?? 0) + 1;
     if (sword.frameTimer >= sword.frameRate) {
       sword.frameTimer = 0;
       sword.frame = (sword.frame + 1) % 2;
