@@ -117,7 +117,11 @@ export function useMolaMolaGameCore({
   const lastGameEngine = useRef<any>(null);
   const handleRestart = () => {
     if (lastGameEngine.current) {
-      try { lastGameEngine.current.stop(); } catch {}
+      try {
+        lastGameEngine.current.stop();
+      } catch {
+        // ignore errors stopping the engine
+      }
       lastGameEngine.current = null;
     }
     resetGame();
@@ -147,14 +151,16 @@ export function useMolaMolaGameCore({
     // Добавляем проксирующую команду для "Огонь"
     if (control === "fire" && state === true) {
       // Всегда пробуем активировать аудио — даже если уже активировано, безопасно
-      import('./audioManager').then(mod => { mod.activateAudio?.(); });
+      import("./audioManager").then((mod) => { mod.activateAudio?.(); });
       if (typeof lastGameEngine.current.fire === "function") {
         lastGameEngine.current.fire();
       }
     }
-    // Для любого ввода, который должен запускать звук — jump/fire
-    if ((control === "jump" || control === "fire") && state === true) {
-      import('./audioManager').then(mod => { mod.activateAudio?.(); });
+    if (control === "jump" && state === true) {
+      import("./audioManager").then((mod) => { mod.activateAudio?.(); });
+      if (typeof lastGameEngine.current.jump === "function") {
+        lastGameEngine.current.jump();
+      }
     }
   };
 

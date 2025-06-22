@@ -1,5 +1,6 @@
 import { GameState } from './types';
-import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
+import { applyGodmodeIfNeeded } from './godmode';
+import { isGodmodeUser } from '@/constants';
 import { handleEnemyCollisions, handleSwordfishCollisions } from './collisionHandlers';
 import { useFreeBrasilena } from './useFreeBrasilena';
 
@@ -18,8 +19,6 @@ import { loadImages } from './imageLoader';
 
 import { spawnResourceForType, ResourceType } from './resourceSpawner';
 import { spawnDynamicPlatform, updateDynamicPlatforms } from './dynamicPlatforms';
-import { drawPixelCoral } from './drawPixelCoral';
-import { drawPixelSand } from './drawPixelSand';
 import { createStaticSandLayer } from './staticSandLayer';
 import { audioManager, activateAudio } from './audioManager';
 
@@ -120,7 +119,6 @@ export class GameEngine {
     brasilena: HTMLImageElement;
     wine: HTMLImageElement;
     coin: HTMLImageElement;
-    backgrounds: { img: HTMLImageElement; level: number }[];
     bossLucia: HTMLImageElement;
     swordfishRight: HTMLImageElement;
     swordfishLeft: HTMLImageElement;
@@ -212,7 +210,7 @@ export class GameEngine {
     this.player.jumpPower = -15;
 
     // ВАЖНО: Применяем godmode ПОСЛЕ установки всех параметров
-    if (this.player.godmode || this.player.username === '@MolaMolaCoin') {
+    if (isGodmodeUser(this.player.username, this.player.godmode)) {
       console.log("[GameEngine] GODMODE ACTIVATED for user:", this.player.username, "godmode flag:", this.player.godmode);
       this.player.health = 100;
       applyGodmodeIfNeeded(this.player, this.player.godmode);
@@ -227,7 +225,6 @@ export class GameEngine {
       brasilena: new Image(),
       wine: new Image(),
       coin: new Image(),
-      backgrounds: [],
       bossLucia: new Image(),
       swordfishRight: new Image(),
       swordfishLeft: new Image(),
@@ -377,25 +374,16 @@ export class GameEngine {
 
   public setMobileControlState(control: string, state: boolean) {
     this.mobileControlState[control] = state;
-  }
+public setMobileControlState(control: string, state: boolean) {
+    this.mobileControlState[control] = state;
+    // Синхронизируем состояние "jump" и "up" для обратной совместимости и полноты
+    if (control === "jump") {
+      this.mobileControlState["up"] = state;
+    } else if (control === "up") { // Используем else if, чтобы избежать циклической зависимости, если вдруг "up" сам по себе вызовет "jump"
+      this.mobileControlState["jump"] = state;
+    }
+  }
 
-  private setupEventListeners() {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      this.keys[e.code] = true;
-
-      if (e.code === 'Space') {
-        e.preventDefault();
-        this.shoot();
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      this.keys[e.code] = false;
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('keyup', handleKeyUp);
-  }
 
   private generateStaticSandLayer() {
     const bottomPlatform = this.platforms.find(
@@ -408,61 +396,7 @@ export class GameEngine {
     );
   }
 
-  private generatePlatforms() {
-    this.platforms = [
-      { x: 0, y: this.canvas.height - 40, width: this.canvas.width, height: 40, color: '#F87171' },
-      { x: 300, y: 350, width: 120, height: 20, color: '#7DD3FC' },
-      { x: 500, y: 280, width: 100, height: 20, color: '#6EE7B7' },
-      { x: 150, y: 220, width: 80, height: 20, color: '#FBBF24' },
-      { x: 650, y: 200, width: 100, height: 20, color: '#A78BFA' }
-    ];
 
-    setTimeout(() => this.generateStaticSandLayer(), 0);
-  }
-
-  private drawCoral(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string) {
-    ctx.save();
-    ctx.beginPath();
-    let waviness = 8 + Math.random() * 20;
-    ctx.moveTo(x, y + height);
-    for (let i = 0; i <= width; i += 6) {
-      ctx.lineTo(x + i, y + height - Math.sin(i / 17) * waviness);
-    }
-    ctx.lineTo(x + width, y + height);
-    ctx.lineTo(x + width, y);
-
-    ctx.lineTo(x, y);
-    ctx.closePath();
-    ctx.fillStyle = color;
-    ctx.shadowColor = "#fef08a";
-    ctx.shadowBlur = 18;
-    ctx.globalAlpha = 0.97;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    let branchCount = 2 + Math.floor(Math.random() * 4);
-    for (let b = 0; b < branchCount; b++) {
-      let bx = x + 16 + Math.random() * (width - 38);
-      let by = y + 8 + Math.random() * (height/2);
-      ctx.beginPath();
-      ctx.moveTo(bx, by + height/3);
-      let len = 38 + Math.random() * 40;
-      let dir = (Math.random() - 0.5) * 0.8;
-      ctx.bezierCurveTo(
-        bx + 12*dir, by - len/1.5,
-        bx + 24*dir, by - len*0.75,
-        bx + 30*dir, by - len
-      );
-      ctx.lineWidth = 5 + Math.random() * 8;
-      ctx.strokeStyle = color;
-      ctx.shadowBlur = 9;
-      ctx.shadowColor = "#f9fafb";
-      ctx.globalAlpha = 0.95;
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-    }
-    ctx.restore();
-  }
 
   private spawnResource = (type: ResourceType) => {
     spawnResourceForType({
@@ -496,8 +430,13 @@ export class GameEngine {
     this.brasilenas = [];
     this.wines = [];
 
-    const config = getLevelConfig(this.player.level);
+// Сброс таймеров появления ресурсов и платформ при старте уровня
+const now = Date.now();
+this.lastResourceSpawnTime = now;
+this.lastPlatformSpawnTime = now;
+this.lastUpdateTimestamp = now;
 
+const config = getLevelConfig(this.player.level);
     // --- Запускаем музыку для этого уровня ---
     if (this.audioActivated && this.soundEnabled && !audioManager.isMutedState()) {
       console.log(`[GameEngine] Starting music for level ${this.player.level}`);
@@ -630,6 +569,17 @@ export class GameEngine {
     this.shoot();
   }
 
+  // Позволяет мгновенно прыгать по мобильному нажатию
+  public jump() {
+    if (this.player.grounded) {
+      this.player.velY = this.player.jumpPower;
+      this.player.grounded = false;
+      if (this.soundEnabled && this.audioActivated) {
+        audioManager.playJumpSound();
+      }
+    }
+  }
+
   private shoot() {
     const currentTime = Date.now();
     if (this.player.ammo <= 0 || currentTime - this.lastShotTime < this.SHOT_COOLDOWN) {
@@ -677,7 +627,7 @@ export class GameEngine {
   private updateGameState() {
     // --- score удаляем полностью
     // Применяем godmode если активен
-    if (isGodmodeActive(this.player.godmode) || this.player.username === '@MolaMolaCoin') {
+    if (isGodmodeUser(this.player.username, this.player.godmode)) {
       this.player.health = 100;
     }
     this.callbacks.onStateUpdate({

@@ -1,10 +1,9 @@
 
 import React from "react";
 import SocialLinks from "./SocialLinks";
+import type { Translations } from "@/hooks/useTranslations";
 
-const DONATE_URL = "https://buymeacoffee.com/com.molamola";
-
-export default function AddressSection({ t }: { t: any }) {
+export default function AddressSection({ t }: { t: Translations }) {
   return (
     <div className="bg-blue-800/70 border border-yellow-400 p-4 rounded-lg w-full mb-4">
       <h2 className="text-yellow-300 font-semibold mb-1">{t.addressTitle}</h2>
@@ -20,7 +19,7 @@ export default function AddressSection({ t }: { t: any }) {
       {/* DONATE BUTTON */}
       <div className="flex justify-center mt-6">
         <a
-          href={DONATE_URL}
+          href="#"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-5 py-2 rounded-full font-semibold text-white shadow-md text-base bg-pink-600 hover:bg-pink-700 border border-yellow-300 transition animate-[pulse_2.2s_cubic-bezier(0.4,0,0.6,1)_infinite] select-none"

@@ -8,6 +8,12 @@ describe('level configuration lookup', () => {
     expect(cfg.coinCount).toBe(7);
   });
 
+it('returns level1 config for unknown or negative levels', () => {
+  const cfg0 = getLevelConfig(0);
+  const cfgNeg = getLevelConfig(-3);
+  expect(cfg0.enemyCount).toBe(4);
+  expect(cfgNeg.coinCount).toBe(7);
+});
   it('falls back to boss config for level >=10', () => {
     const cfg = getLevelConfig(10);
     expect(cfg.boss).toBe(true);

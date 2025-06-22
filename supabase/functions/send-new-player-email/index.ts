@@ -37,9 +37,10 @@ serve(async (req: Request) => {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (err: any) {
-    console.error("Ошибка отправки email о новом игроке:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
+  } catch (err) {
+    const error = err as Error;
+    console.error("Ошибка отправки email о новом игроке:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
