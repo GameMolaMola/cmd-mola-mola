@@ -1,4 +1,3 @@
-
 export function updateEnemies({ bossLucia, enemies, swordfish, player, canvas, callbacks, checkCollision, godmode }: any) {
   // Если есть босс - управляем только им
   if (bossLucia) {
@@ -70,11 +69,6 @@ export function updateEnemies({ bossLucia, enemies, swordfish, player, canvas, c
       sword.x = canvas.width - sword.width;
       sword.direction = -1;
     }
-
-    // Небольшие вертикальные колебания для реалистичности
-    if (!sword._wavePhase) sword._wavePhase = Math.random() * Math.PI * 2;
-    sword._wavePhase += 0.05;
-    sword.y += Math.sin(sword._wavePhase) * 0.5;
 
     // Анимация
     sword.frameTimer = (sword.frameTimer ?? 0) + 1;
