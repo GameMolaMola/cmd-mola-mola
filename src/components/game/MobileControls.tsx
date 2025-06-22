@@ -13,7 +13,7 @@ export default function MobileControls({ onControl }: MobileControlsProps) {
       {/* Левая панель */}
       <div className="flex gap-2">
         <button
-          className="rounded-full bg-black/80 text-white w-14 h-14 text-3xl flex items-center justify-center border-2 border-cyan-400 active:bg-cyan-800 transition duration-75"
+          className="rounded-full bg-black/80 text-white w-20 h-20 text-5xl md:w-14 md:h-14 md:text-3xl flex items-center justify-center border-2 border-cyan-400 active:bg-cyan-800 transition duration-75"
           style={{ touchAction: "none", marginLeft: 4, pointerEvents: "auto" }}
           tabIndex={-1}
           onPointerDown={e => { e.preventDefault(); onControl("left", true); }}
@@ -27,7 +27,7 @@ export default function MobileControls({ onControl }: MobileControlsProps) {
         </button>
 
         <button
-          className="rounded-full bg-black/80 text-white w-14 h-14 text-3xl flex items-center justify-center border-2 border-yellow-400 active:bg-yellow-800 transition duration-75"
+          className="rounded-full bg-black/80 text-white w-20 h-20 text-5xl md:w-14 md:h-14 md:text-3xl flex items-center justify-center border-2 border-yellow-400 active:bg-yellow-800 transition duration-75"
           style={{ touchAction: "none", pointerEvents: "auto" }}
           tabIndex={-1}
           onPointerDown={e => { e.preventDefault(); onControl("right", true); }}
@@ -44,7 +44,7 @@ export default function MobileControls({ onControl }: MobileControlsProps) {
       {/* Правая панель */}
       <div className="flex gap-2">
         <button
-          className="rounded-full bg-black/80 text-yellow-200 w-14 h-14 text-3xl flex items-center justify-center border-2 border-yellow-400 active:bg-cyan-800 transition duration-75"
+          className="rounded-full bg-black/80 text-yellow-200 w-20 h-20 text-5xl md:w-14 md:h-14 md:text-3xl flex items-center justify-center border-2 border-yellow-400 active:bg-cyan-800 transition duration-75"
           style={{ touchAction: "none", pointerEvents: "auto" }}
           tabIndex={-1}
           onPointerDown={e => { e.preventDefault(); onControl("jump", true); }}
@@ -58,7 +58,7 @@ export default function MobileControls({ onControl }: MobileControlsProps) {
         </button>
 
         <button
-          className="rounded-full bg-black/80 text-red-400 w-14 h-14 text-3xl flex items-center justify-center border-2 border-red-400 active:bg-yellow-800 transition duration-75"
+          className="rounded-full bg-black/80 text-red-400 w-20 h-20 text-5xl md:w-14 md:h-14 md:text-3xl flex items-center justify-center border-2 border-red-400 active:bg-yellow-800 transition duration-75"
           style={{ touchAction: "none", marginRight: 4, pointerEvents: "auto" }}
           tabIndex={-1}
           onPointerDown={e => { e.preventDefault(); onControl("fire", true); }}
