@@ -2,8 +2,10 @@
 import React, { useState } from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { useTranslations } from '@/hooks/useTranslations';
+import type { PlayerData } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { isGodmodeUser } from '@/constants';
 
 const SPECIAL_LOGIN = '@Molamola_9@';
 
@@ -14,7 +16,7 @@ const PlayerRegistrationForm = () => {
   const [email, setEmail] = useState('');
   const [submitError, setSubmitError] = useState('');
 
-  const godmode = nickname.trim() === '@MolaMolaCoin';
+  const godmode = isGodmodeUser(nickname.trim());
   // Новый спец-режим (Molamola Mark)
   const isMark = nickname.trim() === SPECIAL_LOGIN;
 
@@ -26,13 +28,14 @@ const PlayerRegistrationForm = () => {
     if (showMarkModal) {
       const timer = setTimeout(() => {
         setShowMarkModal(false);
-        setPlayerData({
+        const data: PlayerData = {
           nickname: SPECIAL_LOGIN,
           email: '-',
           language,
           // Передаем индивидуальный спец-флаг
           markJump: true,
-        } as any);
+        };
+        setPlayerData(data);
         setSubmitError('');
       }, 3000); // было 1700, стало 3000 мс (~3 секунды)
       return () => clearTimeout(timer);
@@ -53,13 +56,23 @@ const PlayerRegistrationForm = () => {
       setSubmitError(t.emailRequired || 'Email required');
       return;
     }
-    setPlayerData({
-      nickname,
-      email: godmode ? '-' : email,
+    const trimmedNickname = nickname.trim();
+    const trimmedEmail = email.trim();
+    const data: PlayerData = {
+const trimmedNickname = nickname.trim();
+    const trimmedEmail = email.trim();
+    const data: PlayerData = {
+      nickname: trimmedNickname, // Используем уже обрезанный никнейм
+      email: godmode ? '-' : trimmedEmail, // Используем уже обрезанный email
+      language,
+      godmode,
+      ...(godmode ? { level: 10 } : {}),
+    } as PlayerData;
       language,
       godmode,
-      ...(godmode ? { level: 10 } : {}), // вот тут: при godmode стартуем с 10 уровня
-    } as any);
+      ...(godmode ? { level: 10 } : {}),
+    } as PlayerData;
+    setPlayerData(data);
     setSubmitError('');
   };
 
@@ -104,12 +117,13 @@ const PlayerRegistrationForm = () => {
             autoFocus
             onClick={() => {
               setShowMarkModal(false);
-              setPlayerData({
+              const markData: PlayerData = {
                 nickname: SPECIAL_LOGIN,
                 email: '-',
                 language,
                 markJump: true,
-              } as any);
+              };
+              setPlayerData(markData);
               setSubmitError('');
             }}
             className="bg-cyan-500 hover:bg-cyan-600 mt-2"
