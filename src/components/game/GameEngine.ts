@@ -1,5 +1,6 @@
 import { GameState } from './types';
-import { isGodmodeActive, applyGodmodeIfNeeded } from './godmode';
+import { applyGodmodeIfNeeded } from './godmode';
+import { isGodmodeUser } from '@/constants';
 import { handleEnemyCollisions, handleSwordfishCollisions } from './collisionHandlers';
 import { useFreeBrasilena } from './useFreeBrasilena';
 
@@ -18,8 +19,6 @@ import { loadImages } from './imageLoader';
 
 import { spawnResourceForType, ResourceType } from './resourceSpawner';
 import { spawnDynamicPlatform, updateDynamicPlatforms } from './dynamicPlatforms';
-import { drawPixelCoral } from './drawPixelCoral';
-import { drawPixelSand } from './drawPixelSand';
 import { createStaticSandLayer } from './staticSandLayer';
 import { audioManager, activateAudio } from './audioManager';
 
@@ -32,6 +31,7 @@ declare global {
 
 import { ParticleSystem } from './particleSystem';
 import { ScreenShake } from './screenShake';
+import { getLevelConfig } from './levels';
 
 export class GameEngine {
   private canvas: HTMLCanvasElement;
@@ -40,6 +40,7 @@ export class GameEngine {
   private keys: { [key: string]: boolean } = {};
   private lastShotTime = 0;
   private readonly SHOT_COOLDOWN = 200;
+  private loadPromise: Promise<void>;
 
   private player = {
     x: 100,
@@ -118,7 +119,6 @@ export class GameEngine {
     brasilena: HTMLImageElement;
     wine: HTMLImageElement;
     coin: HTMLImageElement;
-    backgrounds: { img: HTMLImageElement; level: number }[];
     bossLucia: HTMLImageElement;
     swordfishRight: HTMLImageElement;
     swordfishLeft: HTMLImageElement;
@@ -160,6 +160,8 @@ export class GameEngine {
 
   private bossCoinTimer: number | null = null;
   private bossCoinsEndTime: number | null = null;
+  private bossCoinTimerRemaining: number | null = null;
+  private pauseTimestamp: number | null = null;
   private bossRewardActive: boolean = false;
 
   private soundEnabled: boolean = true;
@@ -208,7 +210,7 @@ export class GameEngine {
     this.player.jumpPower = -15;
 
     // ВАЖНО: Применяем godmode ПОСЛЕ установки всех параметров
-    if (this.player.godmode || this.player.username === '@MolaMolaCoin') {
+    if (isGodmodeUser(this.player.username, this.player.godmode)) {
       console.log("[GameEngine] GODMODE ACTIVATED for user:", this.player.username, "godmode flag:", this.player.godmode);
       this.player.health = 100;
       applyGodmodeIfNeeded(this.player, this.player.godmode);
@@ -223,13 +225,12 @@ export class GameEngine {
       brasilena: new Image(),
       wine: new Image(),
       coin: new Image(),
-      backgrounds: [],
       bossLucia: new Image(),
       swordfishRight: new Image(),
       swordfishLeft: new Image(),
     };
 
-    loadImages(this.images);
+    this.loadPromise = loadImages(this.images);
     setupKeyboardHandlers(this.keys, this.shoot.bind(this));
     this.generateLevel();
     this.platforms = createDefaultPlatforms(this.canvas.width, this.canvas.height);
@@ -299,6 +300,10 @@ export class GameEngine {
     if (typeof window !== "undefined") {
       window.gameEngineInstance = this;
     }
+  }
+
+  public async init() {
+    await this.loadPromise;
   }
 
   private async initializeAudio() {
@@ -371,23 +376,6 @@ export class GameEngine {
     this.mobileControlState[control] = state;
   }
 
-  private setupEventListeners() {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      this.keys[e.code] = true;
-
-      if (e.code === 'Space') {
-        e.preventDefault();
-        this.shoot();
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      this.keys[e.code] = false;
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('keyup', handleKeyUp);
-  }
 
   private generateStaticSandLayer() {
     const bottomPlatform = this.platforms.find(
@@ -400,61 +388,7 @@ export class GameEngine {
     );
   }
 
-  private generatePlatforms() {
-    this.platforms = [
-      { x: 0, y: this.canvas.height - 40, width: this.canvas.width, height: 40, color: '#F87171' },
-      { x: 300, y: 350, width: 120, height: 20, color: '#7DD3FC' },
-      { x: 500, y: 280, width: 100, height: 20, color: '#6EE7B7' },
-      { x: 150, y: 220, width: 80, height: 20, color: '#FBBF24' },
-      { x: 650, y: 200, width: 100, height: 20, color: '#A78BFA' }
-    ];
 
-    setTimeout(() => this.generateStaticSandLayer(), 0);
-  }
-
-  private drawCoral(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, color: string) {
-    ctx.save();
-    ctx.beginPath();
-    let waviness = 8 + Math.random() * 20;
-    ctx.moveTo(x, y + height);
-    for (let i = 0; i <= width; i += 6) {
-      ctx.lineTo(x + i, y + height - Math.sin(i / 17) * waviness);
-    }
-    ctx.lineTo(x + width, y + height);
-    ctx.lineTo(x + width, y);
-
-    ctx.lineTo(x, y);
-    ctx.closePath();
-    ctx.fillStyle = color;
-    ctx.shadowColor = "#fef08a";
-    ctx.shadowBlur = 18;
-    ctx.globalAlpha = 0.97;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    let branchCount = 2 + Math.floor(Math.random() * 4);
-    for (let b = 0; b < branchCount; b++) {
-      let bx = x + 16 + Math.random() * (width - 38);
-      let by = y + 8 + Math.random() * (height/2);
-      ctx.beginPath();
-      ctx.moveTo(bx, by + height/3);
-      let len = 38 + Math.random() * 40;
-      let dir = (Math.random() - 0.5) * 0.8;
-      ctx.bezierCurveTo(
-        bx + 12*dir, by - len/1.5,
-        bx + 24*dir, by - len*0.75,
-        bx + 30*dir, by - len
-      );
-      ctx.lineWidth = 5 + Math.random() * 8;
-      ctx.strokeStyle = color;
-      ctx.shadowBlur = 9;
-      ctx.shadowColor = "#f9fafb";
-      ctx.globalAlpha = 0.95;
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-    }
-    ctx.restore();
-  }
 
   private spawnResource = (type: ResourceType) => {
     spawnResourceForType({
@@ -482,25 +416,26 @@ export class GameEngine {
     }
 
     this.enemies = [];
-    this.swordfish = []; // Очищаем массив Swordfish
+    this.swordfish = [];
     this.coins = [];
     this.pizzas = [];
     this.brasilenas = [];
     this.wines = [];
 
-    // Сброс таймеров появления ресурсов и платформ при старте уровня
-    this.lastResourceSpawnTime = Date.now();
-    this.lastPlatformSpawnTime = Date.now();
-    this.lastUpdateTimestamp = Date.now();
+// Сброс таймеров появления ресурсов и платформ при старте уровня
+    const now = Date.now();
+    this.lastResourceSpawnTime = now;
+    this.lastPlatformSpawnTime = now;
+    this.lastUpdateTimestamp = now;
 
+    const config = getLevelConfig(this.player.level);
     // --- Запускаем музыку для этого уровня ---
     if (this.audioActivated && this.soundEnabled && !audioManager.isMutedState()) {
       console.log(`[GameEngine] Starting music for level ${this.player.level}`);
       audioManager.playLevelMusic(this.player.level ?? 1);
     }
 
-    // Исправлено: теперь босс появляется при уровне >= 10 (раньше было > 10)
-    if (this.player.level >= 10) {
+    if (config.boss) {
       this.bossLucia = {
         x: 300,
         y: 150,
@@ -510,31 +445,29 @@ export class GameEngine {
         image: this.images?.bossLucia ?? new Image(),
         direction: 1,
       };
-      // Пиццы, вино, коин можно добавлять по желанию
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < config.pizzaCount; i++) {
         this.pizzas.push({
           x: 250 + Math.random() * 350,
           y: 110 + Math.random() * 200,
           width: 36,
-          height: 36
+          height: 36,
         });
       }
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < config.wineCount; i++) {
         this.wines.push({
           x: 260 + Math.random() * 320,
           y: 130 + Math.random() * 140,
           width: 32,
-          height: 32
+          height: 32,
         });
       }
       return;
-    } else {
-      this.bossLucia = null;
     }
 
-    // Обычные уровни
-    const enemyCount = 3 + this.player.level;
-    const coinCount = 5 + this.player.level * 2;
+    this.bossLucia = null;
+
+    const enemyCount = config.enemyCount;
+    const coinCount = config.coinCount;
 
     // canvas.height и sandHeight гарантированы, т.к. инициализированы к этому моменту
     const sandHeight = 40;
@@ -553,10 +486,8 @@ export class GameEngine {
       });
     }
 
-    // Спавн Swordfish начиная с уровня 2
-    if (this.player.level >= 2) {
-      const swordfishCount = 1 + Math.floor(this.player.level / 3); // больше Swordfish на высоких уровнях
-      for (let i = 0; i < swordfishCount; i++) {
+    if (config.swordfishCount && config.swordfishCount > 0) {
+      for (let i = 0; i < config.swordfishCount; i++) {
         this.swordfish.push({
           x: Math.random() * (this.canvas.width - 64),
           y: this.canvas.height * 0.4 + Math.random() * (this.canvas.height * 0.2), // середина экрана
@@ -576,7 +507,7 @@ export class GameEngine {
       });
     }
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < config.pizzaCount; i++) {
       this.pizzas.push({
         x: 200 + Math.random() * 400,
         y: 100 + Math.random() * 200,
@@ -588,14 +519,16 @@ export class GameEngine {
     // Бонус "Бразильена" и "Вино" шириной 21px и высотой 64px
     const slimBonusWidth = 21;
     const tallBonusHeight = 64;
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < config.brasilenaCount; i++) {
       this.brasilenas.push({
         x: 200 + Math.random() * 400,
         y: 100 + Math.random() * 200,
         width: slimBonusWidth,
         height: tallBonusHeight
       });
+    }
 
+    for (let i = 0; i < config.wineCount; i++) {
       this.wines.push({
         x: 200 + Math.random() * 400,
         y: 100 + Math.random() * 200,
@@ -675,7 +608,7 @@ export class GameEngine {
   private updateGameState() {
     // --- score удаляем полностью
     // Применяем godmode если активен
-    if (isGodmodeActive(this.player.godmode) || this.player.username === '@MolaMolaCoin') {
+    if (isGodmodeUser(this.player.username, this.player.godmode)) {
       this.player.health = 100;
     }
     this.callbacks.onStateUpdate({
@@ -773,6 +706,38 @@ export class GameEngine {
 
   public start() {
     console.log('Starting game engine...');
+    const now = Date.now();
+
+    if (this.pauseTimestamp !== null) {
+      // Resuming from pause: shift all internal timers forward so they
+      // continue as if the game never stopped
+      const pausedDuration = now - this.pauseTimestamp;
+      this.lastResourceSpawnTime += pausedDuration;
+      this.lastPlatformSpawnTime += pausedDuration;
+      this.lastShotTime += pausedDuration;
+      this.dynamicPlatforms.forEach(p => {
+        p.created += pausedDuration;
+      });
+      this.enemies.forEach(e => {
+        if ((e as any)._chaosTimer) (e as any)._chaosTimer += pausedDuration;
+      });
+
+      if (this.bossCoinTimerRemaining !== null) {
+        if (this.bossCoinTimerRemaining > 0) {
+          this.bossCoinTimer = window.setTimeout(this.endBossCoinsReward, this.bossCoinTimerRemaining);
+          this.bossCoinsEndTime = now + this.bossCoinTimerRemaining;
+        } else {
+          this.endBossCoinsReward();
+        }
+        this.bossCoinTimerRemaining = null;
+      } else if (this.bossCoinsEndTime !== null) {
+        this.bossCoinsEndTime += pausedDuration;
+      }
+      this.pauseTimestamp = null;
+    }
+
+    // Reset timestamp to avoid huge delta after pause
+    this.lastUpdateTimestamp = now;
     this.gameLoop();
   }
 
@@ -783,6 +748,16 @@ export class GameEngine {
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
+    }
+
+    this.pauseTimestamp = Date.now();
+
+    if (this.bossCoinTimer) {
+      clearTimeout(this.bossCoinTimer);
+      this.bossCoinTimerRemaining = this.bossCoinsEndTime
+        ? Math.max(0, this.bossCoinsEndTime - this.pauseTimestamp)
+        : null;
+      this.bossCoinTimer = null;
     }
   }
 
@@ -822,18 +797,19 @@ export class GameEngine {
     if (this.bossCoinTimer) {
       clearTimeout(this.bossCoinTimer);
     }
-    this.bossCoinTimer = window.setTimeout(() => {
-      // По завершении времени — удалить только босс-монеты
-      this.coins = this.coins.filter(coin => !coin._bossCoin);
-      this.bossRewardActive = false;
-      this.bossCoinsEndTime = null;
-      this.bossCoinTimer = null;
-      this.updateGameState();
-    }, 10000);
+    this.bossCoinTimer = window.setTimeout(this.endBossCoinsReward, 10000);
 
     // Сразу обновим UI (монет становится много)
     this.updateGameState();
   }
+
+  private endBossCoinsReward = () => {
+    this.coins = this.coins.filter(coin => !coin._bossCoin);
+    this.bossRewardActive = false;
+    this.bossCoinsEndTime = null;
+    this.bossCoinTimer = null;
+    this.updateGameState();
+  };
 
   // Новый метод: постепенное выпадение части босс-монет при каждом попадании
   public spawnBossCoinsOnHit(count: number, boss: any) {

@@ -1,6 +1,10 @@
 import { drawPixelCoral } from './drawPixelCoral';
 import { drawPixelSand } from './drawPixelSand';
 
+function isImageLoaded(img?: HTMLImageElement): img is HTMLImageElement {
+  return !!img && img.complete && img.naturalWidth > 0;
+}
+
 export function renderScene(
   ctx: CanvasRenderingContext2D,
   engine: any // GameEngine instance
@@ -25,6 +29,9 @@ export function renderScene(
   gradient.addColorStop(1, "#8bf0ff");
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Draw scrolling parallax background on top of the gradient
+  engine.background?.draw(ctx);
 
   // --- Пузыри ---
   engine.updateBubbles?.();
@@ -73,16 +80,16 @@ export function renderScene(
   });
 
   // --- Игрок ---
-  let playerImage;
-  if (player.velX < 0 && images.playerLeft?.complete) {
+  let playerImage: HTMLImageElement | undefined;
+  if (player.velX < 0 && isImageLoaded(images.playerLeft)) {
     playerImage = images.playerLeft;
-  } else if (images.playerFrames?.[player.frame]?.complete) {
+  } else if (isImageLoaded(images.playerFrames?.[player.frame])) {
     playerImage = images.playerFrames[player.frame];
-  } else {
-    playerImage = images.playerFrames?.[0];
+  } else if (isImageLoaded(images.playerFrames?.[0])) {
+    playerImage = images.playerFrames[0];
   }
 
-  if (playerImage) {
+  if (playerImage && isImageLoaded(playerImage)) {
     ctx.drawImage(playerImage, player.x, player.y, player.width, player.height);
   } else {
     ctx.fillStyle = '#3498db';
@@ -97,7 +104,7 @@ export function renderScene(
     const newHeight = coin.height * scale;
     const offsetX = coin.x - (newWidth - coin.width) / 2;
     const offsetY = coin.y - (newHeight - coin.height) / 2;
-    if (image?.complete) {
+    if (isImageLoaded(image)) {
       ctx.drawImage(image, offsetX, offsetY, newWidth, newHeight);
     } else {
       ctx.fillStyle = '#f1c40f';
@@ -108,7 +115,7 @@ export function renderScene(
   // --- Пиццы ---
   pizzas.forEach((pizza: any) => {
     const image = images.pizza;
-    if (image?.complete) {
+    if (isImageLoaded(image)) {
       ctx.drawImage(image, pizza.x, pizza.y, pizza.width, pizza.height);
     } else {
       ctx.fillStyle = '#e74c3c';
@@ -121,7 +128,7 @@ export function renderScene(
     const image = idx === 0 ? images.brasilena : images.wine;
     const fallback = idx === 0 ? '#8e44ad' : '#c0392b';
     group.forEach((obj: any) => {
-      if (image?.complete) {
+      if (isImageLoaded(image)) {
         ctx.drawImage(image, 0, 0, image.width, image.height, obj.x, obj.y, obj.width, obj.height);
       } else {
         ctx.fillStyle = fallback;
@@ -164,17 +171,21 @@ export function renderScene(
 
   // --- Swordfish враги ---
   swordfish.forEach((sword: any) => {
-    let image;
-    if (sword.direction < 0 && images.swordfishLeft?.complete) {
+    let image: HTMLImageElement | undefined;
+    if (sword.direction < 0 && isImageLoaded(images.swordfishLeft)) {
       image = images.swordfishLeft;
-    } else if (images.swordfishRight?.complete) {
+    } else if (isImageLoaded(images.swordfishRight)) {
       image = images.swordfishRight;
     }
-    
-    if (image) {
+
+    if (isImageLoaded(image)) {
       ctx.drawImage(image, sword.x, sword.y, sword.width, sword.height);
     } else {
-      // Запасной вариант отрисовки
+      console.warn(
+        'Rendering red box for Swordfish. Image not loaded:',
+        image?.src || image,
+        image
+      );
       ctx.fillStyle = '#ff4444';
       ctx.fillRect(sword.x, sword.y, sword.width, sword.height);
     }
@@ -183,7 +194,7 @@ export function renderScene(
   // --- Босс и обычные враги ---
   if (bossLucia) {
     const image = images.bossLucia;
-    if (image?.complete) {
+    if (isImageLoaded(image)) {
       ctx.drawImage(image, bossLucia.x, bossLucia.y, bossLucia.width, bossLucia.height);
     } else {
       ctx.fillStyle = "#AA2424";
@@ -205,13 +216,13 @@ export function renderScene(
   // Обычные враги
   if (!bossLucia) {
     enemies.forEach((enemy: any) => {
-      let image;
-      if (enemy.x > player.x && images.enemyLeft?.complete) {
+      let image: HTMLImageElement | undefined;
+      if (enemy.x > player.x && isImageLoaded(images.enemyLeft)) {
         image = images.enemyLeft;
-      } else if (images.enemy?.complete) {
+      } else if (isImageLoaded(images.enemy)) {
         image = images.enemy;
       }
-      if (image) {
+      if (isImageLoaded(image)) {
         ctx.drawImage(image, enemy.x, enemy.y, enemy.width, enemy.height);
       } else {
         ctx.fillStyle = '#e74c3c';

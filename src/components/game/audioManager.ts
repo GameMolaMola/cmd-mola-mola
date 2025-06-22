@@ -1,20 +1,27 @@
 
-// Менеджер звуков для ретро-игры с интеграцией генератора фоновой музыки уровней (чиптюн)
+// Менеджер звуков для ретро-игры с поддержкой OGG файлов для фоновой музыки
 class AudioManager {
   private audioContext: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private isEnabled: boolean = true;
   private isMuted: boolean = false;
-  private ambientLoopId: number | null = null;
 
-  // --- music ---
+  // --- HTML5 Audio для музыки ---
+  private musicAudios: Map<number, HTMLAudioElement> = new Map();
+  private currentMusicAudio: HTMLAudioElement | null = null;
   private musicCurrentLevel: number | null = null;
+  private musicPreloadPromises: Map<number, Promise<void>> = new Map();
+  private musicLoadAttempted: Set<number> = new Set();
+
+  // --- Fallback: генеративная музыка ---
   private musicTimeouts: number[] = [];
-  private musicLoopDuration: number = 8; // seconds for the loop
+  private musicLoopDuration: number = 8;
   private musicStartedAt: number | null = null;
+  private usingGenerativeMusic: boolean = false;
 
   constructor() {
     this.initAudioContext();
+    this.preloadMusicFiles();
   }
 
   private initAudioContext() {
@@ -22,7 +29,7 @@ class AudioManager {
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       this.masterGain = this.audioContext.createGain();
       this.masterGain.connect(this.audioContext.destination);
-      this.masterGain.gain.value = 0.3; // Начальная громкость
+      this.masterGain.gain.value = 0.3;
       console.log('[AudioManager] AudioContext initialized successfully');
     } catch (error) {
       console.warn('Web Audio API не поддерживается:', error);
@@ -49,7 +56,7 @@ class AudioManager {
     return true;
   }
 
-  // Активация звука по клику пользователя (улучшено для мобильных)
+  // Активация звука по клику пользователя
   async activateAudio() {
     console.log('[AudioManager] Attempting to activate audio...');
     
@@ -62,39 +69,126 @@ class AudioManager {
       try {
         await this.audioContext.resume();
         console.log('[AudioManager] Audio activated by user interaction, state:', this.audioContext.state);
-        
-        // Дополнительная проверка после активации
-        console.log('[AudioManager] AudioContext state after resume:', this.audioContext.state);
       } catch (error) {
         console.error('[AudioManager] Failed to resume audio context:', error);
       }
-    } else {
-      console.log('[AudioManager] AudioContext already active, state:', this.audioContext.state);
+    }
+
+    // Активируем HTML5 Audio для музыки на мобильных
+    if (this.currentMusicAudio && this.currentMusicAudio.paused) {
+      try {
+        await this.currentMusicAudio.play();
+        console.log('[AudioManager] Music audio activated on mobile');
+      } catch (error) {
+        console.log('[AudioManager] Music audio activation failed:', error);
+      }
     }
   }
 
-  // --- MUSIC SYSTEM START (improved mobile support) ---
-  // Основная функция для генерации зацикленной музыки для конкретного уровня
+  // --- МУЗЫКАЛЬНАЯ СИСТЕМА ---
+  private preloadMusicFiles() {
+    // Предзагружаем файлы музыки для всех уровней (1-10)
+    for (let level = 1; level <= 10; level++) {
+      this.preloadMusicFile(level);
+    }
+  }
+
+  private preloadMusicFile(level: number): Promise<void> {
+    if (this.musicPreloadPromises.has(level)) {
+      return this.musicPreloadPromises.get(level)!;
+    }
+
+    const promise = new Promise<void>((resolve) => {
+      const audio = new Audio();
+      // Use BASE_URL so paths work both in dev and in production subfolders
+      const musicPath = `${import.meta.env.BASE_URL}audio/music/${level}.ogg`;
+      
+      audio.preload = 'auto';
+      audio.loop = true;
+      audio.volume = 0.3;
+
+      const onLoad = () => {
+        console.log(`[AudioManager] Music file loaded: ${musicPath}`);
+        this.musicAudios.set(level, audio);
+        cleanup();
+        resolve();
+      };
+
+      const onError = () => {
+        console.warn(`[AudioManager] Failed to load music file: ${musicPath}, will use generative music`);
+        cleanup();
+        resolve();
+      };
+
+      const cleanup = () => {
+        audio.removeEventListener('canplaythrough', onLoad);
+        audio.removeEventListener('error', onError);
+      };
+
+      audio.addEventListener('canplaythrough', onLoad);
+      audio.addEventListener('error', onError);
+      audio.src = musicPath;
+      // Ensure the file actually begins loading
+      audio.load();
+    });
+
+    this.musicPreloadPromises.set(level, promise);
+    return promise;
+  }
+
   public async playLevelMusic(level: number) {
-    console.log(`[AudioManager] Attempting to play level ${level} music, muted: ${this.isMuted}, context state: ${this.audioContext?.state}`);
+    console.log(`[AudioManager] Attempting to play level ${level} music, muted: ${this.isMuted}`);
     
-    if (!await this.ensureAudioContext() || this.isMuted) {
-      console.log('[AudioManager] AudioContext not available, muted, or not running');
+    if (this.isMuted) {
+      console.log('[AudioManager] Music is muted, skipping playback');
       return;
     }
-    
-    this.stopLevelMusic(); // отменить текущее
+
+    this.stopLevelMusic();
     this.musicCurrentLevel = level;
 
+    // Пытаемся воспроизвести OGG файл
+    await this.preloadMusicFile(level);
+    const audio = this.musicAudios.get(level);
+
+    if (audio) {
+      try {
+        console.log(`[AudioManager] Playing OGG music for level ${level}`);
+        this.currentMusicAudio = audio;
+        this.usingGenerativeMusic = false;
+        
+        // Сбрасываем на начало и запускаем
+        audio.currentTime = 0;
+        await audio.play();
+        
+        console.log(`[AudioManager] Successfully started OGG music for level ${level}`);
+        return;
+      } catch (error) {
+        console.warn(`[AudioManager] Failed to play OGG music for level ${level}:`, error);
+      }
+    }
+
+    // Fallback: используем генеративную музыку
+    console.log(`[AudioManager] Using generative music for level ${level}`);
+    this.usingGenerativeMusic = true;
+    await this.playGenerativeMusic(level);
+  }
+
+  private async playGenerativeMusic(level: number) {
+    if (!await this.ensureAudioContext()) {
+      console.log('[AudioManager] AudioContext not available for generative music');
+      return;
+    }
+
     const ctx = this.audioContext!;
-    const tempo = 135 + level * 7; // faster per level
-    const loopLen = 8 + level * 0.6; // секунд(loop), чуть длиннее на высоких
+    const tempo = 135 + level * 7;
+    const loopLen = 8 + level * 0.6;
     this.musicLoopDuration = loopLen;
 
-    const startAt = ctx.currentTime + 0.08; // чуть позже
+    const startAt = ctx.currentTime + 0.08;
     this.musicStartedAt = ctx.currentTime;
 
-    console.log(`[AudioManager] Starting level ${level} music with tempo ${tempo}, context time: ${ctx.currentTime}`);
+    console.log(`[AudioManager] Starting generative music for level ${level} with tempo ${tempo}`);
 
     // Вспомогатель: нота
     const note = (freq: number, t: number, dur: number, type: OscillatorType, vol: number=0.14) => {
@@ -106,23 +200,21 @@ class AudioManager {
       o.connect(g).connect(this.masterGain!);
       o.start(startAt + t);
       o.stop(startAt + t + dur);
-      // Очищаем
       const tid = window.setTimeout(() => { o.disconnect(); g.disconnect(); }, (t+dur)*1000 + 500);
       this.musicTimeouts.push(tid);
     };
 
     // База: базовая гамма сдвигов (C мажор и вариации)
     const scales = [
-      [261.63, 293.66, 329.63, 392.00, 440.00, 523.25],   // C, D, E, G, A, C'
-      [220, 261.63, 293.66, 349.23, 392.00, 493.88],       // A min* → D G B
-      [329.63, 392.00, 440.00, 523.25, 587.33, 659.25],     // E, G, A... для яркости
+      [261.63, 293.66, 329.63, 392.00, 440.00, 523.25],
+      [220, 261.63, 293.66, 349.23, 392.00, 493.88],
+      [329.63, 392.00, 440.00, 523.25, 587.33, 659.25],
     ];
 
     const scale = scales[level % 3];
     const melodyLen = 32 + Math.floor(level * 2.0);
 
-    // --- DRUMS ---
-    // Kick, snare, hihat расписание (channel separation)
+    // Drums
     const drum = (type: 'kick'|'snare'|'hihat', t: number, vol: number=0.16) => {
       if (type === 'kick') {
         const o = ctx.createOscillator();
@@ -168,7 +260,8 @@ class AudioManager {
         this.musicTimeouts.push(id);
       }
     };
-    // Drum pattern: зависит от уровня (больше снейров/кейков с ростом)
+
+    // Drum pattern
     for(let b = 0; b < loopLen*tempo/60; b++) {
       const t = b * (60/tempo);
       drum('kick', t);
@@ -176,19 +269,16 @@ class AudioManager {
       if (b%2===1) drum('hihat', t+0.02);
     }
 
-    // --- MELODY arpeggio ---
-    // Усложняем с ростом уровня
+    // Melody arpeggio
     for(let i=0; i<melodyLen; i++) {
       const noteT = i*(60/tempo)/2;
       let pitch = scale[(i + (level%3) + Math.floor(i/4)) % scale.length] * (1 + 0.01*(level-1));
-      // Арпеджио: 8-бит, варьируем waveform с ростом уровня
       const type: OscillatorType = level>7 ? "triangle" : (level>3 ? "sawtooth" : "square");
       note(pitch, noteT, 0.13+(0.01*level), type, 0.11+level*0.012);
-      // иногда добавим "верхний голос"
       if ((i%4)===0 && level>2) note(pitch*2, noteT+0.05, 0.08, "square",0.06+0.015*level);
     }
 
-    // --- BASS ---
+    // Bass
     for(let i=0; i<Math.ceil(loopLen*tempo/60/2); i++) {
       const t = i*2*(60/tempo);
       let bass = scale[0]*0.5;
@@ -196,7 +286,7 @@ class AudioManager {
       if (level>4 && i%3==0) note(bass*2, t+0.18, 0.1, "square", 0.07+0.01*level);
     }
 
-    // --- HARMONY / PAD ---
+    // Harmony/Pad
     if(level>=6) {
       for(let i=0; i<scale.length; i++) {
         let t = (i*1.9)%loopLen;
@@ -206,26 +296,34 @@ class AudioManager {
 
     // Повтор после всей длины
     const loopTimer = window.setTimeout(() => {
-      if(this.musicCurrentLevel===level && !this.isMuted) {
-        console.log(`[AudioManager] Restarting level ${level} music loop`);
-        this.playLevelMusic(level);
+      if(this.musicCurrentLevel===level && !this.isMuted && this.usingGenerativeMusic) {
+        console.log(`[AudioManager] Restarting generative music loop for level ${level}`);
+        this.playGenerativeMusic(level);
       }
     }, loopLen*1000);
     this.musicTimeouts.push(loopTimer);
   }
 
-  // Остановить текущую музыку уровня и очистить таймеры/звуки
   public stopLevelMusic() {
-    if(this.musicTimeouts&&this.musicTimeouts.length) {
-      this.musicTimeouts.forEach(id=>clearTimeout(id));
-      this.musicTimeouts=[];
+    // Останавливаем HTML5 Audio
+    if (this.currentMusicAudio) {
+      this.currentMusicAudio.pause();
+      this.currentMusicAudio = null;
+      console.log('[AudioManager] Stopped HTML5 music audio');
     }
-    this.musicCurrentLevel=null;
+
+    // Останавливаем генеративную музыку
+    if(this.musicTimeouts && this.musicTimeouts.length) {
+      this.musicTimeouts.forEach(id => clearTimeout(id));
+      this.musicTimeouts = [];
+      console.log('[AudioManager] Stopped generative music');
+    }
+
+    this.musicCurrentLevel = null;
+    this.usingGenerativeMusic = false;
   }
-  // --- MUSIC SYSTEM END ---
 
   // --- обычные FX ---
-  // Генерация звука монеты (высокий тон)
   async playCoinSound() {
     if (!await this.ensureAudioContext() || this.isMuted) return;
     
@@ -246,7 +344,6 @@ class AudioManager {
     oscillator.stop(this.audioContext!.currentTime + 0.2);
   }
 
-  // Звук прыжка (sweep вниз)
   async playJumpSound() {
     if (!await this.ensureAudioContext() || this.isMuted) return;
     
@@ -266,7 +363,6 @@ class AudioManager {
     oscillator.stop(this.audioContext!.currentTime + 0.3);
   }
 
-  // Звук выстрела (короткий шум)
   async playShootSound() {
     if (!await this.ensureAudioContext() || this.isMuted) return;
     
@@ -287,11 +383,10 @@ class AudioManager {
     oscillator.stop(this.audioContext!.currentTime + 0.1);
   }
 
-  // Звук восстановления здоровья (мелодичный восходящий тон)
   async playHealthSound() {
     if (!await this.ensureAudioContext() || this.isMuted) return;
     
-    const frequencies = [440, 523.25, 659.25]; // A4, C5, E5
+    const frequencies = [440, 523.25, 659.25];
     
     for (let i = 0; i < frequencies.length; i++) {
       const oscillator = this.audioContext!.createOscillator();
@@ -312,7 +407,6 @@ class AudioManager {
     }
   }
 
-  // Звук восстановления патронов (быстрые клики)
   async playAmmoSound() {
     if (!await this.ensureAudioContext() || this.isMuted) return;
     
@@ -336,11 +430,10 @@ class AudioManager {
     }
   }
 
-  // Звук получения усиления (мощный аккорд)
   async playPowerupSound() {
     if (!await this.ensureAudioContext() || this.isMuted) return;
     
-    const frequencies = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5 (C major chord)
+    const frequencies = [261.63, 329.63, 392.00, 523.25];
     
     frequencies.forEach((freq, i) => {
       const oscillator = this.audioContext!.createOscillator();
@@ -360,7 +453,6 @@ class AudioManager {
     });
   }
 
-  // Звук урона (низкий резкий тон)
   async playDamageSound() {
     if (!await this.ensureAudioContext() || this.isMuted) return;
     
@@ -380,11 +472,10 @@ class AudioManager {
     oscillator.stop(this.audioContext!.currentTime + 0.4);
   }
 
-  // Звук сбора предмета (мелодичный)
   async playItemSound() {
     if (!await this.ensureAudioContext() || this.isMuted) return;
     
-    const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5
+    const frequencies = [523.25, 659.25, 783.99];
     
     for (let i = 0; i < frequencies.length; i++) {
       const oscillator = this.audioContext!.createOscillator();
@@ -405,11 +496,10 @@ class AudioManager {
     }
   }
 
-  // Звук победы на уровне (восходящая арпеджио)
   async playLevelWinSound() {
     if (!await this.ensureAudioContext() || this.isMuted) return;
     
-    const frequencies = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+    const frequencies = [261.63, 329.63, 392.00, 523.25];
     
     for (let i = 0; i < frequencies.length; i++) {
       const oscillator = this.audioContext!.createOscillator();
@@ -430,7 +520,6 @@ class AudioManager {
     }
   }
 
-  // Звук поражения (нисходящий тон)
   async playGameOverSound() {
     if (!await this.ensureAudioContext() || this.isMuted) return;
     
@@ -451,37 +540,65 @@ class AudioManager {
     oscillator.stop(this.audioContext!.currentTime + 1.5);
   }
 
-  // Заглушка: playAmbientLoop больше не нужна, используем только playLevelMusic
-  async playAmbientLoop() { /* no-op for now */ }
-  stopAmbientLoop() { /* no-op for now */ }
+  // Заглушки для совместимости
+  async playAmbientLoop() { /* no-op */ }
+  stopAmbientLoop() { /* no-op */ }
 
   setVolume(volume: number) {
     if (this.masterGain) {
       this.masterGain.gain.value = Math.max(0, Math.min(1, volume));
     }
+    
+    // Обновляем громкость музыки
+    if (this.currentMusicAudio) {
+      this.currentMusicAudio.volume = Math.max(0, Math.min(1, volume));
+    }
   }
+
   mute() {
     this.isMuted = true;
     this.stopLevelMusic();
+    console.log('[AudioManager] Audio muted');
   }
+
   unmute() {
     this.isMuted = false;
-  }
-  toggleMute() {
-    this.isMuted = !this.isMuted;
-    if (this.isMuted) {
-      this.stopLevelMusic();
-    } else if (this.musicCurrentLevel != null) {
+    console.log('[AudioManager] Audio unmuted');
+    
+    // Возобновляем музыку текущего уровня
+    if (this.musicCurrentLevel != null) {
       this.playLevelMusic(this.musicCurrentLevel);
     }
   }
-  isMutedState() { return this.isMuted; }
+
+  toggleMute() {
+    if (this.isMuted) {
+      this.unmute();
+    } else {
+      this.mute();
+    }
+  }
+
+  isMutedState() { 
+    return this.isMuted; 
+  }
+
+  // Дополнительный метод для получения информации о текущем состоянии
+  getMusicInfo() {
+    return {
+      currentLevel: this.musicCurrentLevel,
+      usingGenerativeMusic: this.usingGenerativeMusic,
+      hasCurrentAudio: !!this.currentMusicAudio,
+      isMuted: this.isMuted,
+      loadedFiles: Array.from(this.musicAudios.keys())
+    };
+  }
 }
 
 // Создаём глобальный экземпляр
 export const audioManager = new AudioManager();
 
-// Внешний API:
+// Внешний API
 export const playLevelMusic = (level: number) => audioManager.playLevelMusic(level);
 export const stopLevelMusic = () => audioManager.stopLevelMusic();
 export const activateAudio = () => audioManager.activateAudio();

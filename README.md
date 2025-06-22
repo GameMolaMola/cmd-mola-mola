@@ -36,6 +36,27 @@ npm i
 npm run dev
 ```
 
+## Linting
+
+To run the linter, ensure that you have installed all dependencies first:
+
+```sh
+npm install
+npm run lint
+```
+The `npm run lint` command will automatically install missing dependencies via
+the `prelint` script defined in `package.json`.
+
+## Running tests
+
+To run the test suite, make sure the project dependencies are installed:
+
+```sh
+npm install
+npm test
+```
+This will execute the Vitest suite.
+
 **Edit a file directly in GitHub**
 
 - Navigate to the desired file(s).
@@ -106,4 +127,4 @@ Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-trick
 
 6. Сборка, настройка и публикация — стандартные для App Store приложения шаги.
 
-Полное руководство — [Блог Lovable: публикация мобильных приложений](https://lovable.dev/blogs/TODO)
+Полное руководство — [Блог Lovable: публикация мобильных приложений](https://lovable.dev/blogs/)
