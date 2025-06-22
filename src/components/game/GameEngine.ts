@@ -206,8 +206,8 @@ export class GameEngine {
       this.player.username = username;
     }
 
-    // jumpPower для markJump (по умолчанию -15, на будущее)
-    this.player.jumpPower = -15;
+    // Настраиваем jumpPower для спец-режима Mark
+    this.player.jumpPower = this.player.markJump ? -20 : -15;
 
     // ВАЖНО: Применяем godmode ПОСЛЕ установки всех параметров
     if (isGodmodeUser(this.player.username, this.player.godmode)) {
@@ -374,8 +374,13 @@ export class GameEngine {
 
   public setMobileControlState(control: string, state: boolean) {
     this.mobileControlState[control] = state;
+    // Синхронизируем состояние "jump" и "up" для обратной совместимости и полноты
+    if (control === "jump") {
+      this.mobileControlState["up"] = state;
+    } else if (control === "up") {
+      this.mobileControlState["jump"] = state;
+    }
   }
-
 
   private generateStaticSandLayer() {
     const bottomPlatform = this.platforms.find(
@@ -422,14 +427,13 @@ export class GameEngine {
     this.brasilenas = [];
     this.wines = [];
 
-    // Сброс таймеров появления ресурсов и платформ при старте уровня
-    const now = Date.now();
-    this.lastResourceSpawnTime = now;
-    this.lastPlatformSpawnTime = now;
-    this.lastUpdateTimestamp = now;
+// Сброс таймеров появления ресурсов и платформ при старте уровня
+const now = Date.now();
+this.lastResourceSpawnTime = now;
+this.lastPlatformSpawnTime = now;
+this.lastUpdateTimestamp = now;
 
-    const config = getLevelConfig(this.player.level);
-
+const config = getLevelConfig(this.player.level);
     // --- Запускаем музыку для этого уровня ---
     if (this.audioActivated && this.soundEnabled && !audioManager.isMutedState()) {
       console.log(`[GameEngine] Starting music for level ${this.player.level}`);
@@ -560,6 +564,17 @@ export class GameEngine {
   // --- NEW: публичный метод для мобильной стрельбы ---
   public fire() {
     this.shoot();
+  }
+
+  // Позволяет мгновенно прыгать по мобильному нажатию
+  public jump() {
+    if (this.player.grounded) {
+      this.player.velY = this.player.jumpPower;
+      this.player.grounded = false;
+      if (this.soundEnabled && this.audioActivated) {
+        audioManager.playJumpSound();
+      }
+    }
   }
 
   private shoot() {

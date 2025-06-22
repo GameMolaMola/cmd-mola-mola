@@ -140,9 +140,10 @@ export function renderScene(
   // --- ПУЛИ (ИСПРАВЛЕНО для лучшей видимости на мобильных) ---
   bullets.forEach((bullet: any) => {
     ctx.save();
-    
-    // Увеличиваем размер пуль на мобильных устройствах
-    const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+
+    // Безопасное определение мобильных устройств
+    const isMobile = typeof navigator !== 'undefined' &&
+      /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
     const bulletScale = isMobile ? 1.5 : 1;
     const scaledWidth = bullet.width * bulletScale;
     const scaledHeight = bullet.height * bulletScale;
@@ -181,7 +182,10 @@ export function renderScene(
     if (isImageLoaded(image)) {
       ctx.drawImage(image, sword.x, sword.y, sword.width, sword.height);
     } else {
-      // Запасной вариант отрисовки
+      // Логирование только в dev-режиме
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('Rendering fallback for Swordfish. Image not loaded:', image?.src || image);
+      }
       ctx.fillStyle = '#ff4444';
       ctx.fillRect(sword.x, sword.y, sword.width, sword.height);
     }
