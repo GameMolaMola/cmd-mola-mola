@@ -1,4 +1,5 @@
 import React from "react";
+import { IS_SKELETON_MODE } from "@/constants";
 
 // Путь к изображению монеты
 // оригинальный webp отсутствует, используем png-версию
@@ -13,6 +14,7 @@ interface Feature {
 const ICON_SIZE = 22;
 
 export default function FeatureList({ features }: { features: Feature[] }) {
+  const skeleton = IS_SKELETON_MODE;
   const iconMap: Record<string, React.ReactNode> = {
     pixel: (
       <span
@@ -47,18 +49,31 @@ export default function FeatureList({ features }: { features: Feature[] }) {
         className="inline-block align-middle mr-2"
         style={{ width: ICON_SIZE, minWidth: ICON_SIZE, textAlign: "center" }}
       >
-        <img
-          src={MOLA_COIN_IMG}
-          alt="Mola Mola Coin"
-          style={{
-            width: ICON_SIZE,
-            height: ICON_SIZE,
-            display: "inline-block",
-            objectFit: "contain",
-            verticalAlign: "middle"
-          }}
-          className="align-middle"
-        />
+        {skeleton ? (
+          <span
+            className="inline-block align-middle"
+            style={{
+              width: ICON_SIZE,
+              height: ICON_SIZE,
+              backgroundColor: '#0f172a',
+              display: 'inline-block',
+              borderRadius: '50%'
+            }}
+          />
+        ) : (
+          <img
+            src={MOLA_COIN_IMG}
+            alt="Mola Mola Coin"
+            style={{
+              width: ICON_SIZE,
+              height: ICON_SIZE,
+              display: 'inline-block',
+              objectFit: 'contain',
+              verticalAlign: 'middle'
+            }}
+            className="align-middle"
+          />
+        )}
       </span>
     ),
     powerup: (

@@ -9,3 +9,5 @@ export function isGodmodeUser(username?: string, flag?: boolean): boolean {
   const normalized = username?.trim().toLowerCase();
   return Boolean(flag) || normalized === GODMODE_USERNAME_NORMALIZED;
 }
+
+export const IS_SKELETON_MODE = import.meta.env.VITE_SKELETON_MODE === 'true';
