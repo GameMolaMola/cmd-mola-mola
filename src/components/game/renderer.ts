@@ -31,7 +31,7 @@ export function renderScene(
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Draw scrolling parallax background on top of the gradient
-  engine.background?.draw(ctx);
+  // engine.background?.draw(ctx);
 
   // --- Пузыри ---
   engine.updateBubbles?.();
