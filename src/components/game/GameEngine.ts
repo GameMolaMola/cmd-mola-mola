@@ -173,6 +173,10 @@ export class GameEngine {
   private particleSystem: ParticleSystem = new ParticleSystem();
   private screenShake: ScreenShake = new ScreenShake();
 
+  private shoot() {}
+  private generateLevel() {}
+  private updateGameState() {}
+
   constructor(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
@@ -395,3 +399,4 @@ export class GameEngine {
       bottomPlatform.height
     );
   }
+}
