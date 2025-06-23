@@ -7,6 +7,7 @@ export function setupKeyboardHandlers(keys: any, shoot: () => void) {
       if (!e.repeat) {
         e.preventDefault();
         shoot();
+        console.log('[Controls] Space = shoot');
       }
     }
   };
