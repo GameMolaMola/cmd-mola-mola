@@ -23,3 +23,8 @@ This repository contains the source code for a small pixel art game built with R
 Guides for packaging the game for iOS and Android are available in the project source under `src/pages/AndroidGuide.tsx` and `src/pages/AppStoreGuide.tsx`.
 
 Enjoy the game!
+
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for instructions on how to get involved.
+It includes tips for writing clear commit messages so the project history is easy to follow.
