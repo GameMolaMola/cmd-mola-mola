@@ -1,14 +1,19 @@
 
 export function setupKeyboardHandlers(keys: any, shoot: () => void) {
+  // only SPACE is supported
   const handleKeyDown = (e: KeyboardEvent) => {
-    keys[e.code] = true;
     if (e.code === 'Space') {
-      e.preventDefault();
-      shoot();
+      keys.Space = true;
+      if (!e.repeat) {
+        e.preventDefault();
+        shoot();
+      }
     }
   };
   const handleKeyUp = (e: KeyboardEvent) => {
-    keys[e.code] = false;
+    if (e.code === 'Space') {
+      keys.Space = false;
+    }
   };
   document.addEventListener('keydown', handleKeyDown);
   document.addEventListener('keyup', handleKeyUp);
