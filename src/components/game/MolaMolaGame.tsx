@@ -56,7 +56,7 @@ const MolaMolaGame = ({ autoStart = false }: { autoStart?: boolean }) => {
 
   return (
     <div
-      className="w-screen bg-[#011b2e] relative flex flex-col overflow-hidden"
+      className="w-screen bg-[#084e82] relative flex flex-col overflow-hidden"
       style={{
         height: '100svh',
       }}
