@@ -9,6 +9,7 @@ import GuidoShrimpBlock from './GuidoShrimpBlock';
 import AboutSection from './AboutSection';
 import AddressSection from './AddressSection';
 import GameTitle from './GameTitle';
+import { IS_SKELETON_MODE } from '@/constants';
 
 const LandingPage = ({
   onPlay
@@ -22,6 +23,7 @@ const LandingPage = ({
   } = useGame();
   const t = useTranslations(language);
   const [view, setView] = useState<'language' | 'register' | 'ready'>('language');
+  const skeleton = IS_SKELETON_MODE;
 
   // Переключение вида в пошаговом режиме
   const handleStart = () => {
@@ -75,11 +77,15 @@ const LandingPage = ({
           {/* Новый компонент заголовка */}
           <GameTitle />
         </div>
-        <img
-          src="/uploads/ee8156f0-ed84-469d-b314-13a6aa436d63.png"
-          alt="Mola Mola"
-          className="w-[160px] md:w-[210px] h-20 md:h-24 mb-1 mx-auto object-contain"
-        />
+        {skeleton ? (
+          <div className="w-[160px] md:w-[210px] h-20 md:h-24 mb-1 mx-auto bg-cyan-800 rounded" />
+        ) : (
+          <img
+            src="/uploads/ee8156f0-ed84-469d-b314-13a6aa436d63.png"
+            alt="Mola Mola"
+            className="w-[160px] md:w-[210px] h-20 md:h-24 mb-1 mx-auto object-contain"
+          />
+        )}
         {/* Language selector block */}
         <LanguageSelector language={language} setLanguage={setLanguage} />
         {/* Guido Shrimp block */}
