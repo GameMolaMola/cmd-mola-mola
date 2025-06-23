@@ -16,7 +16,7 @@ import { Toaster } from "@/components/ui/toaster";
 function App() {
   return (
     <GameProvider>
-      <Router>
+      <Router basename={import.meta.env.BASE_URL}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/game" element={<Game />} />
