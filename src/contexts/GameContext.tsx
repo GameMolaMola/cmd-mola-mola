@@ -28,7 +28,9 @@ export const GameProvider = ({ children }: { children: React.ReactNode }) => {
 
   // ЛОГ для контроля
   React.useEffect(() => {
-    console.log('[GameProvider] language:', language);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[GameProvider] language:', language);
+    }
   }, [language]);
 
   return (
