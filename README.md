@@ -4,9 +4,10 @@ This repository contains the source code for a small pixel art game built with R
 
 ## Development
 
-1. Install dependencies
+1. Install dependencies **before** building or testing
    ```sh
    npm install
+   # or pnpm install
    ```
 2. Start the development server
    ```sh
