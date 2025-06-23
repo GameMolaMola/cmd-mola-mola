@@ -17,6 +17,8 @@ This repository contains the source code for a small pixel art game built with R
    ```sh
    npm test
    ```
+4. Before starting the game in production, make sure every image referenced in
+   `src/components/game/imageLoader.ts` is present inside `public/uploads/`.
 
 ## Mobile Builds
 

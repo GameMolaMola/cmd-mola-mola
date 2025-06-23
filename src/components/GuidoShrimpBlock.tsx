@@ -27,7 +27,8 @@ export default function GuidoShrimpBlock({ language }: { language: string }) {
         }}
       >
         <img
-          src="/uploads/f3db5ddc-4774-4a77-a73a-b87832b655a1.webp"
+          // оригинальное webp изображение отсутствует
+          src="/uploads/9132b9d8-ab25-44a7-81ec-031ebfbb97e6.png"
           alt="Guido Shrimp"
           className="w-12 h-12 md:w-14 md:h-14 rounded-full object-cover border-2 border-yellow-300 bg-black"
           style={{ flexShrink: 0, aspectRatio: "1/1", objectFit: "cover" }}
