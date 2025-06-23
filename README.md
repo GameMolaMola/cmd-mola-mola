@@ -19,6 +19,10 @@ This repository contains the source code for a small pixel art game built with R
    ```
 4. Before starting the game in production, make sure every image referenced in
    `src/components/game/imageLoader.ts` is present inside `public/uploads/`.
+5. Backgrounds are generated at runtime from
+   `src/components/game/parallaxLayers.ts` and drawn to the canvas via
+   `src/components/game/renderer.ts`. There is no `background.ts` file, so keep
+   this in mind when discussing the code with contributors to avoid confusion.
 
 ## Mobile Builds
 
