@@ -406,6 +406,14 @@ export class GameEngine {
     return audioManager.isMutedState();
   }
 
+  public getParticleSystem(): ParticleSystem {
+    return this.particleSystem;
+  }
+
+  public getScreenShake(): ScreenShake {
+    return this.screenShake;
+  }
+
   private tick = () => {
     gameTick(this);
     this.animationId = requestAnimationFrame(this.tick);
