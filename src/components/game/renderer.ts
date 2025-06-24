@@ -1,5 +1,9 @@
 import { drawPixelCoral } from './drawPixelCoral';
 import { drawPixelSand } from './drawPixelSand';
+// import { loadParallaxLayers, ParallaxLayers, ParallaxTheme } from './parallaxLayers'; // Эти импорты больше не нужны здесь, так как GameEngine управляет загрузкой
+
+// Мы убираем глобальные переменные и функции initParallax/getParallaxLayers из renderer.ts,
+// так как GameEngine теперь управляет parallaxLayers и передает их сюда.
 
 function isImageLoaded(img?: HTMLImageElement): img is HTMLImageElement {
   return !!img && img.complete && img.naturalWidth > 0;
@@ -34,7 +38,7 @@ export function renderScene(
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Draw scrolling parallax background on top of the gradient
-  const layers = engine.parallaxLayers;
+  const layers = engine.parallaxLayers; // Получаем слои из экземпляра GameEngine
   if (layers) {
     const { far, mid, near } = layers;
 
@@ -54,12 +58,16 @@ export function renderScene(
     };
 
     // Multipliers for parallax effect
+    // Эти значения могут быть настроены для желаемого эффекта глубины
     const FAR_MUL = 0.2;
     const MID_MUL = 0.5;
     const NEAR_MUL = 0.8;
 
+    // Сдвиг по X зависит от движения игрока
+    // Сдвиг по Y для позиционирования слоев относительно "дна" или "поверхности"
     if (isImageLoaded(far)) {
       const offX = -player.x * FAR_MUL;
+      // Clamp offY to keep the top of the layer from going above 0 and bottom below canvas.height
       const offY = Math.max(canvas.height - far.height, Math.min(0, -player.y * FAR_MUL));
       drawParallax(far, offX, offY);
     }

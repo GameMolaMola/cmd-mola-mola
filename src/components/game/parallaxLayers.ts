@@ -4,6 +4,8 @@ export interface ParallaxLayers {
   near: HTMLImageElement
 }
 
+export type ParallaxTheme = string // Сохраняем это определение типа
+
 const cachedLayers: Record<string, ParallaxLayers> = {}
 const cachedPromises: Record<string, Promise<ParallaxLayers>> = {}
 
@@ -174,7 +176,7 @@ function drawNearLayerJungle(): HTMLCanvasElement {
   return ctx.canvas
 }
 
-export function loadParallaxLayers(theme: string = 'underwater'): Promise<ParallaxLayers> {
+export function loadParallaxLayers(theme: ParallaxTheme = 'underwater'): Promise<ParallaxLayers> {
   if (cachedLayers[theme]) return Promise.resolve(cachedLayers[theme])
   if (cachedPromises[theme]) return cachedPromises[theme]
 
@@ -188,6 +190,7 @@ export function loadParallaxLayers(theme: string = 'underwater'): Promise<Parall
       midCanvas = drawMidLayerJungle()
       nearCanvas = drawNearLayerJungle()
     } else {
+      // Это будет 'underwater' или любой другой дефолтный, если не 'jungle'
       farCanvas = drawFarLayer()
       midCanvas = drawMidLayer()
       nearCanvas = drawNearLayer()

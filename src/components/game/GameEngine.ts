@@ -13,10 +13,10 @@ import { generateBubbles, updateBubbles, drawBubbles } from './bubblesManager';
 import { createDefaultPlatforms } from './platformsManager';
 import { setupKeyboardHandlers } from './controlsManager';
 
-import { renderScene } from './renderer';
+import { renderScene, initParallax, getParallaxLayers } from './renderer'; // initParallax и getParallaxLayers могут быть не нужны здесь, в зависимости от их роли
 import { gameTick } from './loop';
 import { loadImages } from './imageLoader';
-import { loadParallaxLayers, ParallaxLayers } from './parallaxLayers';
+import { ParallaxLayers, loadParallaxLayers } from './parallaxLayers'; // Убедитесь, что loadParallaxLayers импортируется
 
 import { spawnResourceForType, ResourceType } from './resourceSpawner';
 import { spawnDynamicPlatform, updateDynamicPlatforms } from './dynamicPlatforms';
@@ -421,7 +421,7 @@ export class GameEngine {
     this.ctx.imageSmoothingEnabled = false;
     this.callbacks = options;
 
-    // handle scaleFactor if provided, default to 1  
+    // handle scaleFactor if provided, default to 1 
     this.scaleFactor = options.scaleFactor ?? 1;
 
     // [ИСПРАВЛЕНО] Прокидываем ВСЕ параметры начального состояния игрока БЕЗ потери значений!
