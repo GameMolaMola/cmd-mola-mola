@@ -10,7 +10,7 @@ export function renderScene(
   engine: any // GameEngine instance
 ) {
   // Apply screen shake at the beginning
-  engine.screenShake.applyShake(ctx);
+  engine.getScreenShake().applyShake(ctx);
 
   // Ensure alpha is reset before drawing
   ctx.globalAlpha = 1;
@@ -251,10 +251,10 @@ export function renderScene(
   }
 
   // Render particle effects on top of everything else
-  engine.particleSystem.render(ctx);
+  engine.getParticleSystem().render(ctx);
 
   // Reset screen shake at the end
-  engine.screenShake.resetShake(ctx);
+  engine.getScreenShake().resetShake(ctx);
 
   // Restore default alpha in case effects changed it
   ctx.globalAlpha = 1;
