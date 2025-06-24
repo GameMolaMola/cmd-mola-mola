@@ -6,6 +6,7 @@ describe('level configuration lookup', () => {
     const cfg = getLevelConfig(1);
     expect(cfg.enemyCount).toBe(4);
     expect(cfg.coinCount).toBe(7);
+    expect(cfg.background).toBe('underwater');
   });
 
   it('returns level1 config for unknown or negative levels', () => {
@@ -25,5 +26,9 @@ describe('level configuration lookup', () => {
     expect(getLevelConfig(10).boss).toBe(true);
     expect(getLevelConfig(15).boss).toBe(true);
     expect(getLevelConfig(999).boss).toBe(true);
+  });
+
+  it('includes correct background theme', () => {
+    expect(getLevelConfig(5).background).toBe('jungle');
   });
 });
