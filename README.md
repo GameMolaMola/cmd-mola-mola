@@ -30,6 +30,16 @@ Guides for packaging the game for iOS and Android are available in the project s
 
 Enjoy the game!
 
+## Configuration
+
+The Supabase function `send-new-player-email` uses the Resend API to notify the
+game administrator when a new player registers. Set `RESEND_API_KEY` so the
+function can authenticate with Resend.
+
+When deploying, add `RESEND_API_KEY` to the project's secrets. You can do this
+with `supabase secrets set RESEND_API_KEY=your_key` or by adding the variable in
+the Supabase dashboard.
+
 ## Contributing
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for instructions on how to get involved.
