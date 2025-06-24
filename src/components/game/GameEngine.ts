@@ -179,6 +179,37 @@ export class GameEngine {
   private generateLevel() {}
   private updateGameState() {}
 
+  // --- New: spawn coins near the boss ---
+  public spawnBossCoins(count: number = 20) {
+    const boss = this.bossLucia;
+    if (!boss) return;
+    for (let i = 0; i < count; i++) {
+      const offsetX = (Math.random() - 0.5) * boss.width;
+      const offsetY = (Math.random() - 0.5) * boss.height;
+      this.coins.push({
+        x: boss.x + boss.width / 2 + offsetX,
+        y: boss.y + boss.height / 2 + offsetY,
+        width: 32,
+        height: 32,
+        _bossCoin: true,
+      });
+    }
+  }
+
+  public spawnBossCoinsOnHit(count: number, boss: { x: number; y: number; width: number; height: number }) {
+    for (let i = 0; i < count; i++) {
+      const offsetX = (Math.random() - 0.5) * boss.width;
+      const offsetY = (Math.random() - 0.5) * boss.height;
+      this.coins.push({
+        x: boss.x + boss.width / 2 + offsetX,
+        y: boss.y + boss.height / 2 + offsetY,
+        width: 32,
+        height: 32,
+        _bossCoin: true,
+      });
+    }
+  }
+
   constructor(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
