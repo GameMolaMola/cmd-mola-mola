@@ -12,6 +12,9 @@ export function renderScene(
   // Apply screen shake at the beginning
   engine.screenShake.applyShake(ctx);
 
+  // Ensure alpha is reset before drawing
+  ctx.globalAlpha = 1;
+
   // вынесем практически всё содержимое оригинального render из GameEngine
   const {
     canvas, player, images, platforms,
@@ -247,4 +250,7 @@ export function renderScene(
 
   // Reset screen shake at the end
   engine.screenShake.resetShake(ctx);
+
+  // Restore default alpha in case effects changed it
+  ctx.globalAlpha = 1;
 }
