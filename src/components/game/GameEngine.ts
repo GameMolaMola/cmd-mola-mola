@@ -368,6 +368,23 @@ export class GameEngine {
     return audioManager.isMutedState();
   }
 
+  private tick = () => {
+    gameTick(this);
+    this.animationId = requestAnimationFrame(this.tick);
+  };
+
+  public start() {
+    if (this.animationId !== null) return;
+    this.animationId = requestAnimationFrame(this.tick);
+  }
+
+  public stop() {
+    if (this.animationId !== null) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+  }
+
   // --- Используем только bubblesManager ---
   private generateBubbles() {
     generateBubbles(this.bubbles, this.canvas);
