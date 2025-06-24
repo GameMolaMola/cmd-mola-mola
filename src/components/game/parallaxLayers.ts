@@ -4,8 +4,10 @@ export interface ParallaxLayers {
   near: HTMLImageElement
 }
 
-let cachedLayers: ParallaxLayers | null = null
-let cachedPromise: Promise<ParallaxLayers> | null = null
+export type ParallaxTheme = string
+
+const cachedLayers: Record<string, ParallaxLayers> = {}
+const cachedPromises: Record<string, Promise<ParallaxLayers>> = {}
 
 function canvasToImage(canvas: HTMLCanvasElement): HTMLImageElement {
   const img = new Image()
@@ -103,11 +105,11 @@ function drawNearLayer(): HTMLCanvasElement {
   return ctx.canvas
 }
 
-export function loadParallaxLayers(): Promise<ParallaxLayers> {
-  if (cachedLayers) return Promise.resolve(cachedLayers)
-  if (cachedPromise) return cachedPromise
+export function loadParallaxLayers(theme: ParallaxTheme = 'default'): Promise<ParallaxLayers> {
+  if (cachedLayers[theme]) return Promise.resolve(cachedLayers[theme])
+  if (cachedPromises[theme]) return cachedPromises[theme]
 
-  cachedPromise = new Promise((resolve) => {
+  cachedPromises[theme] = new Promise((resolve) => {
     const farCanvas = drawFarLayer()
     const midCanvas = drawMidLayer()
     const nearCanvas = drawNearLayer()
@@ -121,8 +123,8 @@ export function loadParallaxLayers(): Promise<ParallaxLayers> {
     const check = () => {
       loaded += 1
       if (loaded === images.length) {
-        cachedLayers = { far: farImg, mid: midImg, near: nearImg }
-        resolve(cachedLayers)
+        cachedLayers[theme] = { far: farImg, mid: midImg, near: nearImg }
+        resolve(cachedLayers[theme])
       }
     }
 
@@ -136,5 +138,5 @@ export function loadParallaxLayers(): Promise<ParallaxLayers> {
     })
   })
 
-  return cachedPromise
+  return cachedPromises[theme]
 }

@@ -13,10 +13,10 @@ import { generateBubbles, updateBubbles, drawBubbles } from './bubblesManager';
 import { createDefaultPlatforms } from './platformsManager';
 import { setupKeyboardHandlers } from './controlsManager';
 
-import { renderScene } from './renderer';
+import { renderScene, initParallax, getParallaxLayers } from './renderer';
 import { gameTick } from './loop';
 import { loadImages } from './imageLoader';
-import { loadParallaxLayers, ParallaxLayers } from './parallaxLayers';
+import { ParallaxLayers } from './parallaxLayers';
 
 import { spawnResourceForType, ResourceType } from './resourceSpawner';
 import { spawnDynamicPlatform, updateDynamicPlatforms } from './dynamicPlatforms';
@@ -460,8 +460,8 @@ export class GameEngine {
 
     this.loadPromise = Promise.all([
       loadImages(this.images),
-      loadParallaxLayers().then((layers) => {
-        this.parallaxLayers = layers;
+      initParallax().then(() => {
+        this.parallaxLayers = getParallaxLayers();
       }),
     ]).then(() => {});
     setupKeyboardHandlers(this.keys, this.shoot.bind(this));

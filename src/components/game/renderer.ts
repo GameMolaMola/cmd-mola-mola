@@ -1,5 +1,17 @@
 import { drawPixelCoral } from './drawPixelCoral';
 import { drawPixelSand } from './drawPixelSand';
+import { loadParallaxLayers, ParallaxLayers, ParallaxTheme } from './parallaxLayers';
+
+let parallaxLayers: ParallaxLayers | null = null;
+
+export async function initParallax(theme: ParallaxTheme = 'default') {
+  parallaxLayers = await loadParallaxLayers(theme);
+  return parallaxLayers;
+}
+
+export function getParallaxLayers() {
+  return parallaxLayers;
+}
 
 function isImageLoaded(img?: HTMLImageElement): img is HTMLImageElement {
   return !!img && img.complete && img.naturalWidth > 0;
@@ -34,7 +46,7 @@ export function renderScene(
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Draw scrolling parallax background on top of the gradient
-  const layers = engine.parallaxLayers;
+  const layers = getParallaxLayers();
   if (layers && isImageLoaded(layers.far)) {
     ctx.drawImage(layers.far, 0, 0);
     ctx.drawImage(layers.mid, 0, 0);
