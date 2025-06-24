@@ -226,6 +226,10 @@ export class GameEngine {
 
     const cfg = getLevelConfig(this.player.level);
 
+    loadParallaxLayers(cfg.background).then((layers) => {
+      this.parallaxLayers = layers;
+    });
+
     this.enemies = [];
     this.swordfish = [];
     this.coins = [];
@@ -458,9 +462,10 @@ export class GameEngine {
       swordfishLeft: new Image(),
     };
 
+    const initialConfig = getLevelConfig(this.player.level);
     this.loadPromise = Promise.all([
       loadImages(this.images),
-      loadParallaxLayers().then((layers) => {
+      loadParallaxLayers(initialConfig.background).then((layers) => {
         this.parallaxLayers = layers;
       }),
     ]).then(() => {});

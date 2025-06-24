@@ -7,6 +7,7 @@ export const level2Config: LevelConfig = {
   brasilenaCount: 2,
   wineCount: 2,
   swordfishCount: 1,
+  background: 'underwater',
 };
 
 export default level2Config;

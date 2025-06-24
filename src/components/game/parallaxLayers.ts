@@ -4,8 +4,8 @@ export interface ParallaxLayers {
   near: HTMLImageElement
 }
 
-let cachedLayers: ParallaxLayers | null = null
-let cachedPromise: Promise<ParallaxLayers> | null = null
+const cachedLayers: Record<string, ParallaxLayers> = {}
+const cachedPromises: Record<string, Promise<ParallaxLayers>> = {}
 
 function canvasToImage(canvas: HTMLCanvasElement): HTMLImageElement {
   const img = new Image()
@@ -58,6 +58,32 @@ function drawFarLayer(): HTMLCanvasElement {
   return ctx.canvas
 }
 
+function drawFarLayerJungle(): HTMLCanvasElement {
+  const ctx = createCanvas()
+  const { canvas } = ctx
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
+  gradient.addColorStop(0, '#042c0f')
+  gradient.addColorStop(1, '#0b5019')
+  ctx.fillStyle = gradient
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  ctx.fillStyle = '#064d16'
+  for (let x = 0; x < canvas.width; x += 256) {
+    ctx.fillRect(x + 40, canvas.height - 260, 80, 180)
+    ctx.fillRect(x + 140, canvas.height - 320, 60, 240)
+  }
+
+  ctx.fillStyle = '#0e7324'
+  for (let i = 0; i < 40; i++) {
+    const bx = (i * 50) % canvas.width
+    const by = 50 + ((i * 97) % (canvas.height / 2))
+    ctx.fillRect(bx, by, 4, 4)
+  }
+
+  return ctx.canvas
+}
+
 function drawMidLayer(): HTMLCanvasElement {
   const ctx = createCanvas()
   const { canvas } = ctx
@@ -72,6 +98,29 @@ function drawMidLayer(): HTMLCanvasElement {
   }
 
   ctx.fillStyle = '#3af2ff'
+  for (let i = 0; i < 80; i++) {
+    const bx = (i * 25) % canvas.width
+    const by = canvas.height - 150 - (i % 5) * 20
+    ctx.fillRect(bx, by, 3, 3)
+  }
+
+  return ctx.canvas
+}
+
+function drawMidLayerJungle(): HTMLCanvasElement {
+  const ctx = createCanvas()
+  const { canvas } = ctx
+
+  ctx.fillStyle = '#0d3915'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  ctx.fillStyle = '#145a21'
+  for (let x = 0; x < canvas.width; x += 128) {
+    ctx.fillRect(x + 20, canvas.height - 220, 32, 140)
+    ctx.fillRect(x + 60, canvas.height - 180, 24, 120)
+  }
+
+  ctx.fillStyle = '#2db43c'
   for (let i = 0; i < 80; i++) {
     const bx = (i * 25) % canvas.width
     const by = canvas.height - 150 - (i % 5) * 20
@@ -103,14 +152,46 @@ function drawNearLayer(): HTMLCanvasElement {
   return ctx.canvas
 }
 
-export function loadParallaxLayers(): Promise<ParallaxLayers> {
-  if (cachedLayers) return Promise.resolve(cachedLayers)
-  if (cachedPromise) return cachedPromise
+function drawNearLayerJungle(): HTMLCanvasElement {
+  const ctx = createCanvas()
+  const { canvas } = ctx
 
-  cachedPromise = new Promise((resolve) => {
-    const farCanvas = drawFarLayer()
-    const midCanvas = drawMidLayer()
-    const nearCanvas = drawNearLayer()
+  ctx.fillStyle = '#124019'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  ctx.fillStyle = '#1f6a29'
+  for (let x = 0; x < canvas.width; x += 64) {
+    ctx.fillRect(x, canvas.height - 120, 64, 120)
+  }
+
+  ctx.fillStyle = '#48dc5d'
+  for (let i = 0; i < 100; i++) {
+    const bx = (i * 20) % canvas.width
+    const by = canvas.height - 80 - (i % 7) * 10
+    ctx.fillRect(bx, by, 4, 4)
+  }
+
+  return ctx.canvas
+}
+
+export function loadParallaxLayers(theme: string = 'underwater'): Promise<ParallaxLayers> {
+  if (cachedLayers[theme]) return Promise.resolve(cachedLayers[theme])
+  if (cachedPromises[theme]) return cachedPromises[theme]
+
+  cachedPromises[theme] = new Promise((resolve) => {
+    let farCanvas: HTMLCanvasElement
+    let midCanvas: HTMLCanvasElement
+    let nearCanvas: HTMLCanvasElement
+
+    if (theme === 'jungle') {
+      farCanvas = drawFarLayerJungle()
+      midCanvas = drawMidLayerJungle()
+      nearCanvas = drawNearLayerJungle()
+    } else {
+      farCanvas = drawFarLayer()
+      midCanvas = drawMidLayer()
+      nearCanvas = drawNearLayer()
+    }
 
     const farImg = canvasToImage(farCanvas)
     const midImg = canvasToImage(midCanvas)
@@ -121,8 +202,8 @@ export function loadParallaxLayers(): Promise<ParallaxLayers> {
     const check = () => {
       loaded += 1
       if (loaded === images.length) {
-        cachedLayers = { far: farImg, mid: midImg, near: nearImg }
-        resolve(cachedLayers)
+        cachedLayers[theme] = { far: farImg, mid: midImg, near: nearImg }
+        resolve(cachedLayers[theme])
       }
     }
 
@@ -136,5 +217,5 @@ export function loadParallaxLayers(): Promise<ParallaxLayers> {
     })
   })
 
-  return cachedPromise
+  return cachedPromises[theme]
 }
