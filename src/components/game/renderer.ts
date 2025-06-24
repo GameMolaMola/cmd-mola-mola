@@ -35,10 +35,44 @@ export function renderScene(
 
   // Draw scrolling parallax background on top of the gradient
   const layers = engine.parallaxLayers;
-  if (layers && isImageLoaded(layers.far)) {
-    ctx.drawImage(layers.far, 0, 0);
-    ctx.drawImage(layers.mid, 0, 0);
-    ctx.drawImage(layers.near, 0, 0);
+  if (layers) {
+    const { far, mid, near } = layers;
+
+    // Helper for wrapping offsets horizontally
+    const drawParallax = (
+      layer: HTMLImageElement,
+      offsetX: number,
+      offsetY: number = 0
+    ) => {
+      const width = layer.width;
+      offsetX %= width;
+      if (offsetX > 0) offsetX -= width;
+      ctx.drawImage(layer, offsetX, offsetY);
+      if (offsetX + width < canvas.width) {
+        ctx.drawImage(layer, offsetX + width, offsetY);
+      }
+    };
+
+    // Multipliers for parallax effect
+    const FAR_MUL = 0.2;
+    const MID_MUL = 0.5;
+    const NEAR_MUL = 0.8;
+
+    if (isImageLoaded(far)) {
+      const offX = -player.x * FAR_MUL;
+      const offY = Math.max(canvas.height - far.height, Math.min(0, -player.y * FAR_MUL));
+      drawParallax(far, offX, offY);
+    }
+    if (isImageLoaded(mid)) {
+      const offX = -player.x * MID_MUL;
+      const offY = Math.max(canvas.height - mid.height, Math.min(0, -player.y * MID_MUL));
+      drawParallax(mid, offX, offY);
+    }
+    if (isImageLoaded(near)) {
+      const offX = -player.x * NEAR_MUL;
+      const offY = Math.max(canvas.height - near.height, Math.min(0, -player.y * NEAR_MUL));
+      drawParallax(near, offX, offY);
+    }
   }
 
   // --- Пузыри ---
