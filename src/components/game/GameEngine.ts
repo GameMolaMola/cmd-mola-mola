@@ -16,6 +16,7 @@ import { setupKeyboardHandlers } from './controlsManager';
 import { renderScene } from './renderer';
 import { gameTick } from './loop';
 import { loadImages } from './imageLoader';
+import { loadParallaxLayers, ParallaxLayers } from './parallaxLayers';
 
 import { spawnResourceForType, ResourceType } from './resourceSpawner';
 import { spawnDynamicPlatform, updateDynamicPlatforms } from './dynamicPlatforms';
@@ -140,6 +141,7 @@ export class GameEngine {
   private mobileControlState: Record<string, boolean> = {};
 
   private staticSandLayer: HTMLCanvasElement | null = null;
+  private parallaxLayers: ParallaxLayers | null = null;
 
   private freeBrasilena?: ReturnType<typeof useFreeBrasilena>;
 
@@ -237,7 +239,12 @@ export class GameEngine {
       swordfishLeft: new Image(),
     };
 
-    this.loadPromise = loadImages(this.images);
+    this.loadPromise = Promise.all([
+      loadImages(this.images),
+      loadParallaxLayers().then((layers) => {
+        this.parallaxLayers = layers;
+      }),
+    ]).then(() => {});
     setupKeyboardHandlers(this.keys, this.shoot.bind(this));
     this.generateLevel();
     this.platforms = createDefaultPlatforms(this.canvas.width, this.canvas.height);
