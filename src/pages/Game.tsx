@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import MolaMolaGame from '@/components/game/MolaMolaGame';
 import { useLocation } from 'react-router-dom';
@@ -18,7 +17,7 @@ const Game = () => {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    console.log('[Game] Mounted');
+    console.log("✅ Game component mounted");
   }, []);
 
   // Класс для Telegram UI-правок
@@ -26,6 +25,12 @@ const Game = () => {
 
   // Заблокируем прокрутку только на странице игры, но разрешим масштабирование
   const containerClass = `no-scroll fixed inset-0 z-0 bg-gradient-to-b from-blue-900 to-blue-700 flex items-center justify-center p-0 ${telegramClass}`;
+
+  if (error) {
+    return (
+      <div style={{ color: "red", padding: "2rem" }}>Ошибка: {error.message}</div>
+    );
+  }
 
   try {
     return (
@@ -40,15 +45,10 @@ const Game = () => {
       </div>
     );
   } catch (err) {
-    console.error('[Game] Render error:', err);
-    setError(err instanceof Error ? err : new Error(String(err)));
+    console.error("❌ Ошибка в MolaMolaGame:", err);
+    setError(err instanceof Error ? err : new Error("Unknown error"));
+    return null;
   }
-
-  if (error) {
-    return <div style={{ color: 'red' }}>❌ Failed to load game: {error.message}</div>;
-  }
-
-  return null;
 };
 
 export default Game;

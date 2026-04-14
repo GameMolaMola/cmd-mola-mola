@@ -28,21 +28,14 @@ export default function GuidoShrimpBlock({ language }: { language: string }) {
           paddingRight: 20,
         }}
       >
-        {skeleton ? (
-          <div
-            className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-cyan-800 border-2 border-yellow-300"
-            style={{ flexShrink: 0 }}
-          />
-        ) : (
-          <img
-            // оригинальное webp изображение отсутствует
-            src="/uploads/Guido%20Shrimp.png"
-            alt="Guido Shrimp"
-            className="w-12 h-12 md:w-14 md:h-14 rounded-full object-cover border-2 border-yellow-300 bg-black"
-            style={{ flexShrink: 0, aspectRatio: "1/1", objectFit: "cover" }}
-            loading="lazy"
-          />
-        )}
+        <img
+          // оригинальное webp изображение отсутствует
+          src="/uploads/9132b9d8-ab25-44a7-81ec-031ebfbb97e6.png"
+          alt="Guido Shrimp"
+          className="w-12 h-12 md:w-14 md:h-14 rounded-full object-cover border-2 border-yellow-300 bg-black"
+          style={{ flexShrink: 0, aspectRatio: "1/1", objectFit: "cover" }}
+          loading="lazy"
+        />
         <span
           className="
             text-base md:text-lg font-semibold text-yellow-200 
