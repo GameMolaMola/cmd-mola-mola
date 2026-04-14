@@ -7,6 +7,7 @@ export const level5Config: LevelConfig = {
   brasilenaCount: 2,
   wineCount: 2,
   swordfishCount: 2,
+  background: 'jungle',
 };
 
 export default level5Config;

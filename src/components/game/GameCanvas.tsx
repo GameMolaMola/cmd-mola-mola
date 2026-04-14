@@ -91,7 +91,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
   return (
     <div
       ref={containerRef}
-      className="absolute inset-0 w-full h-full bg-[#011b2e] outline-none flex items-center justify-center"
+      className="absolute inset-0 w-full h-full bg-[#084e82] outline-none flex items-center justify-center"
       style={{
         touchAction: "manipulation",
         WebkitTouchCallout: "none",
@@ -110,7 +110,7 @@ const GameCanvas: React.FC<GameCanvasProps> = ({
         id="game-canvas"
         className="block outline-none"
         style={{
-          background: "#011b2e",
+          background: "#084e82",
           display: "block",
           border: "none",
           imageRendering: "pixelated",

@@ -1,17 +1,28 @@
-let cachedImages: any | null = null;
-let cachedPromise: Promise<void> | null = null;
+export interface GameImages {
+  playerFrames: HTMLImageElement[]
+  playerLeft: HTMLImageElement
+  enemy: HTMLImageElement
+  enemyLeft: HTMLImageElement
+  pizza: HTMLImageElement
+  brasilena: HTMLImageElement
+  wine: HTMLImageElement
+  coin: HTMLImageElement
+  bossLucia: HTMLImageElement
+  swordfishRight: HTMLImageElement
+  swordfishLeft: HTMLImageElement
+}
 
-export function loadImages(images: any): Promise<void> {
-  if (cachedImages) {
-    Object.assign(images, cachedImages);
-    return Promise.resolve();
-  }
+const cache = new Map<string, HTMLImageElement>()
 
-  if (cachedPromise) {
-    return cachedPromise.then(() => {
-      Object.assign(images, cachedImages!);
-    });
+function getCachedImage(url: string, provided: HTMLImageElement): HTMLImageElement {
+  const cached = cache.get(url)
+  if (cached) {
+    return cached
   }
+  provided.src = url
+  cache.set(url, provided)
+  return provided
+}
 
   cachedPromise = new Promise((resolve) => {
     const imageUrls = {
@@ -35,13 +46,20 @@ export function loadImages(images: any): Promise<void> {
     const keys = Object.keys(imageUrls);
     const toLoad = keys.length;
 
-    const checkResolve = () => {
-      loadedCount += 1;
-      if (loadedCount >= toLoad) {
-        cachedImages = images;
-        resolve();
-      }
-    };
+  const list: HTMLImageElement[] = [
+    images.playerFrames[0],
+    images.playerFrames[1],
+    images.playerLeft,
+    images.enemy,
+    images.enemyLeft,
+    images.pizza,
+    images.brasilena,
+    images.wine,
+    images.coin,
+    images.bossLucia,
+    images.swordfishRight,
+    images.swordfishLeft,
+  ]
 
     keys.forEach((key) => {
       const url = imageUrls[key];
@@ -65,5 +83,13 @@ export function loadImages(images: any): Promise<void> {
     });
   });
 
-  return cachedPromise;
+    list.forEach((img) => {
+      if (img.complete) {
+        check()
+      } else {
+        img.onload = check
+        img.onerror = check
+      }
+    })
+  })
 }

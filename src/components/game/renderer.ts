@@ -1,5 +1,9 @@
 import { drawPixelCoral } from './drawPixelCoral';
 import { drawPixelSand } from './drawPixelSand';
+// import { loadParallaxLayers, ParallaxLayers, ParallaxTheme } from './parallaxLayers'; // Эти импорты больше не нужны здесь, так как GameEngine управляет загрузкой
+
+// Мы убираем глобальные переменные и функции initParallax/getParallaxLayers из renderer.ts,
+// так как GameEngine теперь управляет parallaxLayers и передает их сюда.
 
 function isImageLoaded(img?: HTMLImageElement): img is HTMLImageElement {
   return !!img && img.complete && img.naturalWidth > 0;
@@ -10,7 +14,10 @@ export function renderScene(
   engine: any // GameEngine instance
 ) {
   // Apply screen shake at the beginning
-  engine.screenShake.applyShake(ctx);
+  engine.getScreenShake().applyShake(ctx);
+
+  // Ensure alpha is reset before drawing
+  ctx.globalAlpha = 1;
 
   // вынесем практически всё содержимое оригинального render из GameEngine
   const {
@@ -31,7 +38,50 @@ export function renderScene(
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Draw scrolling parallax background on top of the gradient
-  engine.background?.draw(ctx);
+  const layers = engine.parallaxLayers; // Получаем слои из экземпляра GameEngine
+  if (layers) {
+    const { far, mid, near } = layers;
+
+    // Helper for wrapping offsets horizontally
+    const drawParallax = (
+      layer: HTMLImageElement,
+      offsetX: number,
+      offsetY: number = 0
+    ) => {
+      const width = layer.width;
+      offsetX %= width;
+      if (offsetX > 0) offsetX -= width;
+      ctx.drawImage(layer, offsetX, offsetY);
+      if (offsetX + width < canvas.width) {
+        ctx.drawImage(layer, offsetX + width, offsetY);
+      }
+    };
+
+    // Multipliers for parallax effect
+    // Эти значения могут быть настроены для желаемого эффекта глубины
+    const FAR_MUL = 0.2;
+    const MID_MUL = 0.5;
+    const NEAR_MUL = 0.8;
+
+    // Сдвиг по X зависит от движения игрока
+    // Сдвиг по Y для позиционирования слоев относительно "дна" или "поверхности"
+    if (isImageLoaded(far)) {
+      const offX = -player.x * FAR_MUL;
+      // Clamp offY to keep the top of the layer from going above 0 and bottom below canvas.height
+      const offY = Math.max(canvas.height - far.height, Math.min(0, -player.y * FAR_MUL));
+      drawParallax(far, offX, offY);
+    }
+    if (isImageLoaded(mid)) {
+      const offX = -player.x * MID_MUL;
+      const offY = Math.max(canvas.height - mid.height, Math.min(0, -player.y * MID_MUL));
+      drawParallax(mid, offX, offY);
+    }
+    if (isImageLoaded(near)) {
+      const offX = -player.x * NEAR_MUL;
+      const offY = Math.max(canvas.height - near.height, Math.min(0, -player.y * NEAR_MUL));
+      drawParallax(near, offX, offY);
+    }
+  }
 
   // --- Пузыри ---
   engine.updateBubbles?.();
@@ -243,8 +293,11 @@ export function renderScene(
   }
 
   // Render particle effects on top of everything else
-  engine.particleSystem.render(ctx);
+  engine.getParticleSystem().render(ctx);
 
   // Reset screen shake at the end
-  engine.screenShake.resetShake(ctx);
+  engine.getScreenShake().resetShake(ctx);
+
+  // Restore default alpha in case effects changed it
+  ctx.globalAlpha = 1;
 }

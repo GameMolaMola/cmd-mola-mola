@@ -27,21 +27,18 @@ const GameOverScreen = ({ gameState, onRestart }: GameOverScreenProps) => {
 
     setEmailSent("pending");
     try {
-      const res = await fetch(
-        "https://smdjmmefqherrlxcqfhp.supabase.co/functions/v1/send-new-player-email",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nickname: playerData.nickname,
-            email: playerData.email,
-            code,
-            language: playerData.language,
-            level: gameState.level,
-            coins: gameState.coins
-          }),
-        }
-      );
+      const res = await fetch("/api/send-new-player-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nickname: playerData.nickname,
+          email: playerData.email,
+          code,
+          language: playerData.language,
+          level: gameState.level,
+          coins: gameState.coins,
+        }),
+      });
       if (res.ok) {
         setEmailSent("sent");
       } else {

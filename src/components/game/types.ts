@@ -23,4 +23,5 @@ export interface LevelConfig {
   wineCount: number;
   swordfishCount?: number;
   boss?: boolean;
+  background?: string;
 }

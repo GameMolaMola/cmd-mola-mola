@@ -1,5 +1,6 @@
 
 import React from "react";
+import { IS_SKELETON_MODE } from "@/constants";
 
 const GUIDO_MESSAGES = {
   en: "Guido Shrimp greets you!",
@@ -8,6 +9,7 @@ const GUIDO_MESSAGES = {
 };
 
 export default function GuidoShrimpBlock({ language }: { language: string }) {
+  const skeleton = IS_SKELETON_MODE;
   return (
     <div className="w-full flex justify-center my-3">
       <div

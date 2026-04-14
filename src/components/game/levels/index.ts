@@ -29,6 +29,7 @@ const bossLevelConfig: LevelConfig = {
   wineCount: 2,
   swordfishCount: 0,
   boss: true,
+  background: 'jungle',
 };
 
 export function getLevelConfig(level: number): LevelConfig {

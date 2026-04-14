@@ -13,9 +13,10 @@ import { generateBubbles, updateBubbles, drawBubbles } from './bubblesManager';
 import { createDefaultPlatforms } from './platformsManager';
 import { setupKeyboardHandlers } from './controlsManager';
 
-import { renderScene } from './renderer';
+import { renderScene, initParallax, getParallaxLayers } from './renderer'; // initParallax и getParallaxLayers могут быть не нужны здесь, в зависимости от их роли
 import { gameTick } from './loop';
 import { loadImages } from './imageLoader';
+import { ParallaxLayers, loadParallaxLayers } from './parallaxLayers'; // Убедитесь, что loadParallaxLayers импортируется
 
 import { spawnResourceForType, ResourceType } from './resourceSpawner';
 import { spawnDynamicPlatform, updateDynamicPlatforms } from './dynamicPlatforms';
@@ -140,6 +141,7 @@ export class GameEngine {
   private mobileControlState: Record<string, boolean> = {};
 
   private staticSandLayer: HTMLCanvasElement | null = null;
+  private parallaxLayers: ParallaxLayers | null = null;
 
   private freeBrasilena?: ReturnType<typeof useFreeBrasilena>;
 
@@ -173,9 +175,232 @@ export class GameEngine {
   private particleSystem: ParticleSystem = new ParticleSystem();
   private screenShake: ScreenShake = new ScreenShake();
 
-  private shoot() {}
-  private generateLevel() {}
-  private updateGameState() {}
+  private shoot() {
+    const currentTime = Date.now();
+    if (
+      this.player.ammo <= 0 ||
+      currentTime - this.lastShotTime < this.SHOT_COOLDOWN
+    ) {
+      return;
+    }
+
+    const direction = typeof this.player.direction === 'number' ? this.player.direction : 1;
+    const isMobile =
+      typeof navigator !== 'undefined' &&
+      /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+
+    const bulletWidth = isMobile ? 25 : 20;
+    const bulletHeight = isMobile ? 12 : 10;
+
+    const bulletX =
+      direction === 1 ? this.player.x + this.player.width : this.player.x - bulletWidth;
+    const bulletY = this.player.y + this.player.height / 2 - bulletHeight / 2;
+
+    this.bullets.push({
+      x: bulletX,
+      y: bulletY,
+      width: bulletWidth,
+      height: bulletHeight,
+      speed: 10 * direction,
+      direction,
+    });
+
+    this.particleSystem.createMuzzleFlash(
+      bulletX + (direction === 1 ? -5 : bulletWidth + 5),
+      bulletY + bulletHeight / 2
+    );
+
+    if (this.soundEnabled && this.audioActivated) {
+      audioManager.playShootSound();
+    }
+
+    this.player.ammo--;
+    this.lastShotTime = currentTime;
+    this.updateGameState();
+  }
+
+  private generateLevel() {
+    if (this.freeBrasilena && typeof this.freeBrasilena.reset === 'function') {
+      this.freeBrasilena.reset();
+    }
+
+    const cfg = getLevelConfig(this.player.level);
+
+    loadParallaxLayers(cfg.background).then((layers) => {
+      this.parallaxLayers = layers;
+    });
+
+    this.enemies = [];
+    this.swordfish = [];
+    this.coins = [];
+    this.pizzas = [];
+    this.brasilenas = [];
+    this.wines = [];
+    this.dynamicPlatforms = [];
+
+    if (this.audioActivated && this.soundEnabled && !audioManager.isMutedState()) {
+      audioManager.playLevelMusic(this.player.level || 1);
+    }
+
+    if (cfg.boss) {
+      this.bossLucia = {
+        x: 300,
+        y: 150,
+        width: 128,
+        height: 128,
+        health: 200 + (this.player.level - 10) * 40,
+        image: this.images.bossLucia,
+        direction: 1,
+      };
+    } else {
+      this.bossLucia = null;
+
+      const sandHeight = 40;
+      const enemyHeight = 48;
+      const minY = 20;
+      const maxY = this.canvas.height - sandHeight - enemyHeight - 8;
+      const minX = 20;
+      const maxX = this.canvas.width - 48 - 20;
+
+      for (let i = 0; i < cfg.enemyCount; i++) {
+        this.enemies.push({
+          x: minX + Math.random() * (maxX - minX),
+          y: minY + Math.random() * (maxY - minY),
+          width: 48,
+          height: 48,
+          speed: 1 + this.player.level * 0.2,
+        });
+      }
+
+      for (let i = 0; i < (cfg.swordfishCount || 0); i++) {
+        this.swordfish.push({
+          x: Math.random() * (this.canvas.width - 64),
+          y:
+            this.canvas.height * 0.4 + Math.random() * (this.canvas.height * 0.2),
+          width: 64,
+          height: 48,
+          direction: Math.random() > 0.5 ? 1 : -1,
+          frame: 0,
+          frameTimer: 0,
+          frameRate: 8,
+        });
+      }
+    }
+
+    const arrays = {
+      coin: this.coins,
+      pizza: this.pizzas,
+      brasilena: this.brasilenas,
+      wine: this.wines,
+    };
+
+    for (let i = 0; i < cfg.coinCount; i++) {
+      spawnResourceForType({
+        type: 'coin',
+        arrays,
+        player: this.player,
+        platforms: this.platforms,
+        canvasWidth: this.canvas.width,
+        canvasHeight: this.canvas.height,
+      });
+    }
+
+    for (let i = 0; i < cfg.pizzaCount; i++) {
+      spawnResourceForType({
+        type: 'pizza',
+        arrays,
+        player: this.player,
+        platforms: this.platforms,
+        canvasWidth: this.canvas.width,
+        canvasHeight: this.canvas.height,
+      });
+    }
+
+    for (let i = 0; i < cfg.brasilenaCount; i++) {
+      spawnResourceForType({
+        type: 'brasilena',
+        arrays,
+        player: this.player,
+        platforms: this.platforms,
+        canvasWidth: this.canvas.width,
+        canvasHeight: this.canvas.height,
+      });
+    }
+
+    for (let i = 0; i < cfg.wineCount; i++) {
+      spawnResourceForType({
+        type: 'wine',
+        arrays,
+        player: this.player,
+        platforms: this.platforms,
+        canvasWidth: this.canvas.width,
+        canvasHeight: this.canvas.height,
+      });
+    }
+
+    const dynCount = 1 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < dynCount; i++) {
+      const typeRand = Math.random();
+      let type: 'static' | 'disappearing' | 'moving' = 'static';
+      if (typeRand > 0.8) type = 'moving';
+      else if (typeRand > 0.4) type = 'disappearing';
+      this.dynamicPlatforms.push(
+        spawnDynamicPlatform(
+          this.canvas.width,
+          this.canvas.height,
+          this.dynamicPlatforms,
+          type
+        )
+      );
+    }
+
+    this.updateGameState();
+  }
+
+  private updateGameState() {
+    if (isGodmodeUser(this.player.username, this.player.godmode)) {
+      this.player.health = 100;
+    }
+
+    this.callbacks.onStateUpdate({
+      health: this.player.health,
+      ammo: this.player.ammo,
+      coins: this.player.coins,
+      level: this.player.level,
+      soundMuted: this.isSoundMuted(),
+    });
+  }
+
+  // --- New: spawn coins near the boss ---
+  public spawnBossCoins(count: number = 20) {
+    const boss = this.bossLucia;
+    if (!boss) return;
+    for (let i = 0; i < count; i++) {
+      const offsetX = (Math.random() - 0.5) * boss.width;
+      const offsetY = (Math.random() - 0.5) * boss.height;
+      this.coins.push({
+        x: boss.x + boss.width / 2 + offsetX,
+        y: boss.y + boss.height / 2 + offsetY,
+        width: 32,
+        height: 32,
+        _bossCoin: true,
+      });
+    }
+  }
+
+  public spawnBossCoinsOnHit(count: number, boss: { x: number; y: number; width: number; height: number }) {
+    for (let i = 0; i < count; i++) {
+      const offsetX = (Math.random() - 0.5) * boss.width;
+      const offsetY = (Math.random() - 0.5) * boss.height;
+      this.coins.push({
+        x: boss.x + boss.width / 2 + offsetX,
+        y: boss.y + boss.height / 2 + offsetY,
+        width: 32,
+        height: 32,
+        _bossCoin: true,
+      });
+    }
+  }
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -196,7 +421,7 @@ export class GameEngine {
     this.ctx.imageSmoothingEnabled = false;
     this.callbacks = options;
 
-    // handle scaleFactor if provided, default to 1  
+    // handle scaleFactor if provided, default to 1 
     this.scaleFactor = options.scaleFactor ?? 1;
 
     // [ИСПРАВЛЕНО] Прокидываем ВСЕ параметры начального состояния игрока БЕЗ потери значений!
@@ -237,7 +462,13 @@ export class GameEngine {
       swordfishLeft: new Image(),
     };
 
-    this.loadPromise = loadImages(this.images);
+    const initialConfig = getLevelConfig(this.player.level);
+    this.loadPromise = Promise.all([
+      loadImages(this.images),
+      loadParallaxLayers(initialConfig.background).then((layers) => {
+        this.parallaxLayers = layers;
+      }),
+    ]).then(() => {});
     setupKeyboardHandlers(this.keys, this.shoot.bind(this));
     this.generateLevel();
     this.platforms = createDefaultPlatforms(this.canvas.width, this.canvas.height);
@@ -366,6 +597,31 @@ export class GameEngine {
 
   public isSoundMuted() {
     return audioManager.isMutedState();
+  }
+
+  public getParticleSystem(): ParticleSystem {
+    return this.particleSystem;
+  }
+
+  public getScreenShake(): ScreenShake {
+    return this.screenShake;
+  }
+
+  private tick = () => {
+    gameTick(this);
+    this.animationId = requestAnimationFrame(this.tick);
+  };
+
+  public start() {
+    if (this.animationId !== null) return;
+    this.animationId = requestAnimationFrame(this.tick);
+  }
+
+  public stop() {
+    if (this.animationId !== null) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
   }
 
   // --- Используем только bubblesManager ---

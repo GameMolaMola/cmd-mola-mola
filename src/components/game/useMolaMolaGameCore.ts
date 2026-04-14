@@ -78,16 +78,6 @@ export function useMolaMolaGameCore({
     if (!gameEnded) setIsPaused(false);
   }, [gameEnded, setIsPaused]);
 
-  // Клавиша паузы
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.code === "KeyP" && !gameEnded) {
-        setIsPaused((v: boolean) => !v);
-      }
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [gameEnded, setIsPaused]);
 
   // HUD и GameOver обработчики (создаём фабрики чтобы иметь доступ к рефам/состояниям)
   const onStateUpdate = onStateUpdateFactory({ setHud, justResetGameRef });
